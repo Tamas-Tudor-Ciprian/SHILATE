@@ -23,5 +23,8 @@ public class VehicleTelemetryBridge : MonoBehaviour
         broker.BrakePedal = vehicle.BrakeInput;
         broker.ThrottlePosition = vehicle.ThrottleInput;
         broker.Gear = vehicle.CurrentGear;
+        broker.FrontSlip = vehicle.FrontSlip;
+        broker.RearSlip = vehicle.RearSlip;
+        broker.RearForwardSlip = vehicle.RearForwardSlip;
     }
 }

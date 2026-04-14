@@ -31,6 +31,15 @@ public class VehicleController : MonoBehaviour
     [Tooltip("Maximum steering angle for front wheels (degrees)")]
     public float maxSteerAngle = 35f;
 
+    [Tooltip("Steering rack rate at low speed (degrees/sec at the wheels)")]
+    public float steeringSpeedLow = 120f;
+
+    [Tooltip("Steering rack rate at high speed (heavier feel = slower rack)")]
+    public float steeringSpeedHigh = 30f;
+
+    [Tooltip("Speed (km/h) at which steering rate reaches its minimum (heaviest feel)")]
+    public float steeringWeightFullSpeed = 120f;
+
     [Tooltip("Maximum brake torque applied to all wheels (Nm)")]
     public float maxBrakeTorque = 3000f;
 
@@ -71,6 +80,29 @@ public class VehicleController : MonoBehaviour
     [Tooltip("Brake torque applied in Park to lock wheels (Nm)")]
     public float parkBrakeTorque = 10000f;
 
+    [Header("Tire Friction (Continental ProContact RX — Model 3)")]
+    [Tooltip("Forward: slip ratio at peak grip (~0.08 for road tires)")]
+    public float fwdExtremumSlip = 0.08f;
+    [Tooltip("Forward: peak friction coefficient")]
+    public float fwdExtremumValue = 1.3f;
+    [Tooltip("Forward: slip ratio where friction stabilises (sliding)")]
+    public float fwdAsymptoteSlip = 0.4f;
+    [Tooltip("Forward: stabilised friction coefficient (< peak = breakaway)")]
+    public float fwdAsymptoteValue = 0.9f;
+
+    [Tooltip("Sideways: slip angle at peak lateral grip (~0.06)")]
+    public float sideExtremumSlip = 0.06f;
+    [Tooltip("Sideways: peak lateral friction coefficient")]
+    public float sideExtremumValue = 1.2f;
+    [Tooltip("Sideways: slip angle where lateral friction stabilises")]
+    public float sideAsymptoteSlip = 0.35f;
+    [Tooltip("Sideways: stabilised lateral friction (drift zone)")]
+    public float sideAsymptoteValue = 0.85f;
+
+    [Tooltip("Rear lateral grip loss under full throttle (0 = no loss, 0.4 = 40% less grip)")]
+    [Range(0f, 0.8f)]
+    public float rearGripLossUnderPower = 0.3f;
+
     [Header("Center of Mass")]
     [Tooltip("Local center of mass position for stability (lower = more stable)")]
     public Vector3 centerOfMassOffset = new Vector3(0f, -0.2f, 0.15f);
@@ -103,12 +135,53 @@ public class VehicleController : MonoBehaviour
     /// <summary>Active gear (Park / Reverse / Neutral / Drive).</summary>
     public GearState CurrentGear { get; private set; } = GearState.Park;
 
+    /// <summary>Average front wheel lateral slip (absolute).</summary>
+    public float FrontSlip { get; private set; }
+
+    /// <summary>Average rear wheel lateral slip (absolute).</summary>
+    public float RearSlip { get; private set; }
+
+    /// <summary>Average rear wheel longitudinal slip (wheelspin / lockup).</summary>
+    public float RearForwardSlip { get; private set; }
+
     Rigidbody _rb;
+    float _baseSideStiffnessRL;
+    float _baseSideStiffnessRR;
 
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
         _rb.centerOfMass = centerOfMassOffset;
+        ApplyFrictionCurves();
+    }
+
+    void ApplyFrictionCurves()
+    {
+        WheelCollider[] allWheels = { wheelFL, wheelFR, wheelRL, wheelRR };
+        foreach (var w in allWheels)
+        {
+            if (w == null) continue;
+
+            var fwd = w.forwardFriction;
+            fwd.extremumSlip = fwdExtremumSlip;
+            fwd.extremumValue = fwdExtremumValue;
+            fwd.asymptoteSlip = fwdAsymptoteSlip;
+            fwd.asymptoteValue = fwdAsymptoteValue;
+            fwd.stiffness = 1f;
+            w.forwardFriction = fwd;
+
+            var side = w.sidewaysFriction;
+            side.extremumSlip = sideExtremumSlip;
+            side.extremumValue = sideExtremumValue;
+            side.asymptoteSlip = sideAsymptoteSlip;
+            side.asymptoteValue = sideAsymptoteValue;
+            side.stiffness = 1f;
+            w.sidewaysFriction = side;
+        }
+
+        // Cache base rear stiffness for dynamic grip reduction
+        _baseSideStiffnessRL = wheelRL != null ? wheelRL.sidewaysFriction.stiffness : 1f;
+        _baseSideStiffnessRR = wheelRR != null ? wheelRR.sidewaysFriction.stiffness : 1f;
     }
 
     // ─── Gear Shift API ───
@@ -196,6 +269,7 @@ public class VehicleController : MonoBehaviour
         ApplySteering();
         ApplyMotor();
         ApplyBrakes();
+        UpdateDynamicGrip();
         UpdateTelemetry();
     }
 
@@ -206,7 +280,14 @@ public class VehicleController : MonoBehaviour
 
     void ApplySteering()
     {
-        CurrentSteerAngle = SteerInput * maxSteerAngle;
+        float targetAngle = SteerInput * maxSteerAngle;
+
+        // Speed-dependent steering rate (heavier feel at speed, full mechanical range always available)
+        float speedT = Mathf.InverseLerp(0f, steeringWeightFullSpeed, CurrentSpeed);
+        float rackSpeed = Mathf.Lerp(steeringSpeedLow, steeringSpeedHigh, speedT);
+
+        CurrentSteerAngle = Mathf.MoveTowards(CurrentSteerAngle, targetAngle, rackSpeed * Time.fixedDeltaTime);
+
         wheelFL.steerAngle = CurrentSteerAngle;
         wheelFR.steerAngle = CurrentSteerAngle;
     }
@@ -315,6 +396,50 @@ public class VehicleController : MonoBehaviour
         float avgWheelRPM = (Mathf.Abs(wheelRL.rpm) + Mathf.Abs(wheelRR.rpm)) * 0.5f;
         float motorRPM = avgWheelRPM * finalDriveRatio;
         CurrentRPM = Mathf.Clamp(motorRPM, 0f, maxMotorRPM);
+
+        // Slip telemetry from WheelHit data
+        UpdateSlipTelemetry();
+    }
+
+    void UpdateDynamicGrip()
+    {
+        // Reduce rear lateral grip under throttle (simulates weight transfer + torque oversteer)
+        float gripLoss = ThrottleInput * rearGripLossUnderPower;
+        SetRearSideStiffness(wheelRL, _baseSideStiffnessRL * (1f - gripLoss));
+        SetRearSideStiffness(wheelRR, _baseSideStiffnessRR * (1f - gripLoss));
+    }
+
+    void SetRearSideStiffness(WheelCollider wheel, float stiffness)
+    {
+        if (wheel == null) return;
+        var sf = wheel.sidewaysFriction;
+        sf.stiffness = stiffness;
+        wheel.sidewaysFriction = sf;
+    }
+
+    void UpdateSlipTelemetry()
+    {
+        float fSlipFL = 0f, fSlipFR = 0f, fSlipRL = 0f, fSlipRR = 0f;
+        float sSlipRL = 0f, sSlipRR = 0f;
+
+        if (wheelFL.GetGroundHit(out WheelHit hitFL))
+            fSlipFL = Mathf.Abs(hitFL.sidewaysSlip);
+        if (wheelFR.GetGroundHit(out WheelHit hitFR))
+            fSlipFR = Mathf.Abs(hitFR.sidewaysSlip);
+        if (wheelRL.GetGroundHit(out WheelHit hitRL))
+        {
+            fSlipRL = Mathf.Abs(hitRL.sidewaysSlip);
+            sSlipRL = Mathf.Abs(hitRL.forwardSlip);
+        }
+        if (wheelRR.GetGroundHit(out WheelHit hitRR))
+        {
+            fSlipRR = Mathf.Abs(hitRR.sidewaysSlip);
+            sSlipRR = Mathf.Abs(hitRR.forwardSlip);
+        }
+
+        FrontSlip = (fSlipFL + fSlipFR) * 0.5f;
+        RearSlip = (fSlipRL + fSlipRR) * 0.5f;
+        RearForwardSlip = (sSlipRL + sSlipRR) * 0.5f;
     }
 
     void SyncWheelMeshes()

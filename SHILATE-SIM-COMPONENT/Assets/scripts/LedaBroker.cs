@@ -23,6 +23,9 @@ public class LedaBroker : MonoBehaviour
     public float BrakePedal;
     public float ThrottlePosition;
     public VehicleController.GearState Gear;
+    public float FrontSlip;
+    public float RearSlip;
+    public float RearForwardSlip;
 
     MqttClient _mqtt;
     float _publishTimer;
@@ -75,6 +78,9 @@ public class LedaBroker : MonoBehaviour
         Publish("vehicle/brake", BrakePedal);
         Publish("vehicle/throttle", ThrottlePosition);
         PublishString("vehicle/gear", GearToString(Gear));
+        Publish("vehicle/slip/front", FrontSlip);
+        Publish("vehicle/slip/rear", RearSlip);
+        Publish("vehicle/slip/rearForward", RearForwardSlip);
     }
 
     void Publish(string topic, float value)
