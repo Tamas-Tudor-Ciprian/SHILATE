@@ -22,6 +22,7 @@ public class SimulationRunner : MonoBehaviour
     public int CurrentCommandIndex { get; private set; }
 
     float _commandTimer;
+    VehicleController.GearState _lastGear;
 
     void Start()
     {
@@ -37,6 +38,14 @@ public class SimulationRunner : MonoBehaviour
         _commandTimer += Time.fixedDeltaTime;
 
         DriveCommand cmd = scenario.commands[CurrentCommandIndex];
+
+        // Apply gear change when command's gear differs from last applied
+        VehicleController.GearState targetGear = cmd.gear;
+        if (targetGear != _lastGear)
+        {
+            if (vehicle.RequestGearChange(targetGear))
+                _lastGear = targetGear;
+        }
 
         // Apply current command inputs
         vehicle.ThrottleInput = cmd.throttle;
@@ -81,6 +90,7 @@ public class SimulationRunner : MonoBehaviour
 
         CurrentCommandIndex = 0;
         _commandTimer = 0f;
+        _lastGear = vehicle.CurrentGear;
         IsRunning = true;
         Debug.Log($"[SimulationRunner] Started scenario '{scenario.name}' ({scenario.commands.Length} commands).");
     }

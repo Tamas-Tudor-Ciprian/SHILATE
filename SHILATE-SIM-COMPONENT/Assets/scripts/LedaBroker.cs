@@ -17,10 +17,12 @@ public class LedaBroker : MonoBehaviour
 
     [Header("Vehicle Signals (set from other scripts or Inspector)")]
     public float Speed;
+    public float SignedSpeed;
     public float RPM;
     public float SteeringAngle;
     public float BrakePedal;
     public float ThrottlePosition;
+    public VehicleController.GearState Gear;
 
     MqttClient _mqtt;
     float _publishTimer;
@@ -67,16 +69,36 @@ public class LedaBroker : MonoBehaviour
     void PublishSignals()
     {
         Publish("vehicle/speed", Speed);
+        Publish("vehicle/signedSpeed", SignedSpeed);
         Publish("vehicle/rpm", RPM);
         Publish("vehicle/steering", SteeringAngle);
         Publish("vehicle/brake", BrakePedal);
         Publish("vehicle/throttle", ThrottlePosition);
+        PublishString("vehicle/gear", GearToString(Gear));
     }
 
     void Publish(string topic, float value)
     {
         string json = "{\"value\":" + value.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + "}";
         _mqtt.Publish(topic, json);
+    }
+
+    void PublishString(string topic, string value)
+    {
+        string json = "{\"value\":\"" + value + "\"}";
+        _mqtt.Publish(topic, json);
+    }
+
+    static string GearToString(VehicleController.GearState gear)
+    {
+        switch (gear)
+        {
+            case VehicleController.GearState.Park:    return "P";
+            case VehicleController.GearState.Reverse:  return "R";
+            case VehicleController.GearState.Neutral:  return "N";
+            case VehicleController.GearState.Drive:    return "D";
+            default: return "P";
+        }
     }
 
     // ─── Public API for other scripts ───

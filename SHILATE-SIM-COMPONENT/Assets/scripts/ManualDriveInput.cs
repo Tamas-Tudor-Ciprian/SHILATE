@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 /// Reads the Input System "Player/Move" action and writes to VehicleController.
 /// Vertical axis → throttle (positive) / brake (negative).
 /// Horizontal axis → steering.
+/// P / R / N / D keys select gears via VehicleController.RequestGearChange().
 /// Disable this component when SimulationRunner is driving the car.
 /// </summary>
 public class ManualDriveInput : MonoBehaviour
@@ -36,6 +37,17 @@ public class ManualDriveInput : MonoBehaviour
         // Suppress manual input while a scripted scenario is active
         if (simulationRunner != null && simulationRunner.IsRunning) return;
 
+        // ─── Gear selection (P / R / N / D) ───
+        if (Input.GetKeyDown(KeyCode.P))
+            vehicle.RequestGearChange(VehicleController.GearState.Park);
+        if (Input.GetKeyDown(KeyCode.R))
+            vehicle.RequestGearChange(VehicleController.GearState.Reverse);
+        if (Input.GetKeyDown(KeyCode.N))
+            vehicle.RequestGearChange(VehicleController.GearState.Neutral);
+        if (Input.GetKeyDown(KeyCode.D))
+            vehicle.RequestGearChange(VehicleController.GearState.Drive);
+
+        // ─── Throttle / Brake / Steering ───
         Vector2 input = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
 
         vehicle.SteerInput = input.x;

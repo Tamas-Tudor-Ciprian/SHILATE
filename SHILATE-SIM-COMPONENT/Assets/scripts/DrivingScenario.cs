@@ -23,6 +23,9 @@ public struct DriveCommand
     [Tooltip("How long to apply these inputs (seconds)")]
     public float duration;
 
+    [Tooltip("Gear selector (defaults to Drive for backward compatibility)")]
+    public VehicleController.GearState gear;
+
     [Range(0f, 1f)]
     [Tooltip("Throttle: 0 = none, 1 = full")]
     public float throttle;

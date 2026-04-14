@@ -17,9 +17,11 @@ public class VehicleTelemetryBridge : MonoBehaviour
         if (vehicle == null || broker == null) return;
 
         broker.Speed = vehicle.CurrentSpeed;
+        broker.SignedSpeed = vehicle.SignedSpeed;
         broker.RPM = vehicle.CurrentRPM;
         broker.SteeringAngle = vehicle.CurrentSteerAngle;
         broker.BrakePedal = vehicle.BrakeInput;
         broker.ThrottlePosition = vehicle.ThrottleInput;
+        broker.Gear = vehicle.CurrentGear;
     }
 }
