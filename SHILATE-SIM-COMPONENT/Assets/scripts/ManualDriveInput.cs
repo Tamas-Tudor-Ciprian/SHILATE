@@ -44,6 +44,13 @@ public class ManualDriveInput : MonoBehaviour
         // Suppress manual input while a scripted scenario is active
         if (simulationRunner != null && simulationRunner.IsRunning) return;
 
+        // Auto-discover RemoteDriveInput if the reference wasn't set in Inspector
+        if (remoteInput == null)
+            remoteInput = GetComponent<RemoteDriveInput>();
+
+        // Yield to remote control whenever it is active — don't zero out its values
+        if (remoteInput != null && remoteInput.enabled) return;
+
         // ─── Gear selection (P / R / N / D) ───
         if (Input.GetKeyDown(KeyCode.P))
             vehicle.RequestGearChange(VehicleController.GearState.Park);

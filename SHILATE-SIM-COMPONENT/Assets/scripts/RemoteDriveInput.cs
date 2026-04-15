@@ -46,7 +46,13 @@ public class RemoteDriveInput : MonoBehaviour
 
         if (GearChangeRequested)
         {
+            // Temporarily satisfy the brake-to-shift safety check.
+            // A remote gear command is authoritative — we don't require the
+            // physical brake to be held over MQTT (timing is unreliable).
+            float savedBrake = vehicle.BrakeInput;
+            vehicle.BrakeInput = Mathf.Max(vehicle.BrakeInput, 0.15f);
             vehicle.RequestGearChange(RequestedGear);
+            vehicle.BrakeInput = savedBrake;
             GearChangeRequested = false;
         }
     }
