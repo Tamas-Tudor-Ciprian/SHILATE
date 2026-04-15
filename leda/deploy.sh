@@ -75,6 +75,10 @@ deploy_app() {
     build_and_deploy "shilate-velocitas-app" "${SCRIPT_DIR}/velocitas-app"
 }
 
+deploy_controller() {
+    build_and_deploy "shilate-leda-controller" "${SCRIPT_DIR}/leda-controller"
+}
+
 # ─── Main ─────────────────────────────────────────────────────────────────
 
 info "Checking SSH connectivity to Leda …"
@@ -86,13 +90,15 @@ fi
 ok "Leda is reachable"
 
 case "${TARGET}" in
-    feeder) deploy_feeder ;;
-    app)    deploy_app    ;;
-    all)    deploy_feeder
-            deploy_app    ;;
+    feeder)     deploy_feeder     ;;
+    app)        deploy_app        ;;
+    controller) deploy_controller ;;
+    all)        deploy_feeder
+                deploy_app
+                deploy_controller ;;
     *)
         err "Unknown target: ${TARGET}"
-        echo "Usage: $0 [feeder|app|all]"
+        echo "Usage: $0 [feeder|app|controller|all]"
         exit 1
         ;;
 esac
@@ -103,4 +109,5 @@ ok   "Deployment complete!  Verify with:"
 echo "  ${LEDA_SSH} \"kanto-cm list\""
 echo "  ${LEDA_SSH} \"kanto-cm logs --name mqtt-kuksa-feeder\""
 echo "  ${LEDA_SSH} \"kanto-cm logs --name shilate-velocitas-app\""
+echo "  ${LEDA_SSH} \"kanto-cm logs --name shilate-leda-controller\""
 info "═══════════════════════════════════════════════════════════"

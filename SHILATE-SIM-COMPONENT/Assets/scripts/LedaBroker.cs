@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Bridge between the Unity simulation and an Eclipse Leda instance via MQTT.
 /// Publishes vehicle signals that flow through Mosquitto → Kuksa Feeder → Kuksa Databroker.
+/// Receives control commands from Leda on {envPrefix}/leda/control/* topics.
 /// </summary>
 public class LedaBroker : MonoBehaviour
 {
@@ -11,9 +12,17 @@ public class LedaBroker : MonoBehaviour
     [SerializeField] int brokerPort = 1883;
     [SerializeField] string clientId = "unity-shilate";
 
+    [Header("Environment Prefix (for parallel training)")]
+    [Tooltip("Prefix for all MQTT topics, e.g. 'env0'. Set per instance for parallel envs.")]
+    [SerializeField] string envPrefix = "env0";
+
     [Header("Publish Settings")]
     [Tooltip("Seconds between signal publishes")]
     [SerializeField] float publishInterval = 0.1f;
+
+    [Header("Remote Control")]
+    [Tooltip("Remote input receiver for Leda control commands")]
+    public RemoteDriveInput remoteInput;
 
     [Header("Vehicle Signals (set from other scripts or Inspector)")]
     public float Speed;
@@ -30,6 +39,12 @@ public class LedaBroker : MonoBehaviour
     MqttClient _mqtt;
     float _publishTimer;
     bool _connected;
+
+    /// <summary>Fired when a reset command is received from Leda.</summary>
+    public event System.Action OnResetRequested;
+
+    /// <summary>Fired when a timescale command is received from Leda.</summary>
+    public event System.Action<float> OnTimeScaleRequested;
 
     void OnEnable()
     {
@@ -61,7 +76,7 @@ public class LedaBroker : MonoBehaviour
 
         if (!_connected) return;
 
-        _publishTimer += Time.deltaTime;
+        _publishTimer += Time.unscaledDeltaTime;
         if (_publishTimer >= publishInterval)
         {
             _publishTimer = 0f;
@@ -71,16 +86,17 @@ public class LedaBroker : MonoBehaviour
 
     void PublishSignals()
     {
-        Publish("vehicle/speed", Speed);
-        Publish("vehicle/signedSpeed", SignedSpeed);
-        Publish("vehicle/rpm", RPM);
-        Publish("vehicle/steering", SteeringAngle);
-        Publish("vehicle/brake", BrakePedal);
-        Publish("vehicle/throttle", ThrottlePosition);
-        PublishString("vehicle/gear", GearToString(Gear));
-        Publish("vehicle/slip/front", FrontSlip);
-        Publish("vehicle/slip/rear", RearSlip);
-        Publish("vehicle/slip/rearForward", RearForwardSlip);
+        string p = envPrefix + "/";
+        Publish(p + "vehicle/speed", Speed);
+        Publish(p + "vehicle/signedSpeed", SignedSpeed);
+        Publish(p + "vehicle/rpm", RPM);
+        Publish(p + "vehicle/steering", SteeringAngle);
+        Publish(p + "vehicle/brake", BrakePedal);
+        Publish(p + "vehicle/throttle", ThrottlePosition);
+        PublishString(p + "vehicle/gear", GearToString(Gear));
+        Publish(p + "vehicle/slip/front", FrontSlip);
+        Publish(p + "vehicle/slip/rear", RearSlip);
+        Publish(p + "vehicle/slip/rearForward", RearForwardSlip);
     }
 
     void Publish(string topic, float value)
@@ -113,20 +129,37 @@ public class LedaBroker : MonoBehaviour
     public void SetSpeed(float value)
     {
         Speed = value;
-        if (_connected) Publish("vehicle/speed", value);
+        if (_connected) Publish(envPrefix + "/vehicle/speed", value);
     }
 
     /// <summary>Set RPM and immediately publish.</summary>
     public void SetRPM(float value)
     {
         RPM = value;
-        if (_connected) Publish("vehicle/rpm", value);
+        if (_connected) Publish(envPrefix + "/vehicle/rpm", value);
     }
 
-    /// <summary>Publish an arbitrary signal.</summary>
+    /// <summary>Publish an arbitrary signal (auto-prefixed with envPrefix).</summary>
     public void PublishSignal(string topic, float value)
     {
-        if (_connected) Publish(topic, value);
+        if (_connected) Publish(envPrefix + "/" + topic, value);
+    }
+
+    /// <summary>Publish a raw JSON string to an arbitrary topic (auto-prefixed).</summary>
+    public void PublishRaw(string topic, string json)
+    {
+        if (_connected) _mqtt.Publish(envPrefix + "/" + topic, json);
+    }
+
+    /// <summary>The environment prefix for this instance (e.g. "env0").</summary>
+    public string EnvPrefix => envPrefix;
+
+    /// <summary>Configure broker settings at runtime (used by TrainingBootstrap).</summary>
+    public void Configure(string host, int port, string prefix)
+    {
+        brokerHost = host;
+        brokerPort = port;
+        envPrefix = prefix;
     }
 
     // ─── MQTT callbacks (dispatched on main thread) ───
@@ -134,10 +167,10 @@ public class LedaBroker : MonoBehaviour
     void HandleConnected()
     {
         _connected = true;
-        Debug.Log($"[LedaBroker] Connected to MQTT broker at {brokerHost}:{brokerPort}");
+        Debug.Log($"[LedaBroker] Connected to MQTT broker at {brokerHost}:{brokerPort} (prefix: {envPrefix})");
 
-        // Subscribe for future bidirectional commands from Leda
-        _mqtt.Subscribe("leda/command/#");
+        _mqtt.Subscribe(envPrefix + "/leda/control/#");
+        _mqtt.Subscribe(envPrefix + "/leda/command/#");
     }
 
     void HandleDisconnected(string reason)
@@ -148,7 +181,70 @@ public class LedaBroker : MonoBehaviour
 
     void HandleMessage(string topic, string payload)
     {
-        Debug.Log($"[LedaBroker] Received {topic}: {payload}");
-        // Future: parse actuator commands from Leda here
+        // Strip the env prefix to get the logical topic
+        string prefix = envPrefix + "/";
+        string localTopic = topic.StartsWith(prefix) ? topic.Substring(prefix.Length) : topic;
+
+        // Parse control commands from Leda
+        if (localTopic.StartsWith("leda/control/"))
+        {
+            string command = localTopic.Substring("leda/control/".Length);
+            float value = ParseFloat(payload);
+
+            switch (command)
+            {
+                case "throttle":
+                    if (remoteInput != null) remoteInput.Throttle = Mathf.Clamp01(value);
+                    break;
+                case "steer":
+                    if (remoteInput != null) remoteInput.Steer = Mathf.Clamp(value, -1f, 1f);
+                    break;
+                case "brake":
+                    if (remoteInput != null) remoteInput.Brake = Mathf.Clamp01(value);
+                    break;
+                case "gear":
+                    if (remoteInput != null)
+                    {
+                        remoteInput.RequestedGear = ParseGear(payload);
+                        remoteInput.GearChangeRequested = true;
+                    }
+                    break;
+                case "reset":
+                    OnResetRequested?.Invoke();
+                    break;
+                case "timescale":
+                    OnTimeScaleRequested?.Invoke(value);
+                    break;
+                default:
+                    Debug.Log($"[LedaBroker] Unknown control command: {command}");
+                    break;
+            }
+        }
+        else
+        {
+            Debug.Log($"[LedaBroker] Received {topic}: {payload}");
+        }
+    }
+
+    static float ParseFloat(string json)
+    {
+        // Parse {"value": 0.5} — simple extraction without allocating a JSON parser
+        int idx = json.IndexOf(':');
+        if (idx < 0) return 0f;
+        string raw = json.Substring(idx + 1).TrimEnd('}', ' ', '\n', '\r');
+        // Remove quotes if present (for string values like gear)
+        raw = raw.Trim('"', ' ');
+        float.TryParse(raw, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out float result);
+        return result;
+    }
+
+    static VehicleController.GearState ParseGear(string json)
+    {
+        string upper = json.ToUpperInvariant();
+        if (upper.Contains("\"R\"")) return VehicleController.GearState.Reverse;
+        if (upper.Contains("\"N\"")) return VehicleController.GearState.Neutral;
+        if (upper.Contains("\"D\"")) return VehicleController.GearState.Drive;
+        return VehicleController.GearState.Park;
     }
 }
