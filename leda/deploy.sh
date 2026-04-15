@@ -46,11 +46,21 @@ build_and_deploy() {
     ${LEDA_SCP} "${dir}/kanto-manifest.json" "root@localhost:/tmp/${name}-manifest.json"
 
     info "Stopping existing container (if any) …"
-    ${LEDA_SSH} "kanto-cm stop   --name ${name} 2>/dev/null || true"
-    ${LEDA_SSH} "kanto-cm remove --name ${name} 2>/dev/null || true"
+    ${LEDA_SSH} "kanto-cm stop   --force --name ${name} 2>/dev/null || true"
+    ${LEDA_SSH} "kanto-cm remove --force --name ${name} 2>/dev/null || true"
+
+    info "Reading env vars from manifest …"
+    local env_flags=""
+    env_flags=$(python3 -c "
+import json, sys
+with open('${dir}/kanto-manifest.json') as f:
+    m = json.load(f)
+for e in m.get('config', {}).get('env', []):
+    print(f'--e={e}')
+" | tr '\n' ' ')
 
     info "Creating and starting container via Kanto …"
-    ${LEDA_SSH} "kanto-cm create --name ${name} --network=host --rp=unless-stopped ${image_tag}"
+    ${LEDA_SSH} "kanto-cm create --name ${name} --network=host --rp=unless-stopped ${env_flags} ${image_tag}"
     ${LEDA_SSH} "kanto-cm start --name ${name}"
     ok "Container '${name}' deployed and running on Leda"
 }
