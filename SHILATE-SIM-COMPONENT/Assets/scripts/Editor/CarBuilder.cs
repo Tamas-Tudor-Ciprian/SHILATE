@@ -133,6 +133,7 @@ public static class CarBuilder
         remoteInput.manualInput = manual;
         remoteInput.enabled = false; // disabled by default; TrainingBootstrap or Inspector enables it
         broker.remoteInput = remoteInput;
+        manual.remoteInput = remoteInput;   // so enabling ManualDriveInput disables RemoteDriveInput
 
         // ── TimeScaleController ──
         TimeScaleController tsController = car.AddComponent<TimeScaleController>();

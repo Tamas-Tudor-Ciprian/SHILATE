@@ -26,20 +26,19 @@ err()   { echo -e "\033[1;31m[ERROR]\033[0m $*" >&2; }
 build_and_deploy() {
     local name="$1"
     local dir="$2"
+    local docker_target="${3:-}"          # optional --target for multi-stage
     local image_tag="localhost/shilate/${name}:latest"
 
     info "Building image: ${image_tag}"
-    docker build -t "${image_tag}" "${dir}"
+    if [[ -n "${docker_target}" ]]; then
+        docker build --target "${docker_target}" -t "${image_tag}" "${dir}"
+    else
+        docker build -t "${image_tag}" "${dir}"
+    fi
     ok "Image built: ${image_tag}"
 
-    info "Exporting image to tarball …"
-    docker save "${image_tag}" -o "/tmp/${name}.tar"
-
-    info "Copying image to Leda VM …"
-    ${LEDA_SCP} "/tmp/${name}.tar" "root@localhost:/tmp/${name}.tar"
-
-    info "Importing image into containerd on Leda …"
-    ${LEDA_SSH} "ctr --namespace kanto-cm images import /tmp/${name}.tar && rm /tmp/${name}.tar"
+    info "Streaming image directly into containerd on Leda …"
+    docker save "${image_tag}" | ${LEDA_SSH} "ctr --namespace kanto-cm images import -"
     ok "Image imported on Leda"
 
     info "Copying Kanto manifest …"
@@ -76,7 +75,11 @@ deploy_app() {
 }
 
 deploy_controller() {
-    build_and_deploy "shilate-leda-controller" "${SCRIPT_DIR}/leda-controller"
+    build_and_deploy "shilate-leda-controller" "${SCRIPT_DIR}/leda-controller" "full"
+}
+
+deploy_controller_debug() {
+    build_and_deploy "shilate-leda-controller-debug" "${SCRIPT_DIR}/leda-controller" "debug"
 }
 
 # ─── Main ─────────────────────────────────────────────────────────────────
@@ -90,15 +93,16 @@ fi
 ok "Leda is reachable"
 
 case "${TARGET}" in
-    feeder)     deploy_feeder     ;;
-    app)        deploy_app        ;;
-    controller) deploy_controller ;;
-    all)        deploy_feeder
-                deploy_app
-                deploy_controller ;;
+    feeder)           deploy_feeder           ;;
+    app)              deploy_app              ;;
+    controller)       deploy_controller       ;;
+    controller-debug) deploy_controller_debug ;;
+    all)              deploy_feeder
+                      deploy_app
+                      deploy_controller       ;;
     *)
         err "Unknown target: ${TARGET}"
-        echo "Usage: $0 [feeder|app|controller|all]"
+        echo "Usage: $0 [feeder|app|controller|controller-debug|all]"
         exit 1
         ;;
 esac
