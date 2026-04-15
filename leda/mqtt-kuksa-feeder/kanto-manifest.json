@@ -21,7 +21,7 @@
       "MQTT_HOST=localhost",
       "MQTT_PORT=1883",
       "KUKSA_HOST=127.0.0.1",
-      "KUKSA_PORT=55555"
+      "KUKSA_PORT=30555"
     ]
   }
 }
