@@ -26,7 +26,7 @@ err()   { echo -e "\033[1;31m[ERROR]\033[0m $*" >&2; }
 build_and_deploy() {
     local name="$1"
     local dir="$2"
-    local image_tag="shilate/${name}:latest"
+    local image_tag="localhost/shilate/${name}:latest"
 
     info "Building image: ${image_tag}"
     docker build -t "${image_tag}" "${dir}"
@@ -50,11 +50,7 @@ build_and_deploy() {
     ${LEDA_SSH} "kanto-cm remove --name ${name} 2>/dev/null || true"
 
     info "Creating and starting container via Kanto …"
-    # Override image name to use the locally-imported tag
-    ${LEDA_SSH} "kanto-cm create --name ${name} \
-        --i ${image_tag} \
-        --network=host \
-        --rp=unless-stopped"
+    ${LEDA_SSH} "kanto-cm create --name ${name} --network=host --rp=unless-stopped ${image_tag}"
     ${LEDA_SSH} "kanto-cm start --name ${name}"
     ok "Container '${name}' deployed and running on Leda"
 }
