@@ -127,6 +127,34 @@ public static class CarBuilder
         bridge.vehicle = vc;
         bridge.broker = broker;
 
+        // ── RemoteDriveInput (Leda → Unity control) ──
+        RemoteDriveInput remoteInput = car.AddComponent<RemoteDriveInput>();
+        remoteInput.vehicle = vc;
+        remoteInput.manualInput = manual;
+        remoteInput.enabled = false; // disabled by default; TrainingBootstrap or Inspector enables it
+        broker.remoteInput = remoteInput;
+
+        // ── TimeScaleController ──
+        TimeScaleController tsController = car.AddComponent<TimeScaleController>();
+        tsController.broker = broker;
+
+        // ── RaycastSensor ──
+        RaycastSensor raycastSensor = car.AddComponent<RaycastSensor>();
+        raycastSensor.broker = broker;
+
+        // ── ObstacleCourse ──
+        GameObject courseGO = new GameObject("ObstacleCourse");
+        ObstacleCourse obstacleCourse = courseGO.AddComponent<ObstacleCourse>();
+        obstacleCourse.vehicle = vc;
+        obstacleCourse.broker = broker;
+
+        // ── TrainingBridge ──
+        TrainingBridge trainingBridge = car.AddComponent<TrainingBridge>();
+        trainingBridge.broker = broker;
+        trainingBridge.vehicle = vc;
+        trainingBridge.raycastSensor = raycastSensor;
+        trainingBridge.obstacleCourse = obstacleCourse;
+
         // ── Camera ──
         Camera mainCam = Camera.main;
         if (mainCam != null)
@@ -137,7 +165,9 @@ public static class CarBuilder
 
         // ── Select the car so user sees it ──
         Selection.activeGameObject = car;
-        Debug.Log("[CarBuilder] Car scene built. Press Play to drive with WASD or assign a DrivingScenario to SimulationRunner.");
+        Debug.Log("[CarBuilder] Car scene built with full Leda integration. " +
+            "Manual drive (WASD) active by default. " +
+            "Enable RemoteDriveInput for Leda control, or use TrainingBootstrap for headless mode.");
     }
 
     static WheelCollider CreateWheelCollider(GameObject parent, string name, Vector3 localPos, float radius, float suspDist)
