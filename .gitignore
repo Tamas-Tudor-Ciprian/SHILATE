@@ -56,3 +56,16 @@
 # Velocitas Vehicle App
 !leda/velocitas-app/
 !leda/velocitas-app/**
+
+# Leda Controller (MQTT bridge, debug drive, RL training)
+!leda/leda-controller/
+!leda/leda-controller/Dockerfile
+!leda/leda-controller/*.py
+!leda/leda-controller/*.txt
+!leda/leda-controller/*.json
+
+# ---------- Unity training launch scripts ----------
+!SHILATE-SIM-COMPONENT/run-training.sh
+!SHILATE-SIM-COMPONENT/run-training.cmd
+!SHILATE-SIM-COMPONENT/run-training-parallel.sh
+!SHILATE-SIM-COMPONENT/run-training-parallel.cmd

@@ -1,0 +1,13 @@
+{
+    "config": {
+        "env": [
+            "MODE=train",
+            "MQTT_HOST=127.0.0.1",
+            "MQTT_PORT=1883",
+            "NUM_ENVS=4",
+            "TIMESCALE=5",
+            "TOTAL_TIMESTEPS=100000",
+            "MODEL_PATH=/tmp/shilate_model/best_model.zip"
+        ]
+    }
+}
