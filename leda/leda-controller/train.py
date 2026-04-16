@@ -98,7 +98,6 @@ def main():
         batch_size=args.batch_size,
         policy_kwargs=policy_kwargs,
         verbose=1,
-        tensorboard_log=args.log_dir,
     )
 
     log.info("PPO model created: %s", model.policy)
@@ -117,7 +116,6 @@ def main():
         model.learn(
             total_timesteps=args.total_timesteps,
             callback=checkpoint_cb,
-            progress_bar=True,
         )
     except KeyboardInterrupt:
         log.info("Training interrupted by user")

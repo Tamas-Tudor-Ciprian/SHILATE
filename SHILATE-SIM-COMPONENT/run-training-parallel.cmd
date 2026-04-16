@@ -18,12 +18,11 @@ IF "%MQTT_PORT%"=="" SET MQTT_PORT=1883
 
 ECHO [parallel] Launching %NUM_ENVS% Unity headless instances (timescale=%TIMESCALE%)
 
-FOR /L %%i IN (0,1,3) DO (
-    IF %%i LSS %NUM_ENVS% (
-        ECHO [parallel] Starting env%%i ...
-        START "SHILATE-env%%i" /MIN "%~dp0run-training.cmd" %%i %TIMESCALE% %MQTT_HOST% %MQTT_PORT%
-        TIMEOUT /T 2 /NOBREAK >NUL
-    )
+SET /A LAST_ENV=%NUM_ENVS%-1
+FOR /L %%i IN (0,1,%LAST_ENV%) DO (
+    ECHO [parallel] Starting env%%i ...
+    START "SHILATE-env%%i" /MIN "%~dp0run-training.cmd" %%i %TIMESCALE% %MQTT_HOST% %MQTT_PORT%
+    TIMEOUT /T 2 /NOBREAK >NUL
 )
 
 ECHO [parallel] All %NUM_ENVS% instances launched.

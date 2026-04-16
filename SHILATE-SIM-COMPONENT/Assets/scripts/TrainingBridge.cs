@@ -34,10 +34,25 @@ public class TrainingBridge : MonoBehaviour
     float _cumulativeReward;
     bool _episodeDone;
     float _lastRealTime;
+    bool _collidedThisStep;   // owned here to avoid FixedUpdate ordering race with RaycastSensor
+
+    void OnCollisionEnter(Collision collision)
+    {
+        _collidedThisStep = true;
+    }
 
     void OnEnable()
     {
         ResetEpisodeState();
+        // Also subscribe to reset events directly as a safety net
+        if (broker != null)
+            broker.OnResetRequested += ResetEpisodeState;
+    }
+
+    void OnDisable()
+    {
+        if (broker != null)
+            broker.OnResetRequested -= ResetEpisodeState;
     }
 
     void FixedUpdate()
@@ -54,8 +69,9 @@ public class TrainingBridge : MonoBehaviour
 
         float stepReward = forwardProgress * progressReward;
 
-        // Collision check
-        bool collided = raycastSensor.HasCollided;
+        // Collision check — use flag set by OnCollisionEnter (not RaycastSensor's cleared flag)
+        bool collided = _collidedThisStep;
+        _collidedThisStep = false;
         if (collided)
         {
             stepReward += collisionPenalty;
@@ -129,20 +145,5 @@ public class TrainingBridge : MonoBehaviour
 
         if (vehicle != null)
             _lastZ = vehicle.transform.position.z;
-    }
-
-    void Start()
-    {
-        // Hook into reset so episode state is cleared when ObstacleCourse resets
-        if (obstacleCourse != null && broker != null)
-        {
-            broker.OnResetRequested += ResetEpisodeState;
-        }
-    }
-
-    void OnDisable()
-    {
-        if (broker != null)
-            broker.OnResetRequested -= ResetEpisodeState;
     }
 }

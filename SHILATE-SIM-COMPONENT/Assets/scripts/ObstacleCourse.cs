@@ -39,6 +39,7 @@ public class ObstacleCourse : MonoBehaviour
 
     [Header("References")]
     public LedaBroker broker;
+    public TrainingBridge trainingBridge;
 
     readonly List<GameObject> _obstacles = new List<GameObject>();
     Material _obstacleMaterial;
@@ -80,6 +81,9 @@ public class ObstacleCourse : MonoBehaviour
         ClearObstacles();
         SpawnObstacles();
         ResetCar();
+
+        if (trainingBridge != null)
+            trainingBridge.ResetEpisodeState();
     }
 
     void ClearObstacles()

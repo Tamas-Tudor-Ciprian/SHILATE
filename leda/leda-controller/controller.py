@@ -155,13 +155,16 @@ class VehicleController:
 
         # Training signals
         elif local_topic == "vehicle/training/reward":
-            self.training_reward = float(value)
+            self.training_reward = float(value) if value is not None else 0.0
         elif local_topic == "vehicle/training/done":
+            # Unity sends {"value":1,...} or {"value":0}
             self.training_done = bool(value)
             if self.training_done:
                 self.done_event.set()
         elif local_topic == "vehicle/training/obs":
-            self.training_obs = value if isinstance(value, dict) else {}
+            # Unity publishes {"rays":[...],"speed":...,"steer":...} — no "value" wrapper.
+            # Store the full payload dict, not payload["value"].
+            self.training_obs = payload if isinstance(payload, dict) else {}
             self.obs_event.set()
 
     # ─── Control commands ────────────────────────────────────────────

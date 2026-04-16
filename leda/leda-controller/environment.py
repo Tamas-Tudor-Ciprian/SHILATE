@@ -85,6 +85,14 @@ class ShilateEnv(gym.Env):
         self._ctrl.send_reset()
         self._step_count = 0
 
+        # Car resets to Park gear — need brake then gear D
+        import time
+        self._ctrl.set_brake(1.0)
+        time.sleep(0.1)
+        self._ctrl.set_gear("D")
+        time.sleep(0.1)
+        self._ctrl.set_brake(0.0)
+
         # Wait for first observation after reset
         self._ctrl.obs_event.clear()
         if not self._ctrl.obs_event.wait(timeout=OBS_TIMEOUT):
