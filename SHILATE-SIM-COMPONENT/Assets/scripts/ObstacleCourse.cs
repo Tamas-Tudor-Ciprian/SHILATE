@@ -19,14 +19,11 @@ public class ObstacleCourse : MonoBehaviour
     [Tooltip("Outer wall radius (meters)")]
     [SerializeField] float outerRadius = 40f;
 
-    [Tooltip("Number of wall segments per circle (higher = smoother)")]
+    [Tooltip("Number of mesh segments per wall cylinder (higher = smoother)")]
     [SerializeField] int wallSegments = 64;
 
     [Tooltip("Height of the track walls (meters)")]
     [SerializeField] float wallHeight = 3f;
-
-    [Tooltip("Thickness of wall segments (meters)")]
-    [SerializeField] float wallThickness = 0.5f;
 
     [Header("Obstacles")]
     [Tooltip("Number of obstacles to spawn on the track")]
@@ -94,6 +91,7 @@ public class ObstacleCourse : MonoBehaviour
 
         SpawnWalls();
         SpawnObstacles();
+        ResetCar();
     }
 
     void OnDisable()
@@ -139,44 +137,98 @@ public class ObstacleCourse : MonoBehaviour
     {
         ClearWalls();
 
-        float angleStep = 360f / wallSegments;
-        float innerArc = 2f * innerRadius * Mathf.Sin(angleStep * 0.5f * Mathf.Deg2Rad);
-        float outerArc = 2f * outerRadius * Mathf.Sin(angleStep * 0.5f * Mathf.Deg2Rad);
+        // Inner wall: normals face outward (visible from the track)
+        _walls.Add(CreateCylinderWall("InnerWall", innerRadius, true));
+        // Outer wall: normals face inward (visible from the track)
+        _walls.Add(CreateCylinderWall("OuterWall", outerRadius, false));
 
-        for (int i = 0; i < wallSegments; i++)
-        {
-            float midAngle = (i + 0.5f) * angleStep * Mathf.Deg2Rad;
-
-            CreateWallSegment(innerRadius, midAngle, innerArc, $"InnerWall_{i}");
-            CreateWallSegment(outerRadius, midAngle, outerArc, $"OuterWall_{i}");
-        }
-
-        Debug.Log($"[ObstacleCourse] Spawned circular walls: inner R={innerRadius}, outer R={outerRadius}, {wallSegments} segments each");
+        Debug.Log($"[ObstacleCourse] Spawned cylinder walls: inner R={innerRadius}, outer R={outerRadius}, {wallSegments} segments");
     }
 
-    void CreateWallSegment(float radius, float angle, float arcLength, string segmentName)
+    GameObject CreateCylinderWall(string wallName, float radius, bool normalsOutward)
     {
-        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        wall.name = segmentName;
+        int segs = wallSegments;
+        int vertCount = (segs + 1) * 2;
+        var vertices = new Vector3[vertCount];
+        var normals  = new Vector3[vertCount];
+        var uvs      = new Vector2[vertCount];
+        var triangles = new int[segs * 6];
 
-        float x = trackCenter.x + radius * Mathf.Cos(angle);
-        float z = trackCenter.z + radius * Mathf.Sin(angle);
-        wall.transform.position = new Vector3(x, wallHeight * 0.5f, z);
-        wall.transform.localScale = new Vector3(wallThickness, wallHeight, arcLength);
+        float sign = normalsOutward ? 1f : -1f;
 
-        // Rotate so the long side (Z) is tangent to the circle
-        float angleDeg = angle * Mathf.Rad2Deg;
-        wall.transform.rotation = Quaternion.Euler(0f, -angleDeg + 90f, 0f);
+        for (int i = 0; i <= segs; i++)
+        {
+            float t = (float)i / segs;
+            float angle = t * Mathf.PI * 2f;
+            float cx = Mathf.Cos(angle);
+            float cz = Mathf.Sin(angle);
 
-        wall.GetComponent<Renderer>().material = _wallMaterial;
-        _walls.Add(wall);
+            float x = trackCenter.x + radius * cx;
+            float z = trackCenter.z + radius * cz;
+
+            int bot = i * 2;
+            int top = i * 2 + 1;
+
+            vertices[bot] = new Vector3(x, 0f, z);
+            vertices[top] = new Vector3(x, wallHeight, z);
+
+            Vector3 n = new Vector3(cx * sign, 0f, cz * sign);
+            normals[bot] = n;
+            normals[top] = n;
+
+            uvs[bot] = new Vector2(t, 0f);
+            uvs[top] = new Vector2(t, 1f);
+        }
+
+        for (int i = 0; i < segs; i++)
+        {
+            int bl = i * 2;
+            int tl = i * 2 + 1;
+            int br = i * 2 + 2;
+            int tr = i * 2 + 3;
+            int ti = i * 6;
+
+            if (normalsOutward)
+            {
+                triangles[ti    ] = bl;
+                triangles[ti + 1] = tl;
+                triangles[ti + 2] = br;
+                triangles[ti + 3] = br;
+                triangles[ti + 4] = tl;
+                triangles[ti + 5] = tr;
+            }
+            else
+            {
+                triangles[ti    ] = bl;
+                triangles[ti + 1] = br;
+                triangles[ti + 2] = tl;
+                triangles[ti + 3] = br;
+                triangles[ti + 4] = tr;
+                triangles[ti + 5] = tl;
+            }
+        }
+
+        var mesh = new Mesh { name = wallName + "Mesh" };
+        mesh.vertices  = vertices;
+        mesh.normals   = normals;
+        mesh.uv        = uvs;
+        mesh.triangles = triangles;
+        mesh.RecalculateBounds();
+
+        var go = new GameObject(wallName);
+        go.AddComponent<MeshFilter>().mesh = mesh;
+        go.AddComponent<MeshRenderer>().material = _wallMaterial;
+        var mc = go.AddComponent<MeshCollider>();
+        mc.sharedMesh = mesh;
+
+        return go;
     }
 
     void SpawnObstacles()
     {
         int maxAttempts = obstacleCount * 10;
         int placed = 0;
-        float margin = wallThickness + 0.5f;
+        float margin = 1.5f;
         List<Vector3> positions = new List<Vector3>();
 
         // Car start position for exclusion zone
