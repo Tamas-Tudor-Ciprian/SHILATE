@@ -18,10 +18,8 @@
   },
   "config": {
     "env": [
-      "KUKSA_HOST=127.0.0.1",
-      "KUKSA_PORT=55555",
-      "MQTT_HOST=localhost",
-      "MQTT_PORT=1883",
+      "SDV_VEHICLEDATABROKER_ADDRESS=grpc://127.0.0.1:30555",
+      "SDV_MQTT_ADDRESS=mqtt://localhost:1883",
       "SPEED_LIMIT=120",
       "RPM_REDLINE=6500"
     ]

@@ -18,10 +18,9 @@ import json
 import logging
 import os
 import signal
-import sys
 
-from sdv.vehicle_app import VehicleApp
-from sdv.vdb.client import VdbClient
+from velocitas_sdk.vehicle_app import VehicleApp
+from velocitas_sdk.model import DataPointFloat, Node
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,14 +40,60 @@ MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
 SPEED_LIMIT = float(os.environ.get("SPEED_LIMIT", 120.0))
 RPM_REDLINE = float(os.environ.get("RPM_REDLINE", 6500.0))
 
-# VSS paths matching the feeder config
-VSS_SPEED = "Vehicle.Speed"
-VSS_RPM = "Vehicle.Powertrain.CombustionEngine.Speed"
-VSS_STEERING = "Vehicle.Chassis.SteeringWheel.Angle"
-VSS_BRAKE = "Vehicle.Chassis.Brake.PedalPosition"
-VSS_THROTTLE = "Vehicle.Powertrain.CombustionEngine.Throttle"
-
 ALERT_TOPIC = "leda/command/alert"
+
+
+# ---------------------------------------------------------------------------
+# VSS Vehicle Model (minimal tree for the signals we monitor)
+# ---------------------------------------------------------------------------
+class Brake(Node):
+    def __init__(self, parent: Node):
+        super().__init__(parent)
+        self.PedalPosition = DataPointFloat("PedalPosition", self)
+
+
+class SteeringWheel(Node):
+    def __init__(self, parent: Node):
+        super().__init__(parent)
+        self.Angle = DataPointFloat("Angle", self)
+
+
+class Chassis(Node):
+    def __init__(self, parent: Node):
+        super().__init__(parent)
+        self.Brake = Brake(self)
+        self.SteeringWheel = SteeringWheel(self)
+
+
+class CombustionEngine(Node):
+    def __init__(self, parent: Node):
+        super().__init__(parent)
+        self.Speed = DataPointFloat("Speed", self)
+
+
+class Powertrain(Node):
+    def __init__(self, parent: Node):
+        super().__init__(parent)
+        self.CombustionEngine = CombustionEngine(self)
+
+
+class OBD(Node):
+    def __init__(self, parent: Node):
+        super().__init__(parent)
+        self.ThrottlePosition = DataPointFloat("ThrottlePosition", self)
+
+
+class Vehicle(Node):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vehicle"
+        self.Speed = DataPointFloat("Speed", self)
+        self.Chassis = Chassis(self)
+        self.Powertrain = Powertrain(self)
+        self.OBD = OBD(self)
+
+
+vehicle = Vehicle()
 
 
 # ---------------------------------------------------------------------------
@@ -63,11 +108,11 @@ class ShilateMonitorApp(VehicleApp):
     def __init__(self):
         super().__init__()
         self._latest: dict[str, float] = {
-            VSS_SPEED: 0.0,
-            VSS_RPM: 0.0,
-            VSS_STEERING: 0.0,
-            VSS_BRAKE: 0.0,
-            VSS_THROTTLE: 0.0,
+            "Vehicle.Speed": 0.0,
+            "Vehicle.Powertrain.CombustionEngine.Speed": 0.0,
+            "Vehicle.Chassis.SteeringWheel.Angle": 0.0,
+            "Vehicle.Chassis.Brake.PedalPosition": 0.0,
+            "Vehicle.OBD.ThrottlePosition": 0.0,
         }
         self._overspeed_active = False
         self._redline_active = False
@@ -81,46 +126,41 @@ class ShilateMonitorApp(VehicleApp):
         log.info("  Speed limit:      %.0f km/h", SPEED_LIMIT)
         log.info("  RPM redline:      %.0f", RPM_REDLINE)
 
-        # Subscribe to all monitored VSS signals
-        await self.Vehicle.Speed.subscribe(self._on_speed)
-        await self.Vehicle.Powertrain.CombustionEngine.Speed.subscribe(
-            self._on_rpm
-        )
-        await self.Vehicle.Chassis.SteeringWheel.Angle.subscribe(
-            self._on_steering
-        )
-        await self.Vehicle.Chassis.Brake.PedalPosition.subscribe(
-            self._on_brake
-        )
-        await self.Vehicle.Powertrain.CombustionEngine.Throttle.subscribe(
-            self._on_throttle
-        )
+        await vehicle.Speed.subscribe(self._on_speed)
+        await vehicle.Powertrain.CombustionEngine.Speed.subscribe(self._on_rpm)
+        await vehicle.Chassis.SteeringWheel.Angle.subscribe(self._on_steering)
+        await vehicle.Chassis.Brake.PedalPosition.subscribe(self._on_brake)
+        await vehicle.OBD.ThrottlePosition.subscribe(self._on_throttle)
 
         log.info("Subscribed to %d VSS signals", len(self._latest))
-
-        # Periodic summary task
         asyncio.ensure_future(self._telemetry_summary_loop())
 
     # -- Signal callbacks ---------------------------------------------------
 
     async def _on_speed(self, data):
-        value = data.fields[VSS_SPEED].value
-        self._latest[VSS_SPEED] = value
+        value = data.get(vehicle.Speed).value
+        self._latest["Vehicle.Speed"] = value
         await self._check_overspeed(value)
 
     async def _on_rpm(self, data):
-        value = data.fields[VSS_RPM].value
-        self._latest[VSS_RPM] = value
+        value = data.get(vehicle.Powertrain.CombustionEngine.Speed).value
+        self._latest["Vehicle.Powertrain.CombustionEngine.Speed"] = value
         await self._check_redline(value)
 
     async def _on_steering(self, data):
-        self._latest[VSS_STEERING] = data.fields[VSS_STEERING].value
+        self._latest["Vehicle.Chassis.SteeringWheel.Angle"] = data.get(
+            vehicle.Chassis.SteeringWheel.Angle
+        ).value
 
     async def _on_brake(self, data):
-        self._latest[VSS_BRAKE] = data.fields[VSS_BRAKE].value
+        self._latest["Vehicle.Chassis.Brake.PedalPosition"] = data.get(
+            vehicle.Chassis.Brake.PedalPosition
+        ).value
 
     async def _on_throttle(self, data):
-        self._latest[VSS_THROTTLE] = data.fields[VSS_THROTTLE].value
+        self._latest["Vehicle.OBD.ThrottlePosition"] = data.get(
+            vehicle.OBD.ThrottlePosition
+        ).value
 
     # -- Safety checks ------------------------------------------------------
 
@@ -134,7 +174,7 @@ class ShilateMonitorApp(VehicleApp):
                 "message": f"Speed {speed:.1f} km/h exceeds limit {SPEED_LIMIT:.0f} km/h",
             }
             log.warning("ALERT: %s", alert["message"])
-            await self.publish_mqtt(ALERT_TOPIC, json.dumps(alert))
+            await self.publish_event(ALERT_TOPIC, json.dumps(alert))
         elif speed <= SPEED_LIMIT and self._overspeed_active:
             self._overspeed_active = False
             log.info("Speed returned to normal: %.1f km/h", speed)
@@ -149,7 +189,7 @@ class ShilateMonitorApp(VehicleApp):
                 "message": f"RPM {rpm:.0f} exceeds redline {RPM_REDLINE:.0f}",
             }
             log.warning("ALERT: %s", alert["message"])
-            await self.publish_mqtt(ALERT_TOPIC, json.dumps(alert))
+            await self.publish_event(ALERT_TOPIC, json.dumps(alert))
         elif rpm <= RPM_REDLINE and self._redline_active:
             self._redline_active = False
             log.info("RPM returned to normal: %.0f", rpm)
@@ -162,11 +202,11 @@ class ShilateMonitorApp(VehicleApp):
             log.info(
                 "Telemetry | SPD: %6.1f km/h | RPM: %6.0f | STR: %5.1f° "
                 "| BRK: %.2f | THR: %.2f",
-                self._latest[VSS_SPEED],
-                self._latest[VSS_RPM],
-                self._latest[VSS_STEERING],
-                self._latest[VSS_BRAKE],
-                self._latest[VSS_THROTTLE],
+                self._latest["Vehicle.Speed"],
+                self._latest["Vehicle.Powertrain.CombustionEngine.Speed"],
+                self._latest["Vehicle.Chassis.SteeringWheel.Angle"],
+                self._latest["Vehicle.Chassis.Brake.PedalPosition"],
+                self._latest["Vehicle.OBD.ThrottlePosition"],
             )
 
 

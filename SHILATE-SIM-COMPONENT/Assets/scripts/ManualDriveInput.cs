@@ -16,6 +16,9 @@ public class ManualDriveInput : MonoBehaviour
     [Tooltip("Optional — if assigned and running, manual input is suppressed")]
     public SimulationRunner simulationRunner;
 
+    [Tooltip("Optional — remote input to suppress when manual takes over")]
+    public RemoteDriveInput remoteInput;
+
     InputAction _moveAction;
 
     void OnEnable()
@@ -23,6 +26,10 @@ public class ManualDriveInput : MonoBehaviour
         var map = InputSystem.actions?.FindActionMap("Player");
         _moveAction = map?.FindAction("Move");
         _moveAction?.Enable();
+
+        // Disable remote control when manual takes over
+        if (remoteInput != null)
+            remoteInput.enabled = false;
     }
 
     void OnDisable()
@@ -36,6 +43,13 @@ public class ManualDriveInput : MonoBehaviour
 
         // Suppress manual input while a scripted scenario is active
         if (simulationRunner != null && simulationRunner.IsRunning) return;
+
+        // Auto-discover RemoteDriveInput if the reference wasn't set in Inspector
+        if (remoteInput == null)
+            remoteInput = GetComponent<RemoteDriveInput>();
+
+        // Yield to remote control whenever it is active — don't zero out its values
+        if (remoteInput != null && remoteInput.enabled) return;
 
         // ─── Gear selection (P / R / N / D) ───
         if (Input.GetKeyDown(KeyCode.P))

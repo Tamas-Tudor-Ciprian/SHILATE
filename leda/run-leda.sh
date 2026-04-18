@@ -27,5 +27,5 @@ qemu-system-x86_64 \
     -drive if=pflash,format=qcow2,file=ovmf.qcow2 \
     -cpu IvyBridge \
     -machine q35 \
-    -smp 4 \
-    -m 2G
+    -smp 8 \
+    -m 4G

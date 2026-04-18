@@ -26,7 +26,7 @@ err()   { echo -e "\033[1;31m[ERROR]\033[0m $*" >&2; }
 build_and_deploy() {
     local name="$1"
     local dir="$2"
-    local image_tag="localhost/shilate/${name}:latest"
+    local image_tag="shilate/${name}:latest"
 
     info "Building image: ${image_tag}"
     docker build -t "${image_tag}" "${dir}"
@@ -42,15 +42,28 @@ build_and_deploy() {
     ${LEDA_SSH} "ctr --namespace kanto-cm images import /tmp/${name}.tar && rm /tmp/${name}.tar"
     ok "Image imported on Leda"
 
-    info "Copying Kanto manifest …"
-    ${LEDA_SCP} "${dir}/kanto-manifest.json" "root@localhost:/tmp/${name}-manifest.json"
-
     info "Stopping existing container (if any) …"
     ${LEDA_SSH} "kanto-cm stop   --name ${name} 2>/dev/null || true"
     ${LEDA_SSH} "kanto-cm remove --name ${name} 2>/dev/null || true"
 
+    # Build --e flags from the manifest's config.env array
+    local env_flags=""
+    if command -v jq &>/dev/null && [[ -f "${dir}/kanto-manifest.json" ]]; then
+        while IFS= read -r envvar; do
+            env_flags+=" --e=${envvar}"
+        done < <(jq -r '.config.env[]? // empty' "${dir}/kanto-manifest.json")
+    fi
+
     info "Creating and starting container via Kanto …"
-    ${LEDA_SSH} "kanto-cm create --name ${name} --network=host --rp=unless-stopped ${image_tag}"
+    ${LEDA_SSH} "kanto-cm create \
+        --name ${name} \
+        --network=host \
+        --rp=unless-stopped \
+        --log-driver=json-file \
+        --log-max-files=3 \
+        --log-max-size=5M \
+        ${env_flags} \
+        docker.io/${image_tag}"
     ${LEDA_SSH} "kanto-cm start --name ${name}"
     ok "Container '${name}' deployed and running on Leda"
 }
