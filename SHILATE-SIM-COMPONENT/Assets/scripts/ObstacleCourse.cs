@@ -78,6 +78,7 @@ public class ObstacleCourse : MonoBehaviour
     /// </summary>
     public void Reset()
     {
+        if (!Application.isPlaying) return;
         ClearObstacles();
         SpawnObstacles();
         ResetCar();
