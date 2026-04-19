@@ -33,7 +33,7 @@ public static class CarBuilder
         // (ray length = suspensionDistance + radius = 0.55, from Y=0.5 reaches Y=-0.05)
         // This avoids the free-fall → spring explosion on first contact.
         GameObject car = new GameObject("Car");
-        car.transform.position = new Vector3(0f, 0.5f, 0f);
+        car.transform.position = new Vector3(32.5f, 0.5f, 0f); // on track centerline (inner=25 + outer=40) / 2
         Rigidbody rb = car.AddComponent<Rigidbody>();    
         rb.mass = 1500f;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
@@ -162,6 +162,10 @@ public static class CarBuilder
         {
             CameraFollow follow = mainCam.gameObject.AddComponent<CameraFollow>();
             follow.target = car.transform;
+
+            // Place camera behind the car immediately so there's no lerp from origin
+            mainCam.transform.position = car.transform.TransformPoint(follow.offset);
+            mainCam.transform.LookAt(car.transform);
         }
 
         // ── Select the car so user sees it ──
