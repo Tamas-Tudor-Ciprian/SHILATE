@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 using System.Collections.Generic;
 
 /// <summary>
@@ -74,14 +75,28 @@ public class ObstacleCourse : MonoBehaviour
 
     void Awake()
     {
-        _obstacleMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"))
+        // Grab the shader from a temp primitive — guaranteed to be bundled in the build.
+        Shader shader = null;
+        GameObject tmp = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        var tmpRenderer = tmp.GetComponent<Renderer>();
+        if (tmpRenderer != null && tmpRenderer.sharedMaterial != null)
+            shader = tmpRenderer.sharedMaterial.shader;
+        DestroyImmediate(tmp);
+
+        if (shader == null)
         {
-            color = new Color(0.2f, 0.4f, 0.9f)
-        };
-        _wallMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"))
-        {
-            color = new Color(0.5f, 0.5f, 0.5f)
-        };
+            var pipeline = GraphicsSettings.currentRenderPipeline;
+            if (pipeline != null && pipeline.defaultMaterial != null)
+                shader = pipeline.defaultMaterial.shader;
+        }
+
+        _obstacleMaterial = new Material(shader);
+        _obstacleMaterial.SetColor("_BaseColor", new Color(0.2f, 0.4f, 0.9f));
+        _obstacleMaterial.color = new Color(0.2f, 0.4f, 0.9f);
+
+        _wallMaterial = new Material(shader);
+        _wallMaterial.SetColor("_BaseColor", new Color(0.5f, 0.5f, 0.5f));
+        _wallMaterial.color = new Color(0.5f, 0.5f, 0.5f);
     }
 
     void OnEnable()
@@ -220,7 +235,11 @@ public class ObstacleCourse : MonoBehaviour
         go.AddComponent<MeshRenderer>().material = _wallMaterial;
         var mc = go.AddComponent<MeshCollider>();
         mc.sharedMesh = mesh;
+	
+	//we scale the height to by 2 units high here
+	go.transform.localScale = new Vector3(1f,2f,1f);
 
+	//return the created game object
         return go;
     }
 

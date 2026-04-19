@@ -59,6 +59,9 @@ public static class StandaloneBootstrap
         var trainingBridge = Object.FindFirstObjectByType<TrainingBridge>();
         var obstacleCourse = Object.FindFirstObjectByType<ObstacleCourse>();
 
+        Debug.Log($"[StandaloneBootstrap] Found: broker={broker != null}, remote={remoteInput != null}, " +
+            $"manual={manualInput != null}, training={trainingBridge != null}, course={obstacleCourse != null}");
+
         if (broker != null)
             broker.Configure(mqttHost, mqttPort, $"env{envId}");
 
