@@ -75,26 +75,12 @@ public class ObstacleCourse : MonoBehaviour
 
     void Awake()
     {
-        // Grab the shader from a temp primitive — guaranteed to be bundled in the build.
-        Shader shader = null;
-        GameObject tmp = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        var tmpRenderer = tmp.GetComponent<Renderer>();
-        if (tmpRenderer != null && tmpRenderer.sharedMaterial != null)
-            shader = tmpRenderer.sharedMaterial.shader;
-        DestroyImmediate(tmp);
 
-        if (shader == null)
-        {
-            var pipeline = GraphicsSettings.currentRenderPipeline;
-            if (pipeline != null && pipeline.defaultMaterial != null)
-                shader = pipeline.defaultMaterial.shader;
-        }
-
-        _obstacleMaterial = new Material(shader);
+        _obstacleMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         _obstacleMaterial.SetColor("_BaseColor", new Color(0.2f, 0.4f, 0.9f));
         _obstacleMaterial.color = new Color(0.2f, 0.4f, 0.9f);
 
-        _wallMaterial = new Material(shader);
+        _wallMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         _wallMaterial.SetColor("_BaseColor", new Color(0.5f, 0.5f, 0.5f));
         _wallMaterial.color = new Color(0.5f, 0.5f, 0.5f);
     }

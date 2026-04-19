@@ -59,7 +59,7 @@ public class TrainingBridge : MonoBehaviour
     void FixedUpdate()
     {
         if (broker == null || vehicle == null || raycastSensor == null) return;
-        if (_episodeDone) return;
+        //if (_episodeDone) return;
 
         _episodeTimer += Time.fixedDeltaTime;
 

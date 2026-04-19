@@ -122,6 +122,11 @@ def main():
             # Auto-reset for next episode
             time.sleep(0.5)
             ctrl.send_reset()
+            time.sleep(0.1)
+            ctrl.set_brake(1.0)
+            ctrl.set_gear("D")
+            time.sleep(0.1)
+            ctrl.set_brake(0.0)
             ctrl.obs_event.clear()
             ctrl.obs_event.wait(timeout=5.0)
 

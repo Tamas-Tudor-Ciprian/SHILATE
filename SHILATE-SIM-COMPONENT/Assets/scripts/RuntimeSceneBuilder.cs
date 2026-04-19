@@ -12,6 +12,7 @@ public static class RuntimeSceneBuilder
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void Init()
     {
+
         UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -34,31 +35,8 @@ public static class RuntimeSceneBuilder
 
     static Shader GetSafeShader()
     {
-        if (_cachedShader != null) return _cachedShader;
-
-        // Create a temp primitive to grab the default shader Unity assigns.
-        // This shader is always bundled in the build.
-        GameObject tmp = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        var renderer = tmp.GetComponent<Renderer>();
-        if (renderer != null && renderer.sharedMaterial != null && renderer.sharedMaterial.shader != null)
-            _cachedShader = renderer.sharedMaterial.shader;
-        Object.DestroyImmediate(tmp);
-
-        if (_cachedShader != null)
-        {
-            Debug.Log($"[RuntimeSceneBuilder] Got shader from primitive: {_cachedShader.name}");
-            return _cachedShader;
-        }
-
-        // Last resort fallbacks
-        var pipeline = GraphicsSettings.currentRenderPipeline;
-        if (pipeline != null && pipeline.defaultMaterial != null)
-            _cachedShader = pipeline.defaultMaterial.shader;
-        else
-            _cachedShader = Shader.Find("Standard");
-
-        Debug.Log($"[RuntimeSceneBuilder] Shader fallback: {(_cachedShader != null ? _cachedShader.name : "NULL")}");
-        return _cachedShader;
+     
+        return Shader.Find("Universal Render Pipeline/Lit");
     }
 
     static Material MakeMaterial(Color color)
