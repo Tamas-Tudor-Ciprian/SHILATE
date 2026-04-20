@@ -158,8 +158,8 @@ class VehicleController:
             self.training_reward = float(value) if value is not None else 0.0
         elif local_topic == "vehicle/training/done":
             # Unity sends {"value":1,...} or {"value":0}
-            self.training_done = bool(value)
-            if self.training_done:
+            if bool(value):
+                self.training_done = True
                 self.done_event.set()
         elif local_topic == "vehicle/training/obs":
             # Unity publishes {"rays":[...],"speed":...,"steer":...} — no "value" wrapper.
