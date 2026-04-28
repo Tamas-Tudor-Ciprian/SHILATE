@@ -17,7 +17,7 @@ IF "%MQTT_HOST%"=="" SET MQTT_HOST=localhost
 IF "%MQTT_PORT%"=="" SET MQTT_PORT=1883
 
 :: Find Unity — adjust path to your installed version
-SET UNITY_EXE=C:\Program Files\Unity\Hub\Editor\6000.3.12f1\Editor\Unity.exe
+SET UNITY_EXE=C:\Users\uiv80988\Documents\Software-Hardware-In-Loop-Automotive-Test-Enviroment-SHILATE\SHILATE-SIM-COMPONENT\build\SHILATE.exe
 IF NOT EXIST "%UNITY_EXE%" (
     ECHO ERROR: Unity not found at %UNITY_EXE%
     ECHO Set UNITY_EXE to your Unity editor path.
