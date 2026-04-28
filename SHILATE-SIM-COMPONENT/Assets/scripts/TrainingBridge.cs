@@ -24,7 +24,7 @@ public class TrainingBridge : MonoBehaviour
 
     [Header("Episode Settings")]
     [Tooltip("Max episode duration in sim-time seconds")]
-    [SerializeField] float episodeTimeout = 30f;
+    [SerializeField] float episodeTimeout = 60f;
 
     [Tooltip("Max speed for observation normalization (km/h)")]
     [SerializeField] float maxSpeed = 150f;
