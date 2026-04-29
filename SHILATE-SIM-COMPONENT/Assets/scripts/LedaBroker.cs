@@ -39,6 +39,8 @@ public class LedaBroker : MonoBehaviour
     MqttClient _mqtt;
     float _publishTimer;
     bool _connected;
+    float _reconnectTimer;
+    const float ReconnectInterval = 3f;
 
     /// <summary>Fired when a reset command is received from Leda.</summary>
     public event System.Action OnResetRequested;
@@ -48,7 +50,7 @@ public class LedaBroker : MonoBehaviour
 
     void OnEnable()
     {
-        _mqtt = new MqttClient(brokerHost, brokerPort, clientId);
+        _mqtt = new MqttClient(brokerHost, brokerPort, $"unity-shilate-{envPrefix}");
         _mqtt.OnConnected += HandleConnected;
         _mqtt.OnDisconnected += HandleDisconnected;
         _mqtt.OnMessageReceived += HandleMessage;
@@ -74,7 +76,23 @@ public class LedaBroker : MonoBehaviour
     {
         _mqtt?.ProcessMessages();
 
-        if (!_connected) return;
+        if (!_connected)
+        {
+            _reconnectTimer += Time.unscaledDeltaTime;
+            if (_reconnectTimer >= ReconnectInterval)
+            {
+                _reconnectTimer = 0f;
+                Debug.Log($"[LedaBroker] Attempting reconnect to {brokerHost}:{brokerPort}...");
+                _mqtt?.Dispose();
+                _mqtt = new MqttClient(brokerHost, brokerPort, $"unity-shilate-{envPrefix}");
+                _mqtt.OnConnected += HandleConnected;
+                _mqtt.OnDisconnected += HandleDisconnected;
+                _mqtt.OnMessageReceived += HandleMessage;
+                _mqtt.Connect();
+            }
+            return;
+        }
+        _reconnectTimer = 0f;
 
         _publishTimer += Time.unscaledDeltaTime;
         if (_publishTimer >= publishInterval)
@@ -160,6 +178,26 @@ public class LedaBroker : MonoBehaviour
         brokerHost = host;
         brokerPort = port;
         envPrefix = prefix;
+
+        // Disconnect and reconnect with new settings.
+        // OnEnable() already connected with inspector defaults; we must reconnect
+        // to the actual broker host and adopt the correct per-instance client ID.
+        if (_mqtt != null)
+        {
+            _mqtt.OnConnected -= HandleConnected;
+            _mqtt.OnDisconnected -= HandleDisconnected;
+            _mqtt.OnMessageReceived -= HandleMessage;
+            _mqtt.Disconnect();
+        }
+        _connected = false;
+
+        _mqtt = new MqttClient(brokerHost, brokerPort, $"unity-shilate-{prefix}");
+        _mqtt.OnConnected += HandleConnected;
+        _mqtt.OnDisconnected += HandleDisconnected;
+        _mqtt.OnMessageReceived += HandleMessage;
+        _mqtt.Connect();
+
+        Debug.Log($"[LedaBroker] Reconnecting to {brokerHost}:{brokerPort} (prefix: {envPrefix})");
     }
 
     // ─── MQTT callbacks (dispatched on main thread) ───

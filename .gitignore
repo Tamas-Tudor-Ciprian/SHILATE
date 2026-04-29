@@ -30,6 +30,7 @@
 !SHILATE-SIM-COMPONENT/Assets/InputSystem_Actions.inputactions
 !SHILATE-SIM-COMPONENT/Assets/InputSystem_Actions.inputactions.meta
 
+
 # Allow Packages (dependency manifest)
 !SHILATE-SIM-COMPONENT/Packages/
 !SHILATE-SIM-COMPONENT/Packages/manifest.json
@@ -65,7 +66,5 @@
 !leda/leda-controller/*.json
 
 # ---------- Unity training launch scripts ----------
-!SHILATE-SIM-COMPONENT/run-training.sh
-!SHILATE-SIM-COMPONENT/run-training.cmd
-!SHILATE-SIM-COMPONENT/run-training-parallel.sh
-!SHILATE-SIM-COMPONENT/run-training-parallel.cmd
+!SHILATE-SIM-COMPONENT/*.cmd
+!SHILATE-SIM-COMPONENT/*.sh

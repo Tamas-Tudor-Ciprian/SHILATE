@@ -1,15 +1,59 @@
 using UnityEngine;
-using UnityEditor;
+using UnityEngine.Rendering;
 
 /// <summary>
-/// Editor utility to build a complete primitive-placeholder car with WheelColliders,
-/// a ground plane, and all required scripts wired up.
-/// Access via menu: SHILATE → Build Car Scene.
+/// Builds the entire car scene at runtime, mirroring what CarBuilder does in the editor.
+/// Runs automatically via [RuntimeInitializeOnLoadMethod] after the scene loads.
+/// Uses SubsystemRegistration (earliest phase) to register a sceneLoaded callback,
+/// ensuring the scene is built before StandaloneBootstrap (AfterSceneLoad) runs.
 /// </summary>
-public static class CarBuilder
+public static class RuntimeSceneBuilder
 {
-    [MenuItem("SHILATE/Build Car Scene")]
-    static void BuildCarScene()
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void Init()
+    {
+
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        // Skip if the scene already has a VehicleController (e.g. objects were saved in editor)
+        if (Object.FindFirstObjectByType<VehicleController>() != null)
+        {
+            Debug.Log("[RuntimeSceneBuilder] Scene already has a VehicleController, skipping build.");
+            return;
+        }
+
+        Debug.Log("[RuntimeSceneBuilder] Scene is empty, building car scene at runtime...");
+        BuildScene();
+    }
+
+    static Shader _cachedShader;
+
+    static Shader GetSafeShader()
+    {
+     
+        return Shader.Find("Universal Render Pipeline/Lit");
+    }
+
+    static Material MakeMaterial(Color color)
+    {
+        Shader shader = GetSafeShader();
+        if (shader == null)
+        {
+            Debug.LogError("[RuntimeSceneBuilder] No shader available!");
+            return null;
+        }
+        var mat = new Material(shader);
+        mat.SetColor("_BaseColor", color);  // URP uses _BaseColor
+        mat.color = color;                   // fallback for built-in
+        return mat;
+    }
+
+    static void BuildScene()
     {
         // ── Ground Plane ──
         GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -17,7 +61,6 @@ public static class CarBuilder
         ground.transform.position = Vector3.zero;
         ground.transform.localScale = new Vector3(50f, 1f, 50f);
 
-        // Tarmac-like physics material
         PhysicsMaterial groundMat = new PhysicsMaterial("Tarmac")
         {
             staticFriction = 0.8f,
@@ -27,18 +70,17 @@ public static class CarBuilder
             bounceCombine = PhysicsMaterialCombine.Minimum
         };
         ground.GetComponent<Collider>().material = groundMat;
+        ground.GetComponent<Renderer>().material = MakeMaterial(new Color(0.3f, 0.3f, 0.3f));
+        Debug.Log("[RuntimeSceneBuilder] Ground created.");
 
         // ── Car Root ──
-        // Spawn at Y=0.5 so WheelCollider rays reach ground immediately
-        // (ray length = suspensionDistance + radius = 0.55, from Y=0.5 reaches Y=-0.05)
-        // This avoids the free-fall → spring explosion on first contact.
         GameObject car = new GameObject("Car");
-        car.transform.position = new Vector3(32.5f, 0.5f, 0f); // on track centerline (inner=25 + outer=40) / 2
-        Rigidbody rb = car.AddComponent<Rigidbody>();    
+        car.transform.position = new Vector3(32.5f, 0.5f, 0f);
+        Rigidbody rb = car.AddComponent<Rigidbody>();
         rb.mass = 1500f;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
-        rb.inertiaTensor = new Vector3(1000,1000,1000); //this should instruct the wheel coliders to atach to a shape an not explode
-        rb.centerOfMass = new Vector3(0,-0.2f, 0); //low center of mass to prevent flipping
+        rb.inertiaTensor = new Vector3(1000, 1000, 1000);
+        rb.centerOfMass = new Vector3(0, -0.2f, 0);
 
         // ── Car Body (visual) ──
         GameObject body = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -46,53 +88,46 @@ public static class CarBuilder
         body.transform.SetParent(car.transform);
         body.transform.localPosition = new Vector3(0f, 0.35f, 0f);
         body.transform.localScale = new Vector3(1.8f, 0.6f, 4.2f);
-        body.GetComponent<Renderer>().material = new Material(Shader.Find("Universal Render Pipeline/Lit")){color = Color.green};
-       // Object.DestroyImmediate(body.GetComponent<Collider>()); // physics handled by WheelColliders
+        body.GetComponent<Renderer>().material = MakeMaterial(Color.green);
 
-        //here I will create a parent for the visual wheels
-
+        // ── Visual Wheels Parent ──
         GameObject visualWheelsParent = new GameObject("VisualWheels");
         visualWheelsParent.transform.SetParent(car.transform);
         visualWheelsParent.transform.localPosition = Vector3.zero;
 
-        //here I will create a parent for the physics wheels
-
+        // ── Physics Wheels Parent ──
         GameObject physicsWheelsParent = new GameObject("PhysicsWheels");
         physicsWheelsParent.transform.SetParent(car.transform);
         physicsWheelsParent.transform.localPosition = Vector3.zero;
 
-        // Cabin (upper box) 
-             
+        // ── Cabin ──
         GameObject cabin = GameObject.CreatePrimitive(PrimitiveType.Cube);
         cabin.name = "Cabin";
         cabin.transform.SetParent(car.transform);
         cabin.transform.localPosition = new Vector3(0f, 0.85f, -0.2f);
         cabin.transform.localScale = new Vector3(1.5f, 0.5f, 2.0f);
-        Object.DestroyImmediate(cabin.GetComponent<Collider>());
-        cabin.GetComponent<Renderer>().material = new Material(Shader.Find("Universal Render Pipeline/Lit")){color = new Color(0.2f, 0.8f, 0.1f)}; //this should color the wheel
-        
+        Object.Destroy(cabin.GetComponent<Collider>());
+        cabin.GetComponent<Renderer>().material = MakeMaterial(new Color(0.2f, 0.8f, 0.1f));
+
         // ── Wheel dimensions ──
         float wheelRadius = 0.35f;
         float suspensionDistance = 0.2f;
         float wheelX = 1.0f;
         float wheelFrontZ = 1.3f;
         float wheelRearZ = -1.3f;
-        float wheelY = 0f; // relative to car root (WheelCollider handles suspension)
+        float wheelY = 0f;
 
-        // ── Create WheelColliders + Visual Wheels ──
+        // ── WheelColliders ──
         WheelCollider wcFL = CreateWheelCollider(physicsWheelsParent, "WheelCollider_FL", new Vector3(-wheelX, wheelY, wheelFrontZ), wheelRadius, suspensionDistance);
         WheelCollider wcFR = CreateWheelCollider(physicsWheelsParent, "WheelCollider_FR", new Vector3(wheelX, wheelY, wheelFrontZ), wheelRadius, suspensionDistance);
         WheelCollider wcRL = CreateWheelCollider(physicsWheelsParent, "WheelCollider_RL", new Vector3(-wheelX, wheelY, wheelRearZ), wheelRadius, suspensionDistance);
         WheelCollider wcRR = CreateWheelCollider(physicsWheelsParent, "WheelCollider_RR", new Vector3(wheelX, wheelY, wheelRearZ), wheelRadius, suspensionDistance);
 
-        
-
+        // ── Visual Wheels ──
         Transform meshFL = CreateWheelMesh(visualWheelsParent, "WheelMesh_FL", new Vector3(-wheelX, wheelY, wheelFrontZ), wheelRadius);
         Transform meshFR = CreateWheelMesh(visualWheelsParent, "WheelMesh_FR", new Vector3(wheelX, wheelY, wheelFrontZ), wheelRadius);
         Transform meshRL = CreateWheelMesh(visualWheelsParent, "WheelMesh_RL", new Vector3(-wheelX, wheelY, wheelRearZ), wheelRadius);
         Transform meshRR = CreateWheelMesh(visualWheelsParent, "WheelMesh_RR", new Vector3(wheelX, wheelY, wheelRearZ), wheelRadius);
-
-  
 
         // ── VehicleController ──
         VehicleController vc = car.AddComponent<VehicleController>();
@@ -112,28 +147,29 @@ public static class CarBuilder
         // ── SimulationRunner ──
         SimulationRunner runner = car.AddComponent<SimulationRunner>();
         runner.vehicle = vc;
-        runner.autoStart = false; // manual by default until a scenario is assigned
+        runner.autoStart = false;
         manual.simulationRunner = runner;
 
-        // ── Find or create LedaBroker and wire VehicleTelemetryBridge ──
-        LedaBroker broker = Object.FindAnyObjectByType<LedaBroker>();
+        // ── LedaBroker ──
+        LedaBroker broker = Object.FindFirstObjectByType<LedaBroker>();
         if (broker == null)
         {
             GameObject brokerGO = new GameObject("LedaBroker");
             broker = brokerGO.AddComponent<LedaBroker>();
         }
 
+        // ── VehicleTelemetryBridge ──
         VehicleTelemetryBridge bridge = car.AddComponent<VehicleTelemetryBridge>();
         bridge.vehicle = vc;
         bridge.broker = broker;
 
-        // ── RemoteDriveInput (Leda → Unity control) ──
+        // ── RemoteDriveInput ──
         RemoteDriveInput remoteInput = car.AddComponent<RemoteDriveInput>();
         remoteInput.vehicle = vc;
         remoteInput.manualInput = manual;
-        remoteInput.enabled = false; // disabled by default; TrainingBootstrap or Inspector enables it
+        remoteInput.enabled = false;
         broker.remoteInput = remoteInput;
-        manual.remoteInput = remoteInput;   // so enabling ManualDriveInput disables RemoteDriveInput
+        manual.remoteInput = remoteInput;
 
         // ── TimeScaleController ──
         TimeScaleController tsController = car.AddComponent<TimeScaleController>();
@@ -156,23 +192,24 @@ public static class CarBuilder
         trainingBridge.raycastSensor = raycastSensor;
         trainingBridge.obstacleCourse = obstacleCourse;
 
+        // Wire obstacle course back to training bridge
+        obstacleCourse.trainingBridge = trainingBridge;
+
         // ── Camera ──
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {
-            CameraFollow follow = mainCam.gameObject.AddComponent<CameraFollow>();
+            CameraFollow follow = mainCam.gameObject.GetComponent<CameraFollow>();
+            if (follow == null)
+                follow = mainCam.gameObject.AddComponent<CameraFollow>();
             follow.target = car.transform;
 
-            // Place camera behind the car immediately so there's no lerp from origin
             mainCam.transform.position = car.transform.TransformPoint(follow.offset);
             mainCam.transform.LookAt(car.transform);
         }
 
-        // ── Select the car so user sees it ──
-        Selection.activeGameObject = car;
-        Debug.Log("[CarBuilder] Car scene built with full Leda integration. " +
-            "Manual drive (WASD) active by default. " +
-            "Enable RemoteDriveInput for Leda control, or use TrainingBootstrap for headless mode.");
+        Debug.Log("[RuntimeSceneBuilder] Car scene built successfully. " +
+            $"Car at {car.transform.position}, Camera at {(mainCam != null ? mainCam.transform.position.ToString() : "N/A")}");
     }
 
     static WheelCollider CreateWheelCollider(GameObject parent, string name, Vector3 localPos, float radius, float suspDist)
@@ -193,7 +230,6 @@ public static class CarBuilder
 
         wc.mass = 20f;
 
-        // Semi-realistic friction curves
         WheelFrictionCurve fwd = wc.forwardFriction;
         fwd.extremumSlip = 0.4f;
         fwd.extremumValue = 1f;
@@ -223,12 +259,11 @@ public static class CarBuilder
         go.name = name;
         go.transform.SetParent(pivot.transform);
         go.transform.localPosition = Vector3.zero;
-        // Cylinder default height=2, radius=0.5 → scale to match wheel radius
         float diameter = radius * 2f;
         go.transform.localScale = new Vector3(diameter, 0.15f, diameter);
         go.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
-        Object.DestroyImmediate(go.GetComponent<Collider>()); // WheelCollider handles physics
-        go.GetComponent<Renderer>().material = new Material(Shader.Find("Universal Render Pipeline/Lit")){color = Color.brown}; //this should color the wheel
+        Object.Destroy(go.GetComponent<Collider>());
+        go.GetComponent<Renderer>().material = MakeMaterial(new Color(0.4f, 0.25f, 0.1f));
         return pivot.transform;
     }
 }

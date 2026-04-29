@@ -17,5 +17,5 @@ def get_policy_kwargs(ray_count: int = 9):
     # Default: 2 layers of 64. For a small obs space this is sufficient.
     # Increase to [128, 128] or [256, 128] for more complex tasks.
     return {
-        "net_arch": [64, 64],
+        "net_arch": [256, 128],
     }

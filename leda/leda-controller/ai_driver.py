@@ -37,12 +37,14 @@ def handle_signal(sig, frame):
 
 
 def parse_args():
+    from config_loader import load_ray_count_from_config
+    default_ray_count = load_ray_count_from_config()
     p = argparse.ArgumentParser(description="SHILATE AI Driver")
     p.add_argument("--model", required=True, help="Path to trained model .zip")
     p.add_argument("--mqtt-host", default="localhost")
     p.add_argument("--mqtt-port", type=int, default=1883)
     p.add_argument("--env-id", type=int, default=0)
-    p.add_argument("--ray-count", type=int, default=9)
+    p.add_argument("--ray-count", type=int, default=default_ray_count)
     p.add_argument("--episodes", type=int, default=0, help="0 = run forever")
     return p.parse_args()
 
@@ -122,6 +124,11 @@ def main():
             # Auto-reset for next episode
             time.sleep(0.5)
             ctrl.send_reset()
+            time.sleep(0.1)
+            ctrl.set_brake(1.0)
+            ctrl.set_gear("D")
+            time.sleep(0.1)
+            ctrl.set_brake(0.0)
             ctrl.obs_event.clear()
             ctrl.obs_event.wait(timeout=5.0)
 

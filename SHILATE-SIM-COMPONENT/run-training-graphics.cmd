@@ -12,7 +12,7 @@ SET MQTT_HOST=%3
 SET MQTT_PORT=%4
 
 IF "%ENV_ID%"=="" SET ENV_ID=0
-IF "%TIMESCALE%"=="" SET TIMESCALE=5
+IF "%TIMESCALE%"=="" SET TIMESCALE=1
 IF "%MQTT_HOST%"=="" SET MQTT_HOST=localhost
 IF "%MQTT_PORT%"=="" SET MQTT_PORT=1883
 
@@ -29,12 +29,7 @@ SET PROJECT_DIR=%~dp0
 ECHO [run-training] Launching Unity headless (env-id=%ENV_ID%, timescale=%TIMESCALE%, mqtt=%MQTT_HOST%:%MQTT_PORT%)
 
 "%UNITY_EXE%" ^
-    -batchmode ^
-    -nographics ^
-    -projectPath "%PROJECT_DIR%" ^
-    -executeMethod TrainingBootstrap.Launch ^
     --env-id %ENV_ID% ^
     --timescale %TIMESCALE% ^
     --mqtt-host %MQTT_HOST% ^
-    --mqtt-port %MQTT_PORT% ^
-    -logFile "%PROJECT_DIR%\Logs\training-env%ENV_ID%.log"
+    --mqtt-port %MQTT_PORT%

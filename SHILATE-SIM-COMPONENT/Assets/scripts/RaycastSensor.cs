@@ -9,7 +9,7 @@ public class RaycastSensor : MonoBehaviour
 {
     [Header("Raycast Configuration")]
     [Tooltip("Number of rays in the fan")]
-    [SerializeField] int rayCount = 9;
+    [SerializeField] int rayCount = 21;
 
     [Tooltip("Total angular spread of the ray fan (degrees)")]
     [SerializeField] float raySpreadAngle = 120f;

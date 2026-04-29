@@ -13,24 +13,25 @@ public class TrainingBridge : MonoBehaviour
     public ObstacleCourse obstacleCourse;
 
     [Header("Reward Settings")]
-    [Tooltip("Reward per meter of forward progress along track axis")]
-    [SerializeField] float progressReward = 1f;
+    [Tooltip("Reward per degree of forward progress around the track")]
+    [SerializeField] float progressReward = 2f;
 
     [Tooltip("Penalty on collision")]
-    [SerializeField] float collisionPenalty = -10f;
+    [SerializeField] float collisionPenalty = -5f;
 
-    [Tooltip("Bonus for reaching the finish line")]
+    [Tooltip("Bonus for completing a full lap")]
     [SerializeField] float finishBonus = 50f;
 
     [Header("Episode Settings")]
     [Tooltip("Max episode duration in sim-time seconds")]
-    [SerializeField] float episodeTimeout = 30f;
+    [SerializeField] float episodeTimeout = 60f;
 
     [Tooltip("Max speed for observation normalization (km/h)")]
     [SerializeField] float maxSpeed = 150f;
 
     float _episodeTimer;
-    float _lastZ;
+    float _lastAngle;
+    float _totalAngleProgress;
     float _cumulativeReward;
     bool _episodeDone;
     float _lastRealTime;
@@ -58,16 +59,19 @@ public class TrainingBridge : MonoBehaviour
     void FixedUpdate()
     {
         if (broker == null || vehicle == null || raycastSensor == null) return;
-        if (_episodeDone) return;
+        //if (_episodeDone) return;
 
         _episodeTimer += Time.fixedDeltaTime;
 
-        // Compute reward
-        float currentZ = vehicle.transform.position.z;
-        float forwardProgress = currentZ - _lastZ;
-        _lastZ = currentZ;
+        // Compute angular progress around the circular track
+        float currentAngle = obstacleCourse != null
+            ? obstacleCourse.GetAngle(vehicle.transform.position)
+            : 0f;
+        float angleDelta = Mathf.DeltaAngle(_lastAngle, currentAngle);
+        _lastAngle = currentAngle;
+        _totalAngleProgress += angleDelta;
 
-        float stepReward = forwardProgress * progressReward;
+        float stepReward = angleDelta * progressReward;
 
         // Collision check — use flag set by OnCollisionEnter (not RaycastSensor's cleared flag)
         bool collided = _collidedThisStep;
@@ -77,9 +81,9 @@ public class TrainingBridge : MonoBehaviour
             stepReward += collisionPenalty;
         }
 
-        // Finish line check
+        // Lap completion check
         bool finished = false;
-        if (obstacleCourse != null && currentZ >= obstacleCourse.FinishLineZ)
+        if (obstacleCourse != null && _totalAngleProgress >= 360f)
         {
             stepReward += finishBonus;
             finished = true;
@@ -140,10 +144,11 @@ public class TrainingBridge : MonoBehaviour
     {
         _episodeTimer = 0f;
         _cumulativeReward = 0f;
+        _totalAngleProgress = 0f;
         _episodeDone = false;
         _lastRealTime = Time.unscaledTime;
 
-        if (vehicle != null)
-            _lastZ = vehicle.transform.position.z;
+        if (vehicle != null && obstacleCourse != null)
+            _lastAngle = obstacleCourse.GetAngle(vehicle.transform.position);
     }
 }
