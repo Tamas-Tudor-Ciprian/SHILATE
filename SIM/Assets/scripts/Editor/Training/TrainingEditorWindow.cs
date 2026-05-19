@@ -480,9 +480,10 @@ public class TrainingEditorWindow : EditorWindow
             }
         }
 
-        _debugMode = debugMode;
+        DebugMode = debugMode;
+        ProcessWasRunning = true;
         _logEntries.Clear();
-        _metricsParser.Clear();
+        if (_metricsParser != null) _metricsParser.Clear();
         _trainingStartTime = DateTime.Now;
 
         int envCount = debugMode ? 1 : _settings.numEnvs;
@@ -499,7 +500,8 @@ public class TrainingEditorWindow : EditorWindow
         if (!_processManager.Start(_settings, debugMode))
         {
             AddLog("Failed to start training process", LogType.Error);
-            _debugMode = false;
+            DebugMode = false;
+            ProcessWasRunning = false;
             return;
         }
 
