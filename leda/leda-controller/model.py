@@ -14,8 +14,7 @@ def get_policy_kwargs(ray_count: int = 9):
     """
     obs_size = ray_count + 2  # rays + speed + steer
 
-    # Default: 2 layers of 64. For a small obs space this is sufficient.
-    # Increase to [128, 128] or [256, 128] for more complex tasks.
+    # Separate actor (pi) and critic (vf) networks — each has its own independent weights.
     return {
-        "net_arch": [256, 128],
+        "net_arch": dict(pi=[256, 128], vf=[256, 128]),
     }

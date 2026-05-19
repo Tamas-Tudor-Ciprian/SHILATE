@@ -32,6 +32,8 @@ log = logging.getLogger("shilate-train")
 
 
 def parse_args():
+    from config_loader import load_ray_count_from_config
+    default_ray_count = load_ray_count_from_config()
     p = argparse.ArgumentParser(description="SHILATE RL Training")
     p.add_argument("--num-envs", type=int, default=4)
     p.add_argument("--timescale", type=float, default=5.0)
@@ -39,7 +41,7 @@ def parse_args():
     p.add_argument("--learning-rate", type=float, default=3e-4)
     p.add_argument("--n-steps", type=int, default=2048)
     p.add_argument("--batch-size", type=int, default=64)
-    p.add_argument("--ray-count", type=int, default=9)
+    p.add_argument("--ray-count", type=int, default=default_ray_count)
     p.add_argument("--mqtt-host", default="localhost")
     p.add_argument("--mqtt-port", type=int, default=1883)
     p.add_argument("--save-path", default="/tmp/shilate_model")
