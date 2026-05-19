@@ -293,6 +293,35 @@ public class TrainingEditorWindow : EditorWindow
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("savePath"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("logDir"));
 
+        EditorGUILayout.Space(5);
+        EditorGUILayout.LabelField("Resume Training", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(_serializedSettings.FindProperty("resumeTraining"),
+            new GUIContent("Resume From Checkpoint"));
+
+        if (_settings.resumeTraining)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PropertyField(_serializedSettings.FindProperty("resumeModelPath"),
+                new GUIContent("Model File (.zip)"));
+            if (GUILayout.Button("Browse...", GUILayout.Width(70)))
+            {
+                string picked = EditorUtility.OpenFilePanel("Select Model .zip", "", "zip");
+                if (!string.IsNullOrEmpty(picked))
+                {
+                    _settings.resumeModelPath = picked;
+                    EditorUtility.SetDirty(_settings);
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+
+            if (string.IsNullOrEmpty(_settings.resumeModelPath))
+                EditorGUILayout.HelpBox("Browse to a .zip model file to resume from.", MessageType.Warning);
+            else if (!System.IO.File.Exists(_settings.resumeModelPath))
+                EditorGUILayout.HelpBox("Model file not found at the specified path.", MessageType.Error);
+            else
+                EditorGUILayout.HelpBox($"Will resume: {System.IO.Path.GetFileName(_settings.resumeModelPath)}", MessageType.Info);
+        }
+
         _serializedSettings.ApplyModifiedProperties();
         EditorGUI.indentLevel--;
     }
@@ -480,6 +509,22 @@ public class TrainingEditorWindow : EditorWindow
             }
         }
 
+        if (_settings.resumeTraining)
+        {
+            if (string.IsNullOrEmpty(_settings.resumeModelPath))
+            {
+                EditorUtility.DisplayDialog("Resume Model Not Set",
+                    "Resume Training is enabled but no model file has been selected.\n\nPlease browse to a .zip model file in Settings.", "OK");
+                return;
+            }
+            if (!System.IO.File.Exists(_settings.resumeModelPath))
+            {
+                EditorUtility.DisplayDialog("Model File Not Found",
+                    $"The model file could not be found:\n{_settings.resumeModelPath}", "OK");
+                return;
+            }
+        }
+
         DebugMode = debugMode;
         ProcessWasRunning = true;
         _logEntries.Clear();
@@ -493,6 +538,11 @@ public class TrainingEditorWindow : EditorWindow
         AddLog($"Starting training with {envCount} environment(s)...", LogType.Log);
         AddLog($"Timescale: {scale}x, Ray count: {rayCount}", LogType.Log);
         AddLog($"Total timesteps: {_settings.totalTimesteps}", LogType.Log);
+
+        if (_settings.resumeTraining)
+            AddLog($"Resuming from: {System.IO.Path.GetFileName(_settings.resumeModelPath)}", LogType.Log);
+        else
+            AddLog("Starting new model", LogType.Log);
 
         if (debugMode)
             AddLog("Debug mode: Will enter Play mode after Python starts", LogType.Log);

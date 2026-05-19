@@ -59,6 +59,13 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("Directory for TensorBoard logs")]
     public string logDir = "../leda/leda-controller/logs";
 
+    [Header("Resume Training")]
+    [Tooltip("Resume training from an existing model instead of creating a new one")]
+    public bool resumeTraining = false;
+
+    [Tooltip("Absolute path to the .zip model file to resume from")]
+    public string resumeModelPath = "";
+
     /// <summary>
     /// Returns the absolute path to the venv directory.
     /// </summary>
@@ -114,6 +121,9 @@ public class TrainingSettings : ScriptableObject
 
         args.Append($"--save-path \"{absSavePath}\" ");
         args.Append($"--log-dir \"{absLogDir}\"");
+
+        if (resumeTraining && !string.IsNullOrEmpty(resumeModelPath))
+            args.Append($" --resume-model \"{resumeModelPath}\"");
 
         return args.ToString();
     }

@@ -117,6 +117,11 @@ public class TrainingBridge : MonoBehaviour
         bool timeout = _episodeTimer >= episodeTimeout;
         _episodeDone = collided || finished || timeout;
 
+        // Tell ObstacleCourse whether to regenerate the layout on the next reset.
+        // Obstacles only change when the agent successfully completes a full lap.
+        if (_episodeDone && obstacleCourse != null)
+            obstacleCourse.ShouldRespawnObstacles = finished;
+
         // Publish observation
         PublishObservation();
 

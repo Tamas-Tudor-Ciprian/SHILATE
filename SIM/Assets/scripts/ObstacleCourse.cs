@@ -49,6 +49,12 @@ public class ObstacleCourse : MonoBehaviour
     Material _obstacleMaterial;
     Material _wallMaterial;
 
+    /// <summary>
+    /// Set to true by TrainingBridge when the previous episode ended with a completed lap.
+    /// Reset() will only regenerate obstacles when this is true.
+    /// </summary>
+    public bool ShouldRespawnObstacles { get; set; } = false;
+
     /// <summary>Center of the circular track.</summary>
     public Vector3 TrackCenter => trackCenter;
 
@@ -102,14 +108,23 @@ public class ObstacleCourse : MonoBehaviour
     }
 
     /// <summary>
-    /// Destroy all obstacles, spawn new random layout, reset car to start.
+    /// Resets the episode. Only regenerates obstacles when <see cref="ShouldRespawnObstacles"/> is true
+    /// (i.e. the previous episode ended with a completed lap). Otherwise the car is repositioned
+    /// but the obstacle layout stays the same so the agent must learn to beat the same course.
     /// Called by Leda via leda/control/reset MQTT command.
     /// </summary>
     public void Reset()
     {
         if (!Application.isPlaying) return;
-        ClearObstacles();
-        SpawnObstacles();
+
+        if (ShouldRespawnObstacles)
+        {
+            ClearObstacles();
+            SpawnObstacles();
+            ShouldRespawnObstacles = false;
+            Debug.Log("[ObstacleCourse] Lap completed — new obstacle layout generated");
+        }
+
         ResetCar();
 
         if (trainingBridge != null)
@@ -229,60 +244,76 @@ public class ObstacleCourse : MonoBehaviour
         return go;
     }
 
+    /// <summary>
+    /// Spawns obstacles using stratified angular placement: the track is divided into equal
+    /// angular sectors and exactly one obstacle is placed per sector (with random jitter within
+    /// the sector and random radius). This guarantees even circumferential distribution and
+    /// eliminates bunching. Sectors overlapping the car start zone are skipped.
+    /// </summary>
     void SpawnObstacles()
     {
-        int maxAttempts = obstacleCount * 10;
-        int placed = 0;
         float margin = 1.5f;
-        List<Vector3> positions = new List<Vector3>();
+        float sectorDeg = 360f / obstacleCount; // degrees per sector
+        float carStartAngleDeg = 0f;            // car always starts at angle 0 (positive X)
+        // Exclude sectors whose midpoint falls within 1.5 sectors of the start
+        float excludeHalfArc = sectorDeg * 1.5f;
 
-        // Car start position for exclusion zone
-        float centerR = TrackCenterRadius;
-        Vector3 carStart = new Vector3(trackCenter.x + centerR, 0f, trackCenter.z);
+        var positions = new List<Vector3>();
 
-        for (int attempt = 0; attempt < maxAttempts && placed < obstacleCount; attempt++)
+        for (int i = 0; i < obstacleCount; i++)
         {
-            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            float r = Random.Range(innerRadius + margin, outerRadius - margin);
+            float sectorMid = i * sectorDeg + sectorDeg * 0.5f;
 
-            float x = trackCenter.x + r * Mathf.Cos(angle);
-            float z = trackCenter.z + r * Mathf.Sin(angle);
-            Vector3 pos = new Vector3(x, 0f, z);
-
-            // Check minimum spacing against existing obstacles
-            bool tooClose = false;
-            foreach (var existing in positions)
-            {
-                if (Vector3.Distance(pos, existing) < minSpacing)
-                {
-                    tooClose = true;
-                    break;
-                }
-            }
-            if (tooClose) continue;
-
-            // Keep area near car start clear
-            if (Vector3.Distance(pos, carStart) < minSpacing * 2f)
+            // Skip sectors too close to the car start position
+            if (Mathf.Abs(Mathf.DeltaAngle(sectorMid, carStartAngleDeg)) < excludeHalfArc)
                 continue;
 
-            positions.Add(pos);
+            // Try a few times to place within this sector (min-spacing guard)
+            bool placed = false;
+            for (int attempt = 0; attempt < 10 && !placed; attempt++)
+            {
+                // Jitter angle within [10%, 90%] of the sector to avoid clustering at edges
+                float jitterDeg = Random.Range(sectorDeg * 0.1f, sectorDeg * 0.9f);
+                float angleDeg  = i * sectorDeg + jitterDeg;
+                float angleRad  = angleDeg * Mathf.Deg2Rad;
 
-            GameObject obs = GameObject.CreatePrimitive(
-                Random.value > 0.5f ? PrimitiveType.Cube : PrimitiveType.Cylinder);
-            obs.name = $"Obstacle_{placed}";
+                float r = Random.Range(innerRadius + margin, outerRadius - margin);
+                float x = trackCenter.x + r * Mathf.Cos(angleRad);
+                float z = trackCenter.z + r * Mathf.Sin(angleRad);
+                Vector3 pos = new Vector3(x, 0f, z);
 
-            float sx = Random.Range(obstacleMinSize.x, obstacleMaxSize.x);
-            float sy = Random.Range(obstacleMinSize.y, obstacleMaxSize.y);
-            float sz = Random.Range(obstacleMinSize.z, obstacleMaxSize.z);
-            obs.transform.localScale = new Vector3(sx, sy, sz);
-            obs.transform.position = new Vector3(pos.x, sy * 0.5f, pos.z);
-            obs.GetComponent<Renderer>().material = _obstacleMaterial;
+                // Minimum spacing check against already-placed obstacles
+                bool tooClose = false;
+                foreach (var existing in positions)
+                {
+                    if (Vector3.Distance(pos, existing) < minSpacing)
+                    {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (tooClose) continue;
 
-            _obstacles.Add(obs);
-            placed++;
+                positions.Add(pos);
+
+                GameObject obs = GameObject.CreatePrimitive(
+                    Random.value > 0.5f ? PrimitiveType.Cube : PrimitiveType.Cylinder);
+                obs.name = $"Obstacle_{i}";
+
+                float sx = Random.Range(obstacleMinSize.x, obstacleMaxSize.x);
+                float sy = Random.Range(obstacleMinSize.y, obstacleMaxSize.y);
+                float sz = Random.Range(obstacleMinSize.z, obstacleMaxSize.z);
+                obs.transform.localScale = new Vector3(sx, sy, sz);
+                obs.transform.position = new Vector3(pos.x, sy * 0.5f, pos.z);
+                obs.GetComponent<Renderer>().material = _obstacleMaterial;
+
+                _obstacles.Add(obs);
+                placed = true;
+            }
         }
 
-        Debug.Log($"[ObstacleCourse] Spawned {placed} obstacles on circular track (R={innerRadius}-{outerRadius})");
+        Debug.Log($"[ObstacleCourse] Spawned {_obstacles.Count}/{obstacleCount} obstacles " +
+                  $"(stratified, R={innerRadius}-{outerRadius})");
     }
 
     void ResetCar()
