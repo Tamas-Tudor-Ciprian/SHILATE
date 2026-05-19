@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06af36e83e11e0d4f88d3e2116946dd3, type: 3}
+  m_Name: TrainingSettings
+  m_EditorClassIdentifier: Assembly-CSharp::TrainingSettings
+  venvPath: ../leda/leda-controller/venv
+  trainScriptPath: ../leda/leda-controller/train.py
+  numEnvs: 1
+  timescale: 1
+  totalTimesteps: 100000
+  learningRate: 0.0003
+  nSteps: 2048
+  batchSize: 64
+  rayCount: 21
+  debugTimescale: 1
+  mqttHost: localhost
+  mqttPort: 1883
+  savePath: ../leda/leda-controller/models
+  logDir: ../leda/leda-controller/logs
