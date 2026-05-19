@@ -10,35 +10,35 @@
 !.gitattributes
 
 # ---------- Docs ----------
-!SHILATE-SIM-COMPONENT/docs/
-!SHILATE-SIM-COMPONENT/docs/**
+!SIM/docs/
+!SIM/docs/**
 
-# ---------- Unity project (SHILATE-SIM-COMPONENT) ----------
-!SHILATE-SIM-COMPONENT/
+# ---------- Unity project (SIM) ----------
+!SIM/
 
 # Allow Assets (scripts, scenes, settings, input config)
-!SHILATE-SIM-COMPONENT/Assets/
-!SHILATE-SIM-COMPONENT/Assets/scripts/
-!SHILATE-SIM-COMPONENT/Assets/scripts/**
-!SHILATE-SIM-COMPONENT/Assets/scripts.meta
-!SHILATE-SIM-COMPONENT/Assets/Scenes/
-!SHILATE-SIM-COMPONENT/Assets/Scenes/**
-!SHILATE-SIM-COMPONENT/Assets/Scenes.meta
-!SHILATE-SIM-COMPONENT/Assets/Settings/
-!SHILATE-SIM-COMPONENT/Assets/Settings/**
-!SHILATE-SIM-COMPONENT/Assets/Settings.meta
-!SHILATE-SIM-COMPONENT/Assets/InputSystem_Actions.inputactions
-!SHILATE-SIM-COMPONENT/Assets/InputSystem_Actions.inputactions.meta
+!SIM/Assets/
+!SIM/Assets/scripts/
+!SIM/Assets/scripts/**
+!SIM/Assets/scripts.meta
+!SIM/Assets/Scenes/
+!SIM/Assets/Scenes/**
+!SIM/Assets/Scenes.meta
+!SIM/Assets/Settings/
+!SIM/Assets/Settings/**
+!SIM/Assets/Settings.meta
+!SIM/Assets/InputSystem_Actions.inputactions
+!SIM/Assets/InputSystem_Actions.inputactions.meta
 
 
 # Allow Packages (dependency manifest)
-!SHILATE-SIM-COMPONENT/Packages/
-!SHILATE-SIM-COMPONENT/Packages/manifest.json
-!SHILATE-SIM-COMPONENT/Packages/packages-lock.json
+!SIM/Packages/
+!SIM/Packages/manifest.json
+!SIM/Packages/packages-lock.json
 
 # Allow ProjectSettings
-!SHILATE-SIM-COMPONENT/ProjectSettings/
-!SHILATE-SIM-COMPONENT/ProjectSettings/**
+!SIM/ProjectSettings/
+!SIM/ProjectSettings/**
 
 # ---------- Eclipse Leda ----------
 !leda/
@@ -66,5 +66,5 @@
 !leda/leda-controller/*.json
 
 # ---------- Unity training launch scripts ----------
-!SHILATE-SIM-COMPONENT/*.cmd
-!SHILATE-SIM-COMPONENT/*.sh
+!SIM/*.cmd
+!SIM/*.sh
