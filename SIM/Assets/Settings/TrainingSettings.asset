@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06af36e83e11e0d4f88d3e2116946dd3, type: 3}
   m_Name: TrainingSettings
   m_EditorClassIdentifier: Assembly-CSharp::TrainingSettings
-  venvPath: ../leda/leda-controller/venv
+  venvPath: ../leda/leda-controller/.venv
   trainScriptPath: ../leda/leda-controller/train.py
   numEnvs: 1
   timescale: 1

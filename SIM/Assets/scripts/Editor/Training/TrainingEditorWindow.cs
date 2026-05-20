@@ -165,6 +165,12 @@ public class TrainingEditorWindow : EditorWindow
         if (trainingBridge != null)
         {
             if (trainingBridge.broker == null) trainingBridge.broker = broker;
+            if (trainingBridge.vehicle == null)
+                trainingBridge.vehicle = UnityEngine.Object.FindFirstObjectByType<VehicleController>();
+            if (trainingBridge.raycastSensor == null)
+                trainingBridge.raycastSensor = UnityEngine.Object.FindFirstObjectByType<RaycastSensor>();
+            if (trainingBridge.obstacleCourse == null)
+                trainingBridge.obstacleCourse = UnityEngine.Object.FindFirstObjectByType<ObstacleCourse>();
             trainingBridge.enabled = true;
             AddLog("TrainingBridge enabled", LogType.Log);
         }
@@ -175,6 +181,9 @@ public class TrainingEditorWindow : EditorWindow
 
         if (remoteInput != null)
         {
+            // Wire remoteInput into the broker in case the scene reference was not saved
+            if (broker != null && broker.remoteInput == null)
+                broker.remoteInput = remoteInput;
             remoteInput.enabled = true;
             AddLog("RemoteDriveInput enabled", LogType.Log);
         }

@@ -10,7 +10,11 @@ public class TrainingSettings : ScriptableObject
 {
     [Header("Python Environment")]
     [Tooltip("Relative path to Python venv from Unity project root (use forward slashes)")]
+#if UNITY_EDITOR_WIN
     public string venvPath = "../leda/leda-controller/venv";
+#else
+    public string venvPath = "../leda/leda-controller/.venv";
+#endif
 
     [Tooltip("Relative path to train.py from Unity project root")]
     public string trainScriptPath = "../leda/leda-controller/train.py";
@@ -65,11 +69,27 @@ public class TrainingSettings : ScriptableObject
 
     /// <summary>
     /// Returns the absolute path to the venv directory.
+    /// Automatically tries the platform-appropriate folder name (.venv on Linux/Mac, venv on Windows)
+    /// if the stored path does not exist.
     /// </summary>
     public string GetAbsoluteVenvPath()
     {
         string projectRoot = Path.GetDirectoryName(Application.dataPath);
-        return Path.GetFullPath(Path.Combine(projectRoot, venvPath.Replace('/', Path.DirectorySeparatorChar)));
+        string candidate = Path.GetFullPath(Path.Combine(projectRoot, venvPath.Replace('/', Path.DirectorySeparatorChar)));
+        if (Directory.Exists(candidate))
+            return candidate;
+
+        // Fall back to the platform-appropriate alternative folder name.
+        string parentDir = Path.GetDirectoryName(candidate);
+        string folderName = Path.GetFileName(candidate);
+        string altName = folderName == ".venv" ? "venv" : folderName == "venv" ? ".venv" : null;
+        if (altName != null)
+        {
+            string altPath = Path.Combine(parentDir, altName);
+            if (Directory.Exists(altPath))
+                return altPath;
+        }
+        return candidate; // return original so the error message is informative
     }
 
     /// <summary>

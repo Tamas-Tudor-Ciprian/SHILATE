@@ -335,6 +335,13 @@ public class ObstacleCourse : MonoBehaviour
         vehicle.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
         vehicle.ResetInputs();
 
+        // Put the car in Drive so the RL trainer can apply throttle immediately.
+        // ResetInputs() leaves the car in Park; we must satisfy the brake safety
+        // gate to shift out of Park before the Python gear-D command can arrive.
+        vehicle.BrakeInput = 0.5f;
+        vehicle.RequestGearChange(VehicleController.GearState.Drive);
+        vehicle.BrakeInput = 0f;
+
         Debug.Log("[ObstacleCourse] Car reset to track start position");
     }
 }
