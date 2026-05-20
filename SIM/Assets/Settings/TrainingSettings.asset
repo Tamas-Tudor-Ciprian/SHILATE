@@ -26,3 +26,4 @@ MonoBehaviour:
   mqttPort: 1883
   savePath: ../leda/leda-controller/models
   logDir: ../leda/leda-controller/logs
+  resumeModelPath: /home/tetrix/my_projects/SHILATE/leda/leda-controller/models/best_model.zip

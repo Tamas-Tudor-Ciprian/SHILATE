@@ -2,6 +2,7 @@
 Factory for creating SHILATE Gym environments for parallel training.
 """
 
+from stable_baselines3.common.monitor import Monitor
 from environment import ShilateEnv
 
 
@@ -21,12 +22,13 @@ def make_env(
     """
 
     def _init():
-        return ShilateEnv(
+        env = ShilateEnv(
             env_id=env_id,
             mqtt_host=mqtt_host,
             mqtt_port=mqtt_port,
             ray_count=ray_count,
             timescale=timescale,
         )
+        return Monitor(env)
 
     return _init

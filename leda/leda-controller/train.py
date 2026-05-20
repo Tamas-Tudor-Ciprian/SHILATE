@@ -107,6 +107,7 @@ def main():
             n_steps=args.n_steps,
             batch_size=args.batch_size,
         )
+        model.tensorboard_log = args.log_dir
         log.info("Model loaded successfully, resuming training")
     else:
         model = PPO(
@@ -117,6 +118,7 @@ def main():
             batch_size=args.batch_size,
             policy_kwargs=policy_kwargs,
             verbose=1,
+            tensorboard_log=args.log_dir,
         )
         log.info("PPO model created: %s", model.policy)
 
@@ -134,6 +136,8 @@ def main():
         model.learn(
             total_timesteps=args.total_timesteps,
             callback=checkpoint_cb,
+            tb_log_name="shilate_ppo",
+            reset_num_timesteps=args.resume_model is None,
         )
     except KeyboardInterrupt:
         log.info("Training interrupted by user")

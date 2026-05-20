@@ -201,6 +201,20 @@ public class TrainingEditorWindow : EditorWindow
         Time.timeScale = _settings.debugTimescale;
         Time.fixedDeltaTime = 0.02f * _settings.debugTimescale;
         AddLog($"TimeScale set to {_settings.debugTimescale}x", LogType.Log);
+
+        // Start Python here, AFTER the domain reload triggered by EnterPlaymode() has
+        // completed. Starting it before EnterPlaymode() causes the domain reload to
+        // destroy the Process handle, orphaning the subprocess with no stdout capture.
+        AddLog("Starting Python training process...", LogType.Log);
+        if (!_processManager.Start(_settings, debugMode: true))
+        {
+            AddLog("Failed to start Python training process", LogType.Error);
+            DebugMode = false;
+            ProcessWasRunning = false;
+            EditorApplication.ExitPlaymode();
+            return;
+        }
+        AddLog("Python process started. Waiting for environment connection...", LogType.Log);
     }
 
     void LoadOrCreateSettings()
@@ -571,21 +585,22 @@ public class TrainingEditorWindow : EditorWindow
         if (debugMode)
             AddLog("Debug mode: Will enter Play mode after Python starts", LogType.Log);
 
-        if (!_processManager.Start(_settings, debugMode))
-        {
-            AddLog("Failed to start training process", LogType.Error);
-            DebugMode = false;
-            ProcessWasRunning = false;
-            return;
-        }
-
         if (debugMode)
         {
-            EditorApplication.delayCall += () =>
+            // Python is started inside ConfigureSceneForDebugTraining() which runs
+            // after EnteredPlayMode — safely past any domain reload EnterPlaymode() triggers.
+            AddLog("Entering Play mode — Python will start after scene loads...", LogType.Log);
+            EditorApplication.delayCall += EditorApplication.EnterPlaymode;
+        }
+        else
+        {
+            if (!_processManager.Start(_settings, debugMode: false))
             {
-                AddLog("Entering Play mode...", LogType.Log);
-                EditorApplication.EnterPlaymode();
-            };
+                AddLog("Failed to start training process", LogType.Error);
+                DebugMode = false;
+                ProcessWasRunning = false;
+                return;
+            }
         }
     }
 
