@@ -60,10 +60,7 @@ public class TrainingSettings : ScriptableObject
     public string logDir = "../leda/leda-controller/logs";
 
     [Header("Resume Training")]
-    [Tooltip("Resume training from an existing model instead of creating a new one")]
-    public bool resumeTraining = false;
-
-    [Tooltip("Absolute path to the .zip model file to resume from")]
+    [Tooltip("Path to a .zip model file to resume from (leave empty to train from scratch)")]
     public string resumeModelPath = "";
 
     /// <summary>
@@ -122,7 +119,7 @@ public class TrainingSettings : ScriptableObject
         args.Append($"--save-path \"{absSavePath}\" ");
         args.Append($"--log-dir \"{absLogDir}\"");
 
-        if (resumeTraining && !string.IsNullOrEmpty(resumeModelPath))
+        if (!string.IsNullOrEmpty(resumeModelPath))
             args.Append($" --resume-model \"{resumeModelPath}\"");
 
         return args.ToString();
