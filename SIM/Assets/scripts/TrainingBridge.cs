@@ -137,6 +137,10 @@ public class TrainingBridge : MonoBehaviour
                 "{\"value\":1,\"reason\":\"" + reason + "\",\"cumulative_reward\":" +
                 _cumulativeReward.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + "}");
             Debug.Log($"[TrainingBridge] Episode done: {reason}, reward={_cumulativeReward:F2}, time={_episodeTimer:F1}s");
+
+            // Reset immediately — car always resets, obstacles only regenerate on lap completion
+            if (obstacleCourse != null)
+                obstacleCourse.Reset();
         }
         else
         {
