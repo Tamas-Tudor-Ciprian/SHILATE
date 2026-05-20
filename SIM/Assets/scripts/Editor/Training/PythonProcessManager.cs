@@ -30,16 +30,24 @@ public class PythonProcessManager
     /// </summary>
     public bool Start(TrainingSettings settings, bool debugMode = false)
     {
+        return StartScript(
+            settings.GetAbsoluteVenvPath(),
+            settings.GetAbsoluteTrainScriptPath(),
+            settings.GetWorkingDirectory(),
+            settings.BuildCommandLineArgs(debugMode)
+        );
+    }
+
+    /// <summary>
+    /// Starts a Python script with explicit paths and arguments.
+    /// </summary>
+    public bool StartScript(string venvPath, string scriptPath, string workingDir, string args)
+    {
         if (IsRunning)
         {
             Debug.LogWarning("[PythonProcessManager] Process already running");
             return false;
         }
-
-        string venvPath = settings.GetAbsoluteVenvPath();
-        string scriptPath = settings.GetAbsoluteTrainScriptPath();
-        string workingDir = settings.GetWorkingDirectory();
-        string args = settings.BuildCommandLineArgs(debugMode);
 
         if (!Directory.Exists(venvPath))
         {

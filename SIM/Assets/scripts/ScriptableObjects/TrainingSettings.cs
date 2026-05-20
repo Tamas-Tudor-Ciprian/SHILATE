@@ -90,6 +90,32 @@ public class TrainingSettings : ScriptableObject
     }
 
     /// <summary>
+    /// Returns the absolute path to ai_driver.py (same directory as train.py).
+    /// </summary>
+    public string GetAbsoluteAiDriverPath()
+    {
+        return Path.Combine(GetWorkingDirectory(), "ai_driver.py");
+    }
+
+    /// <summary>
+    /// Builds the command-line arguments for ai_driver.py inference.
+    /// </summary>
+    public string BuildInferenceArgs(string modelPath)
+    {
+        var args = new System.Text.StringBuilder();
+        args.Append($"--model \"{modelPath}\" ");
+        args.Append($"--mqtt-host {mqttHost} ");
+        args.Append($"--mqtt-port {mqttPort} ");
+        args.Append($"--env-id 0 ");
+
+        int rays = GetEffectiveRayCount();
+        if (rays > 0)
+            args.Append($"--ray-count {rays}");
+
+        return args.ToString();
+    }
+
+    /// <summary>
     /// Builds the command-line arguments for train.py.
     /// </summary>
     public string BuildCommandLineArgs(bool debugMode = false)

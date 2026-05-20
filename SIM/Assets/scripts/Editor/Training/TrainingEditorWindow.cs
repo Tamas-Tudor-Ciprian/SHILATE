@@ -30,12 +30,19 @@ public class TrainingEditorWindow : EditorWindow
 
     // Use SessionState to persist across play mode transitions
     const string DebugModeKey = "TrainingController_DebugMode";
+    const string InferenceModeKey = "TrainingController_InferenceMode";
     const string ProcessRunningKey = "TrainingController_ProcessRunning";
 
     bool DebugMode
     {
         get => SessionState.GetBool(DebugModeKey, false);
         set => SessionState.SetBool(DebugModeKey, value);
+    }
+
+    bool InferenceMode
+    {
+        get => SessionState.GetBool(InferenceModeKey, false);
+        set => SessionState.SetBool(InferenceModeKey, value);
     }
 
     bool ProcessWasRunning
@@ -109,20 +116,21 @@ public class TrainingEditorWindow : EditorWindow
     {
         bool isRunning = _processManager != null && _processManager.IsRunning;
 
-        if (state == PlayModeStateChange.EnteredPlayMode && DebugMode)
+        if (state == PlayModeStateChange.EnteredPlayMode && (DebugMode || InferenceMode))
         {
             // Delay to ensure scene is fully loaded
             EditorApplication.delayCall += ConfigureSceneForDebugTraining;
         }
-        else if (state == PlayModeStateChange.ExitingPlayMode && DebugMode)
+        else if (state == PlayModeStateChange.ExitingPlayMode && (DebugMode || InferenceMode))
         {
-            AddLog("Exiting Play mode, stopping debug training...", LogType.Warning);
+            AddLog("Exiting Play mode, stopping process...", LogType.Warning);
             if (_processManager != null && _processManager.IsRunning)
                 _processManager.Stop();
             DebugMode = false;
+            InferenceMode = false;
             ProcessWasRunning = false;
         }
-        else if (state == PlayModeStateChange.ExitingEditMode && isRunning && !DebugMode)
+        else if (state == PlayModeStateChange.ExitingEditMode && isRunning && !DebugMode && !InferenceMode)
         {
             AddLog("Stopping training before entering Play mode...", LogType.Warning);
             _processManager.Stop();
@@ -230,10 +238,10 @@ public class TrainingEditorWindow : EditorWindow
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-        bool isRunning = (_processManager != null && _processManager.IsRunning) || (DebugMode && EditorApplication.isPlaying);
-        string status = isRunning ? (DebugMode ? "DEBUG" : "TRAINING") : "IDLE";
+        bool isRunning = (_processManager != null && _processManager.IsRunning) || ((DebugMode || InferenceMode) && EditorApplication.isPlaying);
+        string status = isRunning ? (InferenceMode ? "INFERENCE" : DebugMode ? "DEBUG" : "TRAINING") : "IDLE";
         Color statusColor = isRunning
-            ? (DebugMode ? new Color(1f, 0.7f, 0.2f) : new Color(0.2f, 0.8f, 0.2f))
+            ? (InferenceMode ? new Color(0.4f, 0.8f, 1f) : DebugMode ? new Color(1f, 0.7f, 0.2f) : new Color(0.2f, 0.8f, 0.2f))
             : Color.gray;
 
         GUIStyle statusStyle = new(EditorStyles.boldLabel) { normal = { textColor = statusColor } };
@@ -462,8 +470,9 @@ public class TrainingEditorWindow : EditorWindow
 
         bool processRunning = _processManager != null && _processManager.IsRunning;
         bool debugActive = DebugMode && EditorApplication.isPlaying;
-        bool canStart = !processRunning && !EditorApplication.isPlaying && !DebugMode;
-        bool canStop = processRunning || debugActive;
+        bool inferenceActive = InferenceMode && EditorApplication.isPlaying;
+        bool canStart = !processRunning && !EditorApplication.isPlaying && !DebugMode && !InferenceMode;
+        bool canStop = processRunning || debugActive || inferenceActive;
 
         GUI.enabled = canStart;
         if (GUILayout.Button("Start Training", GUILayout.Width(120), GUILayout.Height(30)))
@@ -472,14 +481,18 @@ public class TrainingEditorWindow : EditorWindow
         if (GUILayout.Button("Debug (1 env)", GUILayout.Width(100), GUILayout.Height(30)))
             StartTraining(debugMode: true);
 
+        if (GUILayout.Button("Run Model", GUILayout.Width(90), GUILayout.Height(30)))
+            StartInference();
+
         GUI.enabled = canStop;
         if (GUILayout.Button("Stop", GUILayout.Width(80), GUILayout.Height(30)))
         {
             if (_processManager != null && _processManager.IsRunning)
                 _processManager.Stop();
-            if (DebugMode && EditorApplication.isPlaying)
+            if ((DebugMode || InferenceMode) && EditorApplication.isPlaying)
                 EditorApplication.ExitPlaymode();
             DebugMode = false;
+            InferenceMode = false;
             ProcessWasRunning = false;
         }
 
@@ -487,7 +500,11 @@ public class TrainingEditorWindow : EditorWindow
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
 
-        if (DebugMode && (processRunning || debugActive))
+        if (InferenceMode && (processRunning || inferenceActive))
+        {
+            EditorGUILayout.HelpBox("Inference mode: Running trained model in Editor Play mode", MessageType.Info);
+        }
+        else if (DebugMode && (processRunning || debugActive))
         {
             EditorGUILayout.HelpBox("Debug mode: Training with 1 env in Editor Play mode", MessageType.Info);
         }
@@ -561,6 +578,66 @@ public class TrainingEditorWindow : EditorWindow
                 EditorApplication.EnterPlaymode();
             };
         }
+    }
+
+    void StartInference()
+    {
+        if (_processManager == null || _settings == null)
+        {
+            Debug.LogError("[TrainingController] Not initialized properly");
+            return;
+        }
+
+        string modelPath = EditorUtility.OpenFilePanel("Select Trained Model", "", "zip");
+        if (string.IsNullOrEmpty(modelPath))
+            return;
+
+        if (!System.IO.File.Exists(modelPath))
+        {
+            EditorUtility.DisplayDialog("Model Not Found",
+                $"Model file not found:\n{modelPath}", "OK");
+            return;
+        }
+
+        if (!_mqttConnected)
+        {
+            CheckMqttConnection();
+            if (!_mqttConnected)
+            {
+                EditorUtility.DisplayDialog("MQTT Not Available",
+                    $"Cannot connect to MQTT broker at {_settings.mqttHost}:{_settings.mqttPort}.\n\n" +
+                    "Please ensure Mosquitto is running.", "OK");
+                return;
+            }
+        }
+
+        InferenceMode = true;
+        ProcessWasRunning = true;
+        _logEntries.Clear();
+        if (_metricsParser != null) _metricsParser.Clear();
+        _trainingStartTime = DateTime.Now;
+
+        AddLog($"Running model: {System.IO.Path.GetFileName(modelPath)}", LogType.Log);
+        AddLog($"Ray count: {_settings.GetEffectiveRayCount()}", LogType.Log);
+
+        string venvPath = _settings.GetAbsoluteVenvPath();
+        string scriptPath = _settings.GetAbsoluteAiDriverPath();
+        string workingDir = _settings.GetWorkingDirectory();
+        string args = _settings.BuildInferenceArgs(modelPath);
+
+        if (!_processManager.StartScript(venvPath, scriptPath, workingDir, args))
+        {
+            AddLog("Failed to start inference process", LogType.Error);
+            InferenceMode = false;
+            ProcessWasRunning = false;
+            return;
+        }
+
+        EditorApplication.delayCall += () =>
+        {
+            AddLog("Entering Play mode...", LogType.Log);
+            EditorApplication.EnterPlaymode();
+        };
     }
 
     void HandleOutput(string line)
