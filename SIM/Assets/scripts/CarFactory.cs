@@ -177,14 +177,14 @@ public static class CarFactory
 
     static void AttachBMWVisual(GameObject car)
     {
-        GameObject bmwPrefab = Resources.Load<GameObject>("bmw");
+        GameObject bmwPrefab = Resources.Load<GameObject>("green_bmw");
         if (bmwPrefab != null)
         {
             GameObject bmwInstance = Object.Instantiate(bmwPrefab, car.transform);
             bmwInstance.name = "BMWVisual";
-            bmwInstance.transform.localPosition = new Vector3(0f, -0.5f, 0f);
-            bmwInstance.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            bmwInstance.transform.localScale    = Vector3.one;
+            bmwInstance.transform.localPosition = new Vector3(-0.2f, -0.5f, 0f);
+            bmwInstance.transform.localRotation = Quaternion.Euler(-90f, 90f, 270f);
+            bmwInstance.transform.localScale    = new Vector3(0.3f, 0.3f, 0.3f);
         }
         else
         {

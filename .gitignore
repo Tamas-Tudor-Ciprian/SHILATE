@@ -68,3 +68,8 @@
 # ---------- Unity training launch scripts ----------
 !SIM/*.cmd
 !SIM/*.sh
+
+
+# ---------- Resources (for car visuals) ----------
+!SIM/Assets/Resources/
+SIM/Assets/Resources/*.meta
