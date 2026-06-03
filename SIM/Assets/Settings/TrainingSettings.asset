@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TrainingSettings
   venvPath: ../leda/leda-controller/.venv
   trainScriptPath: ../leda/leda-controller/train.py
-  numEnvs: 1
+  numEnvs: 10
   timescale: 1
   totalTimesteps: 100000
   learningRate: 0.0003
@@ -26,4 +26,4 @@ MonoBehaviour:
   mqttPort: 1883
   savePath: ../leda/leda-controller/models
   logDir: ../leda/leda-controller/logs
-  resumeModelPath: /home/tetrix/my_projects/SHILATE/leda/leda-controller/models/best_model.zip
+  resumeModelPath: 
