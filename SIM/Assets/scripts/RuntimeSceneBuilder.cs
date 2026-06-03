@@ -82,13 +82,13 @@ public static class RuntimeSceneBuilder
         rb.inertiaTensor = new Vector3(1000, 1000, 1000);
         rb.centerOfMass = new Vector3(0, -0.2f, 0);
 
-        // ── Car Body (visual) ──
+        // ── Car Body (collision only, renderer hidden) ──
         GameObject body = GameObject.CreatePrimitive(PrimitiveType.Cube);
         body.name = "Body";
         body.transform.SetParent(car.transform);
         body.transform.localPosition = new Vector3(0f, 0.35f, 0f);
         body.transform.localScale = new Vector3(1.8f, 0.6f, 4.2f);
-        body.GetComponent<Renderer>().material = MakeMaterial(Color.green);
+        body.GetComponent<Renderer>().enabled = false;
 
         // ── Visual Wheels Parent ──
         GameObject visualWheelsParent = new GameObject("VisualWheels");
@@ -100,14 +100,30 @@ public static class RuntimeSceneBuilder
         physicsWheelsParent.transform.SetParent(car.transform);
         physicsWheelsParent.transform.localPosition = Vector3.zero;
 
-        // ── Cabin ──
+        // ── Cabin (visual only, renderer hidden) ──
         GameObject cabin = GameObject.CreatePrimitive(PrimitiveType.Cube);
         cabin.name = "Cabin";
         cabin.transform.SetParent(car.transform);
         cabin.transform.localPosition = new Vector3(0f, 0.85f, -0.2f);
         cabin.transform.localScale = new Vector3(1.5f, 0.5f, 2.0f);
         Object.Destroy(cabin.GetComponent<Collider>());
-        cabin.GetComponent<Renderer>().material = MakeMaterial(new Color(0.2f, 0.8f, 0.1f));
+        cabin.GetComponent<Renderer>().enabled = false;
+
+        // ── BMW GLB visual ──
+        GameObject bmwPrefab = Resources.Load<GameObject>("bmw");
+        if (bmwPrefab != null)
+        {
+            GameObject bmwInstance = Object.Instantiate(bmwPrefab, car.transform);
+            bmwInstance.name = "BMWVisual";
+            // Adjust position/rotation/scale so the model sits correctly on the car
+            bmwInstance.transform.localPosition = new Vector3(0f, -0.5f, 0f);
+            bmwInstance.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            bmwInstance.transform.localScale = Vector3.one;
+        }
+        else
+        {
+            Debug.LogWarning("[RuntimeSceneBuilder] bmw.glb not found in Resources. Make sure it is placed in Assets/Resources/ and gltfast is installed.");
+        }
 
         // ── Wheel dimensions ──
         float wheelRadius = 0.35f;
@@ -263,7 +279,7 @@ public static class RuntimeSceneBuilder
         go.transform.localScale = new Vector3(diameter, 0.15f, diameter);
         go.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
         Object.Destroy(go.GetComponent<Collider>());
-        go.GetComponent<Renderer>().material = MakeMaterial(new Color(0.4f, 0.25f, 0.1f));
+        go.GetComponent<Renderer>().enabled = false; // wheel mesh hidden; BMW GLB provides visuals
         return pivot.transform;
     }
 }
