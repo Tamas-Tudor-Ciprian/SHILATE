@@ -1,0 +1,83 @@
+name: Update SHILATE Wiki
+
+# Auto-refreshes .github/agents/project-summary.md after every merge to main.
+# Delegates the actual edit to the GitHub Copilot coding agent via an issue
+# assigned to @copilot, which runs the "SHILATE Wiki" custom agent in
+# update mode and opens a PR back into main.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  delegate-wiki-update:
+    runs-on: ubuntu-latest
+    # Skip if the push itself was the wiki-update PR landing, to avoid loops.
+    if: ${{ !contains(github.event.head_commit.message, '[skip wiki]') && !contains(github.event.head_commit.message, 'chore(wiki)') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Compute changed files
+        id: diff
+        run: |
+          {
+            echo 'files<<__EOF__'
+            git diff --name-status HEAD~1..HEAD || true
+            echo '__EOF__'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check if relevant paths changed
+        id: relevant
+        run: |
+          if git diff --name-only HEAD~1..HEAD | grep -E '^(leda/leda-controller/|SIM/Assets/scripts/|config\.json|leda/mqtt-kuksa-feeder/|leda/velocitas-app/)' >/dev/null; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open Copilot delegation issue
+        if: steps.relevant.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+          DIFF: ${{ steps.diff.outputs.files }}
+        run: |
+          set -euo pipefail
+          BODY=$(cat <<EOF
+          @copilot please run the **SHILATE Wiki** custom agent in *update mode* to refresh \`.github/agents/project-summary.md\` against the merge commit \`$SHA\`.
+
+          ## Instructions for the agent
+
+          1. Read \`.github/agents/project-wiki.agent.md\` and \`.github/agents/project-summary.md\`.
+          2. Follow the **Update Protocol** at the bottom of the summary.
+          3. Reconcile every row of every table against the changed files below — re-read each touched source file and update wording, defaults, fields, CLI flags, etc. accordingly.
+          4. Add rows for new files in tracked folders; remove rows for deleted files.
+          5. Bump the *Last updated* date to today.
+          6. Open a PR titled \`chore(wiki): auto-refresh project-summary\` with commit message starting with \`chore(wiki)\` so this workflow does not re-trigger.
+          7. Do **not** edit any file other than \`.github/agents/project-summary.md\`.
+
+          ## Changed files in this merge
+
+          \`\`\`
+          $DIFF
+          \`\`\`
+          EOF
+          )
+          gh issue create \
+            --title "chore(wiki): refresh project-summary for ${SHA:0:7}" \
+            --body "$BODY" \
+            --assignee "Copilot" \
+            --label "automated,wiki" || \
+          gh issue create \
+            --title "chore(wiki): refresh project-summary for ${SHA:0:7}" \
+            --body "$BODY" \
+            --assignee "Copilot"
