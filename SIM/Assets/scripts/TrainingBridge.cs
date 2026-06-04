@@ -117,6 +117,11 @@ public class TrainingBridge : MonoBehaviour
         bool timeout = _episodeTimer >= episodeTimeout;
         _episodeDone = collided || finished || timeout;
 
+        // Tell ObstacleCourse whether to regenerate the layout on the next reset.
+        // Obstacles only change when the agent successfully completes a full lap.
+        if (_episodeDone && obstacleCourse != null)
+            obstacleCourse.ShouldRespawnObstacles = finished;
+
         // Publish observation
         PublishObservation();
 
@@ -132,6 +137,10 @@ public class TrainingBridge : MonoBehaviour
                 "{\"value\":1,\"reason\":\"" + reason + "\",\"cumulative_reward\":" +
                 _cumulativeReward.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + "}");
             Debug.Log($"[TrainingBridge] Episode done: {reason}, reward={_cumulativeReward:F2}, time={_episodeTimer:F1}s");
+
+            // Reset immediately — car always resets, obstacles only regenerate on lap completion
+            if (obstacleCourse != null)
+                obstacleCourse.Reset();
         }
         else
         {

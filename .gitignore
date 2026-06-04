@@ -40,6 +40,11 @@
 !SIM/ProjectSettings/
 !SIM/ProjectSettings/**
 
+# ---------- GitHub Copilot agents ----------
+!.github/
+!.github/agents/
+!.github/agents/**
+
 # ---------- Eclipse Leda ----------
 !leda/
 !leda/*.md
@@ -68,3 +73,8 @@
 # ---------- Unity training launch scripts ----------
 !SIM/*.cmd
 !SIM/*.sh
+
+
+# ---------- Resources (for car visuals) ----------
+!SIM/Assets/Resources/
+SIM/Assets/Resources/*.meta

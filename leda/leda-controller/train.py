@@ -46,6 +46,8 @@ def parse_args():
     p.add_argument("--mqtt-port", type=int, default=1883)
     p.add_argument("--save-path", default="/tmp/shilate_model")
     p.add_argument("--log-dir", default="/tmp/shilate_logs")
+    p.add_argument("--resume-model", default=None,
+                   help="Path to a .zip model file to resume training from")
     return p.parse_args()
 
 
@@ -73,6 +75,10 @@ def main():
     log.info("  MQTT:             %s:%d", args.mqtt_host, args.mqtt_port)
     log.info("  Save path:        %s", args.save_path)
     log.info("  Log dir:          %s", args.log_dir)
+    if args.resume_model:
+        log.info("  Resume model:     %s", args.resume_model)
+    else:
+        log.info("  Mode:             new model")
 
     # Create parallel environments
     env_fns = [
@@ -92,17 +98,29 @@ def main():
     # Create PPO model
     policy_kwargs = get_policy_kwargs(ray_count=args.ray_count)
 
-    model = PPO(
-        "MlpPolicy",
-        vec_env,
-        learning_rate=args.learning_rate,
-        n_steps=args.n_steps,
-        batch_size=args.batch_size,
-        policy_kwargs=policy_kwargs,
-        verbose=1,
-    )
-
-    log.info("PPO model created: %s", model.policy)
+    if args.resume_model:
+        log.info("Loading model from %s ...", args.resume_model)
+        model = PPO.load(
+            args.resume_model,
+            env=vec_env,
+            learning_rate=args.learning_rate,
+            n_steps=args.n_steps,
+            batch_size=args.batch_size,
+        )
+        model.tensorboard_log = args.log_dir
+        log.info("Model loaded successfully, resuming training")
+    else:
+        model = PPO(
+            "MlpPolicy",
+            vec_env,
+            learning_rate=args.learning_rate,
+            n_steps=args.n_steps,
+            batch_size=args.batch_size,
+            policy_kwargs=policy_kwargs,
+            verbose=1,
+            tensorboard_log=args.log_dir,
+        )
+        log.info("PPO model created: %s", model.policy)
 
     # Checkpoint callback
     os.makedirs(args.save_path, exist_ok=True)
@@ -118,6 +136,8 @@ def main():
         model.learn(
             total_timesteps=args.total_timesteps,
             callback=checkpoint_cb,
+            tb_log_name="shilate_ppo",
+            reset_num_timesteps=args.resume_model is None,
         )
     except KeyboardInterrupt:
         log.info("Training interrupted by user")

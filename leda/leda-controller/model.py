@@ -16,5 +16,5 @@ def get_policy_kwargs(ray_count: int = 9):
 
     # Separate actor (pi) and critic (vf) networks — each has its own independent weights.
     return {
-        "net_arch": dict(pi=[256, 128], vf=[256, 128]),
+        "net_arch": dict(pi=[256, 256], vf=[256, 256]),
     }
