@@ -40,6 +40,11 @@
 !SIM/ProjectSettings/
 !SIM/ProjectSettings/**
 
+# ---------- GitHub Copilot agents ----------
+!.github/
+!.github/agents/
+!.github/agents/**
+
 # ---------- Eclipse Leda ----------
 !leda/
 !leda/*.md
