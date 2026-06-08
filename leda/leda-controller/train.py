@@ -1,25 +1,34 @@
 #!/usr/bin/env python3
 """
-SHILATE RL Training Script — trains a PPO agent to navigate an obstacle course.
+SHILATE RL Training Script — trains a PPO agent against a single Unity
+environment running inside the Unity Editor.
 
 Usage:
     python3 train.py [options]
 
-    --num-envs      Number of parallel Unity environments (default: 4)
-    --timescale     Unity Time.timeScale for training speed (default: 5)
     --total-timesteps  Total training timesteps (default: 100000)
-    --learning-rate Learning rate (default: 3e-4)
-    --n-steps       Steps per rollout per env (default: 2048)
-    --batch-size    Minibatch size (default: 64)
-    --ray-count     Number of raycast sensors (default: 9)
-    --mqtt-host     MQTT broker host (default: localhost)
-    --mqtt-port     MQTT broker port (default: 1883)
-    --save-path     Model save directory (default: /tmp/shilate_model)
-    --log-dir       TensorBoard log directory (default: /tmp/shilate_logs)
+    --learning-rate    Learning rate (default: 3e-4)
+    --n-steps          Steps per rollout (default: 2048)
+    --batch-size       Minibatch size (default: 64)
+    --mqtt-host        MQTT broker host (default: localhost)
+    --mqtt-port        MQTT broker port (default: 1883)
+    --save-path        Model save directory (default: /tmp/shilate_model)
+    --log-dir          TensorBoard log directory (default: /tmp/shilate_logs)
+    --resume-model     Path to a .zip model file to resume from
+
+The number of raycast sensors is read from ../../config.json (model.ray_count).
+This trainer always runs against exactly ONE environment at real-time speed —
+parallel environments and time acceleration have been intentionally removed
+so failures are easy to diagnose in the Editor.
+
+Structured stdout markers (consumed by the Unity Editor):
+    SHILATE-METRIC <key>=<value>     single metric update
+    SHILATE-HEALTH <signal>          health-relevant event
 """
 
 import argparse
 import logging
+import math
 import os
 import sys
 
@@ -31,17 +40,17 @@ logging.basicConfig(
 log = logging.getLogger("shilate-train")
 
 
+def emit(marker: str, payload: str) -> None:
+    """Write a structured marker line to stdout for the Editor to parse."""
+    print(f"{marker} {payload}", flush=True)
+
+
 def parse_args():
-    from config_loader import load_ray_count_from_config
-    default_ray_count = load_ray_count_from_config()
-    p = argparse.ArgumentParser(description="SHILATE RL Training")
-    p.add_argument("--num-envs", type=int, default=4)
-    p.add_argument("--timescale", type=float, default=5.0)
+    p = argparse.ArgumentParser(description="SHILATE RL Training (single env)")
     p.add_argument("--total-timesteps", type=int, default=100_000)
     p.add_argument("--learning-rate", type=float, default=3e-4)
     p.add_argument("--n-steps", type=int, default=2048)
     p.add_argument("--batch-size", type=int, default=64)
-    p.add_argument("--ray-count", type=int, default=default_ray_count)
     p.add_argument("--mqtt-host", default="localhost")
     p.add_argument("--mqtt-port", type=int, default=1883)
     p.add_argument("--save-path", default="/tmp/shilate_model")
@@ -56,22 +65,24 @@ def main():
 
     # Import here so --help is fast even without torch installed
     from stable_baselines3 import PPO
-    from stable_baselines3.common.vec_env import SubprocVecEnv
-    from stable_baselines3.common.callbacks import CheckpointCallback
+    from stable_baselines3.common.vec_env import DummyVecEnv
+    from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
+    from stable_baselines3.common.monitor import Monitor
 
-    from make_env import make_env
+    from config_loader import load_ray_count_from_config
+    from environment import ShilateEnv
     from model import get_policy_kwargs
 
+    ray_count = load_ray_count_from_config()
+
     log.info("═══════════════════════════════════════════════════")
-    log.info("  SHILATE RL Training")
+    log.info("  SHILATE RL Training — single env, real time")
     log.info("═══════════════════════════════════════════════════")
-    log.info("  Environments:     %d", args.num_envs)
-    log.info("  TimeScale:        %.1fx", args.timescale)
     log.info("  Total timesteps:  %d", args.total_timesteps)
     log.info("  Learning rate:    %s", args.learning_rate)
     log.info("  n_steps:          %d", args.n_steps)
     log.info("  Batch size:       %d", args.batch_size)
-    log.info("  Ray count:        %d", args.ray_count)
+    log.info("  Ray count:        %d (from config.json)", ray_count)
     log.info("  MQTT:             %s:%d", args.mqtt_host, args.mqtt_port)
     log.info("  Save path:        %s", args.save_path)
     log.info("  Log dir:          %s", args.log_dir)
@@ -80,23 +91,21 @@ def main():
     else:
         log.info("  Mode:             new model")
 
-    # Create parallel environments
-    env_fns = [
-        make_env(
-            env_id=i,
+    log.info("Creating environment...")
+
+    def _make_env():
+        env = ShilateEnv(
             mqtt_host=args.mqtt_host,
             mqtt_port=args.mqtt_port,
-            ray_count=args.ray_count,
-            timescale=args.timescale,
+            ray_count=ray_count,
         )
-        for i in range(args.num_envs)
-    ]
+        return Monitor(env)
 
-    log.info("Creating %d parallel environments...", args.num_envs)
-    vec_env = SubprocVecEnv(env_fns)
+    # DummyVecEnv runs in-process — no subprocess, no IPC overhead, easy to debug.
+    vec_env = DummyVecEnv([_make_env])
 
     # Create PPO model
-    policy_kwargs = get_policy_kwargs(ray_count=args.ray_count)
+    policy_kwargs = get_policy_kwargs(ray_count=ray_count)
 
     if args.resume_model:
         log.info("Loading model from %s ...", args.resume_model)
@@ -108,7 +117,7 @@ def main():
             batch_size=args.batch_size,
         )
         model.tensorboard_log = args.log_dir
-        log.info("Model loaded successfully, resuming training")
+        log.info("Model loaded, resuming training")
     else:
         model = PPO(
             "MlpPolicy",
@@ -120,7 +129,7 @@ def main():
             verbose=1,
             tensorboard_log=args.log_dir,
         )
-        log.info("PPO model created: %s", model.policy)
+        log.info("PPO model created")
 
     # Checkpoint callback
     os.makedirs(args.save_path, exist_ok=True)
@@ -130,24 +139,76 @@ def main():
         name_prefix="shilate_ppo",
     )
 
+    # Health/metric callback — re-emits SB3's rollout stats as SHILATE-METRIC lines
+    # and raises SHILATE-HEALTH alerts when loss/KL become non-finite.
+    class HealthCallback(BaseCallback):
+        _WATCH = (
+            "rollout/ep_rew_mean",
+            "rollout/ep_len_mean",
+            "train/loss",
+            "train/policy_gradient_loss",
+            "train/value_loss",
+            "train/approx_kl",
+            "time/fps",
+        )
+
+        def _on_step(self) -> bool:
+            return True
+
+        def _on_rollout_end(self) -> None:
+            emit("SHILATE-METRIC", f"rollout_end={self.num_timesteps}")
+            self._dump_metrics()
+
+        def _check_finite(self, key: str, value) -> None:
+            try:
+                fv = float(value)
+            except (TypeError, ValueError):
+                return
+            if math.isnan(fv) or math.isinf(fv):
+                emit("SHILATE-HEALTH", f"nan_loss key={key} value={value}")
+
+        def _dump_metrics(self) -> None:
+            logger = self.model.logger
+            if logger is None:
+                return
+            stats = getattr(logger, "name_to_value", {}) or {}
+            for key in self._WATCH:
+                if key in stats:
+                    val = stats[key]
+                    short = key.split("/", 1)[-1]
+                    emit("SHILATE-METRIC", f"{short}={val}")
+                    if "loss" in key or "kl" in key:
+                        self._check_finite(key, val)
+
+    health_cb = HealthCallback()
+
     # Train
     log.info("Starting training for %d timesteps...", args.total_timesteps)
+    emit("SHILATE-HEALTH", "training_started")
     try:
         model.learn(
             total_timesteps=args.total_timesteps,
-            callback=checkpoint_cb,
+            callback=[checkpoint_cb, health_cb],
             tb_log_name="shilate_ppo",
             reset_num_timesteps=args.resume_model is None,
+            progress_bar=False,
         )
     except KeyboardInterrupt:
         log.info("Training interrupted by user")
+        emit("SHILATE-HEALTH", "training_interrupted")
+    except Exception as exc:
+        log.exception("Training crashed: %s", exc)
+        emit("SHILATE-HEALTH", f"training_crashed reason={type(exc).__name__}")
+        raise
 
     # Save final model
     final_path = os.path.join(args.save_path, "best_model")
     model.save(final_path)
     log.info("Final model saved to %s.zip", final_path)
+    emit("SHILATE-METRIC", f"final_model={final_path}.zip")
 
     vec_env.close()
+    emit("SHILATE-HEALTH", "training_complete")
     log.info("Training complete.")
 
 

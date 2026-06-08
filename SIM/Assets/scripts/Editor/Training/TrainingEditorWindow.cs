@@ -7,8 +7,18 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Editor window for controlling RL training from Unity.
+/// Single-environment training control window.
 /// Access via menu: SHILATE → Training Controller.
+///
+/// Layout (top to bottom):
+///   1. Toolbar — status badge + MQTT dot + duration
+///   2. Health banner — coloured strip with the current evaluator state
+///   3. Snapshot row — episode #, last reward, rolling reward, fps
+///   4. Settings — collapsible
+///   5. Metric graphs — reward, policy loss, value loss, KL
+///   6. Issue log — chronological health transitions
+///   7. Raw stdout — collapsible
+///   8. Controls — single Start/Stop button (and Run Model)
 /// </summary>
 public class TrainingEditorWindow : EditorWindow
 {
@@ -16,58 +26,44 @@ public class TrainingEditorWindow : EditorWindow
     SerializedObject _serializedSettings;
     PythonProcessManager _processManager;
     TrainingMetricsParser _metricsParser;
+    TrainingHealthEvaluator _health;
+    EditorMqttListener _mqtt;
 
     readonly List<LogEntry> _logEntries = new();
     Vector2 _logScrollPos;
-    Vector2 _settingsScrollPos;
+    Vector2 _scrollPos;
+    Vector2 _issueScrollPos;
     bool _autoScroll = true;
-    bool _settingsFoldout = true;
+    bool _settingsFoldout = false;     // collapsed by default — health is the priority
+    bool _logFoldout = false;          // collapsed by default — raw log is noise
     bool _metricsFoldout = true;
-    bool _logFoldout = true;
 
     DateTime _trainingStartTime;
     bool _mqttConnected;
+    double _lastMqttCheck;
+    double _lastTick;
 
-    // Tracks whether this window currently holds a SleepPreventer reference,
-    // so multiple stop paths (Stop button, ExitingPlayMode, HandleExited) can
-    // each safely call HoldSleep(false) without double-releasing.
+    int _heartbeatCount;
+    int _episodeCount;
+    float _lastEpisodeReward;
+    float _rollingReward;
+
     bool _sleepHeld;
 
-    void HoldSleep(bool hold, string reason = null)
-    {
-        if (hold && !_sleepHeld)
-        {
-            SleepPreventer.Acquire(reason ?? "training");
-            _sleepHeld = true;
-        }
-        else if (!hold && _sleepHeld)
-        {
-            SleepPreventer.Release();
-            _sleepHeld = false;
-        }
-    }
-
-    // Use SessionState to persist across play mode transitions
-    const string DebugModeKey = "TrainingController_DebugMode";
+    // Persisted across play-mode transitions
+    const string TrainingActiveKey = "TrainingController_TrainingActive";
     const string InferenceModeKey = "TrainingController_InferenceMode";
-    const string ProcessRunningKey = "TrainingController_ProcessRunning";
 
-    bool DebugMode
+    bool TrainingActive
     {
-        get => SessionState.GetBool(DebugModeKey, false);
-        set => SessionState.SetBool(DebugModeKey, value);
+        get => SessionState.GetBool(TrainingActiveKey, false);
+        set => SessionState.SetBool(TrainingActiveKey, value);
     }
 
     bool InferenceMode
     {
         get => SessionState.GetBool(InferenceModeKey, false);
         set => SessionState.SetBool(InferenceModeKey, value);
-    }
-
-    bool ProcessWasRunning
-    {
-        get => SessionState.GetBool(ProcessRunningKey, false);
-        set => SessionState.SetBool(ProcessRunningKey, value);
     }
 
     const int MaxLogEntries = 500;
@@ -84,7 +80,7 @@ public class TrainingEditorWindow : EditorWindow
     public static void ShowWindow()
     {
         var window = GetWindow<TrainingEditorWindow>("Training Controller");
-        window.minSize = new Vector2(400, 500);
+        window.minSize = new Vector2(420, 600);
     }
 
     void OnEnable()
@@ -92,10 +88,17 @@ public class TrainingEditorWindow : EditorWindow
         LoadOrCreateSettings();
         _processManager = new PythonProcessManager();
         _metricsParser = new TrainingMetricsParser();
+        _health = new TrainingHealthEvaluator();
+        _mqtt = new EditorMqttListener();
 
         _processManager.OnOutputLine += HandleOutput;
         _processManager.OnErrorLine += HandleError;
         _processManager.OnExited += HandleExited;
+
+        _metricsParser.OnHealthMarker += s => _health.NotifyHealthMarker(s);
+        _mqtt.OnEpisodeEnd += OnEpisodeEnd;
+        _mqtt.OnHeartbeat += OnHeartbeat;
+        _mqtt.OnConnectionChanged += OnMqttConnectionChanged;
 
         EditorApplication.playModeStateChanged += OnPlayModeChanged;
         EditorApplication.update += OnEditorUpdate;
@@ -121,51 +124,73 @@ public class TrainingEditorWindow : EditorWindow
             _processManager.OnExited -= HandleExited;
         }
 
+        _mqtt?.Stop();
+        _mqtt = null;
+
         EditorApplication.playModeStateChanged -= OnPlayModeChanged;
         EditorApplication.update -= OnEditorUpdate;
 
-        // Release any sleep inhibitor this window owns so closing the window
-        // never leaks an OS-level wakelock.
         HoldSleep(false);
     }
 
     void OnEditorUpdate()
     {
-        if (_processManager != null && _processManager.IsRunning)
-            Repaint();
+        double now = EditorApplication.timeSinceStartup;
+
+        _mqtt?.Pump();
+
+        // Tick health evaluator and MQTT status every ~0.25s
+        if (now - _lastTick > 0.25)
+        {
+            _lastTick = now;
+            _health.Tick();
+
+            if (_processManager != null && _processManager.IsRunning)
+            {
+                // Repaint frequently while running so the snapshot row stays live.
+                Repaint();
+            }
+        }
+
+        // Lightweight TCP probe every 2s when not actively listening
+        if (now - _lastMqttCheck > 2.0)
+        {
+            _lastMqttCheck = now;
+            CheckMqttConnection();
+            _health.NotifyMqttConnected(_mqttConnected);
+        }
     }
 
     void OnPlayModeChanged(PlayModeStateChange state)
     {
         bool isRunning = _processManager != null && _processManager.IsRunning;
 
-        if (state == PlayModeStateChange.EnteredPlayMode && (DebugMode || InferenceMode))
+        if (state == PlayModeStateChange.EnteredPlayMode && (TrainingActive || InferenceMode))
         {
-            // Delay to ensure scene is fully loaded
-            EditorApplication.delayCall += ConfigureSceneForDebugTraining;
+            EditorApplication.delayCall += ConfigureSceneAndLaunch;
         }
-        else if (state == PlayModeStateChange.ExitingPlayMode && (DebugMode || InferenceMode))
+        else if (state == PlayModeStateChange.ExitingPlayMode && (TrainingActive || InferenceMode))
         {
             AddLog("Exiting Play mode, stopping process...", LogType.Warning);
             if (_processManager != null && _processManager.IsRunning)
                 _processManager.Stop();
-            DebugMode = false;
+            TrainingActive = false;
             InferenceMode = false;
-            ProcessWasRunning = false;
             HoldSleep(false);
+            _health.StopTraining();
+            _mqtt?.Stop();
         }
-        else if (state == PlayModeStateChange.ExitingEditMode && isRunning && !DebugMode && !InferenceMode)
+        else if (state == PlayModeStateChange.ExitingEditMode && isRunning && !TrainingActive && !InferenceMode)
         {
             AddLog("Stopping training before entering Play mode...", LogType.Warning);
             _processManager.Stop();
         }
     }
 
-    void ConfigureSceneForDebugTraining()
+    void ConfigureSceneAndLaunch()
     {
-        AddLog("Configuring scene for debug training...", LogType.Log);
+        AddLog("Configuring scene for training...", LogType.Log);
 
-        // Use FindObjectsByType with FindObjectsInactive to find disabled components
         var brokers = UnityEngine.Object.FindObjectsByType<LedaBroker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         var remoteInputs = UnityEngine.Object.FindObjectsByType<RemoteDriveInput>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         var manualInputs = UnityEngine.Object.FindObjectsByType<ManualDriveInput>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -205,7 +230,6 @@ public class TrainingEditorWindow : EditorWindow
 
         if (remoteInput != null)
         {
-            // Wire remoteInput into the broker in case the scene reference was not saved
             if (broker != null && broker.remoteInput == null)
                 broker.remoteInput = remoteInput;
             remoteInput.enabled = true;
@@ -213,7 +237,7 @@ public class TrainingEditorWindow : EditorWindow
         }
         else
         {
-            AddLog("Warning: RemoteDriveInput not found in scene! Make sure Car is in scene.", LogType.Warning);
+            AddLog("Warning: RemoteDriveInput not found in scene!", LogType.Warning);
         }
 
         if (manualInput != null)
@@ -222,23 +246,31 @@ public class TrainingEditorWindow : EditorWindow
             AddLog("ManualDriveInput disabled", LogType.Log);
         }
 
-        Time.timeScale = _settings.debugTimescale;
-        Time.fixedDeltaTime = 0.02f * _settings.debugTimescale;
-        AddLog($"TimeScale set to {_settings.debugTimescale}x", LogType.Log);
+        // Force real time — no acceleration, ever.
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
 
-        // Start Python here, AFTER the domain reload triggered by EnterPlaymode() has
-        // completed. Starting it before EnterPlaymode() causes the domain reload to
-        // destroy the Process handle, orphaning the subprocess with no stdout capture.
+        // Start the Editor MQTT listener now that the broker is up
+        _mqtt.Start(_settings.mqttHost, _settings.mqttPort);
+
+        if (InferenceMode)
+        {
+            // Inference: process was already started in StartInference()
+            AddLog("Inference scene ready.", LogType.Log);
+            return;
+        }
+
+        // Training: start Python AFTER domain reload (started by EnterPlaymode) finishes.
         AddLog("Starting Python training process...", LogType.Log);
-        if (!_processManager.Start(_settings, debugMode: true))
+        if (!_processManager.Start(_settings))
         {
             AddLog("Failed to start Python training process", LogType.Error);
-            DebugMode = false;
-            ProcessWasRunning = false;
+            TrainingActive = false;
             HoldSleep(false);
             EditorApplication.ExitPlaymode();
             return;
         }
+        _health.StartTraining();
         AddLog("Python process started. Waiting for environment connection...", LogType.Log);
     }
 
@@ -261,57 +293,107 @@ public class TrainingEditorWindow : EditorWindow
         _serializedSettings = new SerializedObject(_settings);
     }
 
+    // ─── GUI ───────────────────────────────────────────────────────────
+
     void OnGUI()
     {
-        DrawHeader();
+        DrawToolbar();
+        DrawHealthBanner();
+        DrawSnapshotRow();
+
         EditorGUILayout.Space(5);
 
-        _settingsScrollPos = EditorGUILayout.BeginScrollView(_settingsScrollPos);
-
+        _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
         DrawSettingsSection();
         EditorGUILayout.Space(5);
-
         DrawMetricsSection();
         EditorGUILayout.Space(5);
-
+        DrawIssueLog();
+        EditorGUILayout.Space(5);
         DrawLogSection();
-
         EditorGUILayout.EndScrollView();
 
         EditorGUILayout.Space(5);
         DrawControls();
     }
 
-    void DrawHeader()
+    void DrawToolbar()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-        bool isRunning = (_processManager != null && _processManager.IsRunning) || ((DebugMode || InferenceMode) && EditorApplication.isPlaying);
-        string status = isRunning ? (InferenceMode ? "INFERENCE" : DebugMode ? "DEBUG" : "TRAINING") : "IDLE";
-        Color statusColor = isRunning
-            ? (InferenceMode ? new Color(0.4f, 0.8f, 1f) : DebugMode ? new Color(1f, 0.7f, 0.2f) : new Color(0.2f, 0.8f, 0.2f))
+        bool isRunning = IsBusy();
+        string label = isRunning ? (InferenceMode ? "INFERENCE" : "TRAINING") : "IDLE";
+        Color color = isRunning
+            ? (InferenceMode ? new Color(0.4f, 0.8f, 1f) : new Color(0.2f, 0.85f, 0.3f))
             : Color.gray;
-
-        GUIStyle statusStyle = new(EditorStyles.boldLabel) { normal = { textColor = statusColor } };
-        EditorGUILayout.LabelField($"[{status}]", statusStyle, GUILayout.Width(100));
+        var style = new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = color } };
+        EditorGUILayout.LabelField($"[{label}]", style, GUILayout.Width(100));
 
         if (isRunning)
         {
             TimeSpan duration = DateTime.Now - _trainingStartTime;
-            EditorGUILayout.LabelField($"Duration: {duration:hh\\:mm\\:ss}", GUILayout.Width(120));
+            EditorGUILayout.LabelField($"Duration: {duration:hh\\:mm\\:ss}", GUILayout.Width(140));
         }
 
         GUILayout.FlexibleSpace();
 
-        Color mqttColor = _mqttConnected ? new Color(0.2f, 0.8f, 0.2f) : Color.red;
-        GUIStyle mqttStyle = new(EditorStyles.miniLabel) { normal = { textColor = mqttColor } };
-        string mqttStatus = _mqttConnected ? "MQTT: OK" : "MQTT: X";
-        EditorGUILayout.LabelField(mqttStatus, mqttStyle, GUILayout.Width(60));
+        Color mqttColor = _mqttConnected ? new Color(0.2f, 0.8f, 0.3f) : Color.red;
+        var mqttStyle = new GUIStyle(EditorStyles.miniLabel) { normal = { textColor = mqttColor } };
+        EditorGUILayout.LabelField(_mqttConnected ? "MQTT ●" : "MQTT ●", mqttStyle, GUILayout.Width(60));
 
         if (GUILayout.Button("Check", EditorStyles.toolbarButton, GUILayout.Width(50)))
             CheckMqttConnection();
 
         EditorGUILayout.EndHorizontal();
+    }
+
+    void DrawHealthBanner()
+    {
+        Color bg = HealthColor(_health.CurrentState);
+        Color text = _health.CurrentState == TrainingHealthEvaluator.HealthState.Warning
+            ? Color.black : Color.white;
+
+        var bannerRect = GUILayoutUtility.GetRect(0f, 36f, GUILayout.ExpandWidth(true));
+        EditorGUI.DrawRect(bannerRect, bg);
+
+        var labelStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            fontSize = 13,
+            normal = { textColor = text },
+        };
+
+        string text2 = $"{_health.CurrentState.ToString().ToUpperInvariant()} — {_health.CurrentMessage}";
+        GUI.Label(bannerRect, text2, labelStyle);
+    }
+
+    static Color HealthColor(TrainingHealthEvaluator.HealthState s) => s switch
+    {
+        TrainingHealthEvaluator.HealthState.Healthy => new Color(0.18f, 0.62f, 0.28f),
+        TrainingHealthEvaluator.HealthState.Warning => new Color(0.95f, 0.78f, 0.18f),
+        TrainingHealthEvaluator.HealthState.Critical => new Color(0.85f, 0.22f, 0.22f),
+        TrainingHealthEvaluator.HealthState.Disconnected => new Color(0.50f, 0.50f, 0.50f),
+        _ => new Color(0.30f, 0.30f, 0.30f),
+    };
+
+    void DrawSnapshotRow()
+    {
+        EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+        DrawSnapshot("Episodes", _episodeCount.ToString());
+        DrawSnapshot("Last reward", _lastEpisodeReward.ToString("F2"));
+        DrawSnapshot("Rolling reward", _rollingReward.ToString("F2"));
+        DrawSnapshot("Heartbeats", _heartbeatCount.ToString());
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    void DrawSnapshot(string label, string value)
+    {
+        EditorGUILayout.BeginVertical(GUILayout.MinWidth(80));
+        EditorGUILayout.LabelField(label, EditorStyles.miniLabel);
+        EditorGUILayout.LabelField(value, EditorStyles.boldLabel);
+        EditorGUILayout.EndVertical();
     }
 
     void DrawSettingsSection()
@@ -325,23 +407,10 @@ public class TrainingEditorWindow : EditorWindow
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("venvPath"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("trainScriptPath"));
         EditorGUILayout.Space(3);
-        EditorGUILayout.PropertyField(_serializedSettings.FindProperty("numEnvs"));
-        EditorGUILayout.PropertyField(_serializedSettings.FindProperty("timescale"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("totalTimesteps"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("learningRate"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("nSteps"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("batchSize"));
-
-        // Show effective ray count
-        EditorGUILayout.PropertyField(_serializedSettings.FindProperty("rayCount"));
-        if (_settings.rayCount == 0)
-        {
-            int effectiveRays = _settings.GetEffectiveRayCount();
-            EditorGUILayout.HelpBox($"Auto-detected from RaycastSensor: {effectiveRays} rays", MessageType.Info);
-        }
-
-        EditorGUILayout.Space(3);
-        EditorGUILayout.PropertyField(_serializedSettings.FindProperty("debugTimescale"));
         EditorGUILayout.Space(3);
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("mqttHost"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("mqttPort"));
@@ -372,10 +441,10 @@ public class TrainingEditorWindow : EditorWindow
 
         if (!string.IsNullOrEmpty(_settings.resumeModelPath))
         {
-            if (!System.IO.File.Exists(_settings.resumeModelPath))
+            if (!File.Exists(_settings.resumeModelPath))
                 EditorGUILayout.HelpBox("Model file not found at the specified path.", MessageType.Error);
             else
-                EditorGUILayout.HelpBox($"Will resume from: {System.IO.Path.GetFileName(_settings.resumeModelPath)}", MessageType.Info);
+                EditorGUILayout.HelpBox($"Will resume from: {Path.GetFileName(_settings.resumeModelPath)}", MessageType.Info);
         }
         else
         {
@@ -421,12 +490,10 @@ public class TrainingEditorWindow : EditorWindow
     {
         if (Event.current.type != EventType.Repaint) return;
 
-        // Background
         EditorGUI.DrawRect(rect, new Color(0.15f, 0.15f, 0.15f));
 
         if (data == null || data.Count < 2)
         {
-            // Draw placeholder text
             GUI.Label(rect, "No data", EditorStyles.centeredGreyMiniLabel);
             return;
         }
@@ -459,10 +526,36 @@ public class TrainingEditorWindow : EditorWindow
         Handles.EndGUI();
     }
 
+    void DrawIssueLog()
+    {
+        EditorGUILayout.LabelField($"Issue Log ({_health.History.Count})", EditorStyles.boldLabel);
+
+        if (_health.History.Count == 0)
+        {
+            EditorGUILayout.HelpBox("No health events yet.", MessageType.None);
+            return;
+        }
+
+        Rect boxRect = EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Height(120));
+        _issueScrollPos = EditorGUILayout.BeginScrollView(_issueScrollPos);
+
+        for (int i = _health.History.Count - 1; i >= 0; i--)
+        {
+            var issue = _health.History[i];
+            Color c = HealthColor(issue.Level);
+            var s = new GUIStyle(EditorStyles.miniLabel) { normal = { textColor = c } };
+            EditorGUILayout.LabelField(
+                $"[{issue.Time:HH:mm:ss}] {issue.Level,-12} {issue.Message}", s);
+        }
+
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndVertical();
+    }
+
     void DrawLogSection()
     {
         EditorGUILayout.BeginHorizontal();
-        _logFoldout = EditorGUILayout.Foldout(_logFoldout, $"Output Log ({_logEntries.Count})", true);
+        _logFoldout = EditorGUILayout.Foldout(_logFoldout, $"Raw stdout ({_logEntries.Count})", true);
         GUILayout.FlexibleSpace();
         _autoScroll = GUILayout.Toggle(_autoScroll, "Auto-scroll", GUILayout.Width(80));
         if (GUILayout.Button("Clear", GUILayout.Width(50)))
@@ -474,7 +567,6 @@ public class TrainingEditorWindow : EditorWindow
 
         if (!_logFoldout) return;
 
-        // Draw log box with background
         Rect boxRect = EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Height(200));
         _logScrollPos = EditorGUILayout.BeginScrollView(_logScrollPos, GUILayout.ExpandHeight(true));
 
@@ -516,50 +608,34 @@ public class TrainingEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
 
-        bool processRunning = _processManager != null && _processManager.IsRunning;
-        bool debugActive = DebugMode && EditorApplication.isPlaying;
-        bool inferenceActive = InferenceMode && EditorApplication.isPlaying;
-        bool canStart = !processRunning && !EditorApplication.isPlaying && !DebugMode && !InferenceMode;
-        bool canStop = processRunning || debugActive || inferenceActive;
+        bool busy = IsBusy();
 
-        GUI.enabled = canStart;
-        if (GUILayout.Button("Start Training", GUILayout.Width(120), GUILayout.Height(30)))
-            StartTraining(debugMode: false);
+        GUI.enabled = !busy;
+        if (GUILayout.Button("Start Training", GUILayout.Width(160), GUILayout.Height(34)))
+            StartTraining();
 
-        if (GUILayout.Button("Debug (1 env)", GUILayout.Width(100), GUILayout.Height(30)))
-            StartTraining(debugMode: true);
-
-        if (GUILayout.Button("Run Model", GUILayout.Width(90), GUILayout.Height(30)))
+        if (GUILayout.Button("Run Model", GUILayout.Width(120), GUILayout.Height(34)))
             StartInference();
 
-        GUI.enabled = canStop;
-        if (GUILayout.Button("Stop", GUILayout.Width(80), GUILayout.Height(30)))
-        {
-            if (_processManager != null && _processManager.IsRunning)
-                _processManager.Stop();
-            if ((DebugMode || InferenceMode) && EditorApplication.isPlaying)
-                EditorApplication.ExitPlaymode();
-            DebugMode = false;
-            InferenceMode = false;
-            ProcessWasRunning = false;
-            HoldSleep(false);
-        }
+        GUI.enabled = busy;
+        if (GUILayout.Button("Stop", GUILayout.Width(100), GUILayout.Height(34)))
+            StopAll();
 
         GUI.enabled = true;
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
-
-        if (InferenceMode && (processRunning || inferenceActive))
-        {
-            EditorGUILayout.HelpBox("Inference mode: Running trained model in Editor Play mode", MessageType.Info);
-        }
-        else if (DebugMode && (processRunning || debugActive))
-        {
-            EditorGUILayout.HelpBox("Debug mode: Training with 1 env in Editor Play mode", MessageType.Info);
-        }
     }
 
-    void StartTraining(bool debugMode)
+    bool IsBusy()
+    {
+        bool processRunning = _processManager != null && _processManager.IsRunning;
+        bool playing = EditorApplication.isPlaying;
+        return processRunning || ((TrainingActive || InferenceMode) && playing);
+    }
+
+    // ─── Actions ───────────────────────────────────────────────────────
+
+    void StartTraining()
     {
         if (_processManager == null || _settings == null)
         {
@@ -579,57 +655,31 @@ public class TrainingEditorWindow : EditorWindow
             }
         }
 
-        if (!string.IsNullOrEmpty(_settings.resumeModelPath))
+        if (!string.IsNullOrEmpty(_settings.resumeModelPath) && !File.Exists(_settings.resumeModelPath))
         {
-            if (!System.IO.File.Exists(_settings.resumeModelPath))
-            {
-                EditorUtility.DisplayDialog("Model File Not Found",
-                    $"The resume model file could not be found:\n{_settings.resumeModelPath}", "OK");
-                return;
-            }
+            EditorUtility.DisplayDialog("Model File Not Found",
+                $"The resume model file could not be found:\n{_settings.resumeModelPath}", "OK");
+            return;
         }
 
-        DebugMode = debugMode;
-        ProcessWasRunning = true;
-        HoldSleep(true, debugMode ? "debug training" : "training");
+        TrainingActive = true;
+        InferenceMode = false;
+        HoldSleep(true, "training");
         _logEntries.Clear();
-        if (_metricsParser != null) _metricsParser.Clear();
+        _metricsParser.Clear();
+        _health.Clear();
+        _heartbeatCount = 0;
+        _episodeCount = 0;
+        _lastEpisodeReward = 0f;
+        _rollingReward = 0f;
         _trainingStartTime = DateTime.Now;
 
-        int envCount = debugMode ? 1 : _settings.numEnvs;
-        float scale = debugMode ? _settings.debugTimescale : _settings.timescale;
-        int rayCount = _settings.GetEffectiveRayCount();
-
-        AddLog($"Starting training with {envCount} environment(s)...", LogType.Log);
-        AddLog($"Timescale: {scale}x, Ray count: {rayCount}", LogType.Log);
-        AddLog($"Total timesteps: {_settings.totalTimesteps}", LogType.Log);
-
+        AddLog($"Starting single-env training, {_settings.totalTimesteps} timesteps", LogType.Log);
         if (!string.IsNullOrEmpty(_settings.resumeModelPath))
-            AddLog($"Resuming from: {System.IO.Path.GetFileName(_settings.resumeModelPath)}", LogType.Log);
-        else
-            AddLog("Starting new model", LogType.Log);
+            AddLog($"Resuming from: {Path.GetFileName(_settings.resumeModelPath)}", LogType.Log);
+        AddLog("Entering Play mode — Python will start after scene loads...", LogType.Log);
 
-        if (debugMode)
-            AddLog("Debug mode: Will enter Play mode after Python starts", LogType.Log);
-
-        if (debugMode)
-        {
-            // Python is started inside ConfigureSceneForDebugTraining() which runs
-            // after EnteredPlayMode — safely past any domain reload EnterPlaymode() triggers.
-            AddLog("Entering Play mode — Python will start after scene loads...", LogType.Log);
-            EditorApplication.delayCall += EditorApplication.EnterPlaymode;
-        }
-        else
-        {
-            if (!_processManager.Start(_settings, debugMode: false))
-            {
-                AddLog("Failed to start training process", LogType.Error);
-                DebugMode = false;
-                ProcessWasRunning = false;
-                HoldSleep(false);
-                return;
-            }
-        }
+        EditorApplication.delayCall += EditorApplication.EnterPlaymode;
     }
 
     void StartInference()
@@ -644,10 +694,9 @@ public class TrainingEditorWindow : EditorWindow
         if (string.IsNullOrEmpty(modelPath))
             return;
 
-        if (!System.IO.File.Exists(modelPath))
+        if (!File.Exists(modelPath))
         {
-            EditorUtility.DisplayDialog("Model Not Found",
-                $"Model file not found:\n{modelPath}", "OK");
+            EditorUtility.DisplayDialog("Model Not Found", $"Model file not found:\n{modelPath}", "OK");
             return;
         }
 
@@ -664,14 +713,14 @@ public class TrainingEditorWindow : EditorWindow
         }
 
         InferenceMode = true;
-        ProcessWasRunning = true;
+        TrainingActive = false;
         HoldSleep(true, "inference");
         _logEntries.Clear();
-        if (_metricsParser != null) _metricsParser.Clear();
+        _metricsParser.Clear();
+        _health.Clear();
         _trainingStartTime = DateTime.Now;
 
-        AddLog($"Running model: {System.IO.Path.GetFileName(modelPath)}", LogType.Log);
-        AddLog($"Ray count: {_settings.GetEffectiveRayCount()}", LogType.Log);
+        AddLog($"Running model: {Path.GetFileName(modelPath)}", LogType.Log);
 
         string venvPath = _settings.GetAbsoluteVenvPath();
         string scriptPath = _settings.GetAbsoluteAiDriverPath();
@@ -682,7 +731,6 @@ public class TrainingEditorWindow : EditorWindow
         {
             AddLog("Failed to start inference process", LogType.Error);
             InferenceMode = false;
-            ProcessWasRunning = false;
             HoldSleep(false);
             return;
         }
@@ -693,6 +741,21 @@ public class TrainingEditorWindow : EditorWindow
             EditorApplication.EnterPlaymode();
         };
     }
+
+    void StopAll()
+    {
+        if (_processManager != null && _processManager.IsRunning)
+            _processManager.Stop();
+        if ((TrainingActive || InferenceMode) && EditorApplication.isPlaying)
+            EditorApplication.ExitPlaymode();
+        TrainingActive = false;
+        InferenceMode = false;
+        HoldSleep(false);
+        _health.StopTraining();
+        _mqtt?.Stop();
+    }
+
+    // ─── Process callbacks ─────────────────────────────────────────────
 
     void HandleOutput(string line)
     {
@@ -711,15 +774,43 @@ public class TrainingEditorWindow : EditorWindow
     void HandleExited(int exitCode)
     {
         string msg = exitCode == 0
-            ? "Training completed successfully"
-            : $"Training exited with code {exitCode}";
+            ? "Training process exited cleanly"
+            : $"Training process exited with code {exitCode}";
 
-        AddLog(msg, exitCode == 0 ? LogType.Log : LogType.Warning);
-
-        // Python process has finished — release any sleep inhibitor we held for it.
-        // Safe if the Stop button / ExitingPlayMode already released; HoldSleep is idempotent.
+        AddLog(msg, exitCode == 0 ? LogType.Log : LogType.Error);
+        _health.NotifyProcessExited(exitCode);
         HoldSleep(false);
+        // Beep on a non-zero exit so the user notices even if focused elsewhere.
+        if (exitCode != 0)
+            EditorApplication.Beep();
     }
+
+    void OnEpisodeEnd(int episode, float reward, int steps, string reason)
+    {
+        _episodeCount = Math.Max(_episodeCount, episode + 1);
+        _lastEpisodeReward = reward;
+        // EMA over ~last 20 episodes
+        _rollingReward = _rollingReward == 0f ? reward : _rollingReward * 0.9f + reward * 0.1f;
+        _health.NotifyEpisodeEnd(reward);
+        Repaint();
+    }
+
+    void OnHeartbeat(int episode, int steps, float reward)
+    {
+        _heartbeatCount += 1;
+        _health.NotifyHeartbeat();
+        // Heartbeat counts as an "obs received" signal too.
+        _health.NotifyObs();
+    }
+
+    void OnMqttConnectionChanged(bool connected)
+    {
+        _mqttConnected = connected;
+        _health.NotifyMqttConnected(connected);
+        Repaint();
+    }
+
+    // ─── Helpers ───────────────────────────────────────────────────────
 
     void AddLog(string message, LogType type)
     {
@@ -727,12 +818,10 @@ public class TrainingEditorWindow : EditorWindow
         {
             Message = message,
             Type = type,
-            Time = DateTime.Now
+            Time = DateTime.Now,
         });
-
         while (_logEntries.Count > MaxLogEntries)
             _logEntries.RemoveAt(0);
-
         Repaint();
     }
 
@@ -749,6 +838,20 @@ public class TrainingEditorWindow : EditorWindow
         catch
         {
             _mqttConnected = false;
+        }
+    }
+
+    void HoldSleep(bool hold, string reason = null)
+    {
+        if (hold && !_sleepHeld)
+        {
+            SleepPreventer.Acquire(reason ?? "training");
+            _sleepHeld = true;
+        }
+        else if (!hold && _sleepHeld)
+        {
+            SleepPreventer.Release();
+            _sleepHeld = false;
         }
     }
 }

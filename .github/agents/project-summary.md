@@ -1,11 +1,13 @@
 # SHILATE Project Summary
 
 > **Auto-maintained reference** for the `project-wiki` agent. Updated when PRs are merged to `main`.
-> Last updated: 2026-06-04
+> Last updated: 2026-06-08
 
 ## What is SHILATE?
 
 SHILATE is a **Software-defined-Vehicle reinforcement-learning project**. A Unity simulation (`SIM/`) hosts a virtual vehicle on an obstacle course; a Python PPO agent (`leda/leda-controller/`) trains over MQTT to navigate it. The Eclipse Leda SDV stack (`leda/`) provides the runtime image, Kuksa data broker, and Velocitas vehicle-app scaffolding for deploying the trained model to a real/emulated device.
+
+**Training is Editor-only and single-environment.** One Unity Editor instance runs at real time (`Time.timeScale = 1`), driven from the **Training Controller** window (`SHILATE → Training Controller`). The fixed MQTT prefix is `env0`. There is no parallel-env mode, no headless trainer, and no time-acceleration knob.
 
 ## Top-level Layout
 
@@ -13,6 +15,7 @@ SHILATE is a **Software-defined-Vehicle reinforcement-learning project**. A Unit
 |------|---------|
 | `SIM/` | Unity 2022+ project — simulation, vehicle, sensors, RL environment side |
 | `SIM/Assets/scripts/` | All gameplay/training C# scripts |
+| `SIM/Assets/scripts/Editor/Training/` | Editor-only training control + health UI |
 | `leda/leda-controller/` | Python RL training + inference (PPO via stable-baselines3) |
 | `leda/mqtt-kuksa-feeder/` | Bridges MQTT ↔ Kuksa data broker |
 | `leda/velocitas-app/` | Eclipse Velocitas vehicle-app template (deployment target) |
@@ -24,85 +27,108 @@ SHILATE is a **Software-defined-Vehicle reinforcement-learning project**. A Unit
 
 | File | Role |
 |------|------|
-| `leda/leda-controller/train.py` | Entry point. Parses CLI args, builds `SubprocVecEnv`, runs `PPO.learn`, saves checkpoints. Defaults: 4 envs, timescale 5, 100k timesteps, lr 3e-4, n_steps 2048, batch 64. CLI flags: `--num-envs --timescale --total-timesteps --learning-rate --n-steps --batch-size --ray-count --mqtt-host --mqtt-port --save-path --log-dir --resume-model`. |
-| `leda/leda-controller/environment.py` | `ShilateEnv(gym.Env)` — wraps MQTT comms as a Gymnasium env. Obs = `[N rays, norm_speed, norm_steer]`. Action = `[steer ∈ [-1,1], throttle ∈ [0,1], brake ∈ [0,1]]`. `OBS_TIMEOUT = 5.0s`, `DEFAULT_RAY_COUNT = 9`. |
-| `leda/leda-controller/controller.py` | `VehicleController` — low-level MQTT publisher/subscriber for sensor + training topics. |
-| `leda/leda-controller/make_env.py` | Factory that produces env-id-keyed `ShilateEnv` instances for vector training. |
-| `leda/leda-controller/model.py` | `get_policy_kwargs(ray_count)` — defines PPO net architecture (`pi=[256,128], vf=[256,128]`). Edit here to change neural net topology. |
+| `leda/leda-controller/train.py` | Entry point. Builds a single `Monitor(ShilateEnv(...))` wrapped in a one-slot `DummyVecEnv`, then `PPO.learn`. Defaults: 100k timesteps, lr 3e-4, n_steps 2048, batch 64. CLI flags: `--total-timesteps --learning-rate --n-steps --batch-size --mqtt-host --mqtt-port --save-path --log-dir --resume-model`. Emits `SHILATE-METRIC` / `SHILATE-HEALTH` markers on stdout for the Editor parser. |
+| `leda/leda-controller/environment.py` | `ShilateEnv(gym.Env)` — wraps MQTT comms as a Gymnasium env. Obs = `[N rays, norm_speed, norm_steer]`. Action = `[steer ∈ [-1,1], throttle ∈ [0,1], brake ∈ [0,1]]`. `OBS_TIMEOUT = 5.0s`. Emits `SHILATE-HEALTH obs_timeout` / `mqtt_lost` markers when the bridge breaks. `ray_count` is constructor-injected (loaded from `config.json` by `train.py`). |
+| `leda/leda-controller/controller.py` | `VehicleController` — low-level MQTT publisher/subscriber. Topic prefix hardcoded to `env0`. Subscribes to `env0/vehicle/training/{obs,reward,done,episode_end,heartbeat}`. |
+| `leda/leda-controller/model.py` | `get_policy_kwargs(ray_count)` — defines PPO net architecture (`pi=[256,128], vf=[256,128]`). |
 | `leda/leda-controller/config_loader.py` | Reads `../../config.json` → `model.ray_count`, fallback 9. |
-| `leda/leda-controller/ai_driver.py` | Inference-only: loads a trained `.zip` and drives the sim. |
+| `leda/leda-controller/ai_driver.py` | Inference-only: loads a trained `.zip` and drives the sim. `ray_count` from `config.json`; no `--ray-count` flag. |
 | `leda/leda-controller/debug_drive.py` | Manual/debug driver for diagnosing the MQTT bridge. |
-| `leda/leda-controller/Dockerfile` | Container image for training/inference. |
+| `leda/leda-controller/Dockerfile` | Container image for training/inference. Env vars: `MODE`, `MQTT_HOST`, `MQTT_PORT`, `TOTAL_TIMESTEPS`, `MODEL_PATH`. |
+| `leda/leda-controller/kanto-manifest.json` | Kanto container manifest matching the Dockerfile env vars. |
 | `leda/leda-controller/requirements.txt` | Python deps (sb3, gymnasium, paho-mqtt, torch). |
 | `leda/leda-controller/best_model.zip`, `shilate_ppo_*_steps.zip` | Saved PPO checkpoints. |
 
-## Unity Simulation (C# side)
+## Unity Simulation — Runtime (C# side)
 
-All scripts live in `SIM/Assets/scripts/`.
+All runtime scripts live in `SIM/Assets/scripts/`.
 
 | Script | Role |
 |--------|------|
-| `TrainingBridge.cs` | **Reward + episode logic.** Computes reward = progress·`progressReward` + finish/halfturn bonuses + collision penalty. Inspector fields: `progressReward=2`, `collisionPenalty=-5`, `finishBonus=50`, `halfTurnBonus=25`, `episodeTimeout=60s`, `maxSpeed=150 km/h`. Publishes obs/reward/done over MQTT. |
+| `TrainingBridge.cs` | **Reward + episode logic.** Computes reward = progress·`progressReward` + finish/halfturn bonuses + collision penalty. Inspector fields: `progressReward=2`, `collisionPenalty=-5`, `finishBonus=50`, `halfTurnBonus=25`, `episodeTimeout=60s`, `maxSpeed=150 km/h`. Publishes `obs/reward/done`, plus **`vehicle/training/episode_end`** (JSON `{episode, reward, steps, duration, reason}`) and **`vehicle/training/heartbeat`** (1 Hz unscaled) for the Editor health UI. Exposes `CurrentEpisode`, `EpisodeSteps`, `EpisodeTime`, `EpisodeTimeout`, `CumulativeReward`. |
+| `TrainingHUDOverlay.cs` | **Play-mode IMGUI HUD.** `#if UNITY_EDITOR`-guarded `MonoBehaviour` wired by `CarFactory`. Compact pin in the top-left of the Game view (260×132) showing episode #, cumulative reward, elapsed/timeout, MQTT status, last end reason. Toggle with **F8**. Reads only locally-visible signals (broker, TrainingBridge); SB3-derived health stays in the Editor window. |
 | `VehicleController.cs` | Vehicle physics — applies steer/throttle/brake from input or RL action. |
 | `RaycastSensor.cs` | Emits the N raycasts that form the observation. |
 | `ObstacleCourse.cs` | Track + progress tracking around the course. |
-| `LedaBroker.cs` / `MqttClient.cs` | MQTT client wiring (publish/subscribe, topic naming per `env_id`). |
+| `LedaBroker.cs` / `MqttClient.cs` | MQTT client wiring (publish/subscribe). `LedaBroker.Configure(host, port, "env0")` is the only call site. No timescale handling. |
 | `RemoteDriveInput.cs` | Receives `[steer,throttle,brake]` from Python via MQTT. |
-| `ManualDriveInput.cs` | Keyboard/gamepad input for manual driving. |
-| `TrainingBootstrap.cs` | Headless training entry — auto-spawns the scene for `num-envs` instances. |
-| `StandaloneBootstrap.cs` | Standalone (non-training) launcher. |
-| `RuntimeSceneBuilder.cs` / `CarFactory.cs` | Build scene + spawn vehicles at runtime. |
-| `TimeScaleController.cs` | Receives `timescale` over MQTT and applies `Time.timeScale`. |
+| `ManualDriveInput.cs` | Keyboard/gamepad input for manual driving (auto-disabled during training). |
+| `RuntimeSceneBuilder.cs` / `CarFactory.cs` | Build scene + spawn the single vehicle at runtime. `CarFactory` wires `TrainingHUDOverlay` in Editor builds. |
 | `SimulationRunner.cs` | Top-level loop coordinator. |
 | `DrivingScenario.cs` | Per-scenario configuration. |
 | `CameraFollow.cs` | Editor-only follow camera. |
 | `VehicleTelemetryBridge.cs` | Publishes telemetry (separate from training signals). |
 
+**Removed in the single-env refactor:** `TimeScaleController.cs`, `TrainingBootstrap.cs`, `StandaloneBootstrap.cs`, `make_env.py`. All `run-training-*.{sh,cmd,ps1}` scripts in `SIM/` are gone.
+
+## Unity Simulation — Editor (Training Controller)
+
+All Editor scripts live in `SIM/Assets/scripts/Editor/Training/`.
+
+| Script | Role |
+|--------|------|
+| `TrainingEditorWindow.cs` | **The training UX.** Menu: `SHILATE → Training Controller`. Layout top-to-bottom: toolbar (status + MQTT dot + duration) → coloured health banner → snapshot row (Episodes / Last reward / Rolling reward / Heartbeats) → collapsed settings → metric graphs (reward / policy loss / value loss / KL) → issue log → collapsed raw stdout → controls (Start Training / Run Model / Stop). One button = enter Play mode and auto-launch Python after scene loads. State persisted via `SessionState`. Beeps on non-zero Python exit. |
+| `TrainingHealthEvaluator.cs` | Pure C# state machine emitting `HealthState ∈ {Idle, Healthy, Warning, Critical, Disconnected}`. Tickle every 0.25 s. Signals: MQTT disconnect, Python crash, no obs > 5 s, no heartbeat / no rewards > 60 s, reward collapse (> 50% drop over a 10-episode window), NaN/Inf in losses. `History` list of `Issue { Time, Level, Message }` powers the issue log. |
+| `TrainingMetricsParser.cs` | Parses SB3 stdout tables (`rollout/ep_rew_mean`, `train/policy_gradient_loss`, `train/value_loss`, `train/approx_kl`) **and** the structured `SHILATE-METRIC key=value` / `SHILATE-HEALTH signal` markers. Exposes histories per metric and an `OnHealthMarker` event consumed by the evaluator. |
+| `PythonProcessManager.cs` | Spawns/kills the Python trainer or inference script. Streams stdout/stderr line-by-line; raises `OnOutputLine`, `OnErrorLine`, `OnExited(int)`. No `debugMode`/`--num-envs`/`--timescale`/`--ray-count` plumbing. |
+| `EditorMqttListener.cs` | Editor-side MQTT subscriber (separate client-id from the runtime broker). Subscribes to `env0/vehicle/training/episode_end` and `env0/vehicle/training/heartbeat`, parses JSON, fires `OnEpisodeEnd(episode, reward, steps, reason)` / `OnHeartbeat(episode, steps, reward)` / `OnConnectionChanged(bool)`. Pumped from `EditorApplication.update`. |
+| `SleepPreventer.cs` | Cross-platform OS sleep inhibitor held while training/inference is active. |
+| `TrainingSettings.cs` (ScriptableObject in `Assets/scripts/ScriptableObjects/`) | Persisted knobs: `venvPath`, `trainScriptPath`, `totalTimesteps`, `learningRate`, `nSteps`, `batchSize`, `mqttHost`, `mqttPort`, `savePath`, `logDir`, `resumeModelPath`. `BuildCommandLineArgs()` takes no parameters. |
+
 ## How to Run
 
-| Goal | Command |
-|------|---------|
-| Train (Linux) | `SIM/run-training.sh` then `python3 leda/leda-controller/train.py` |
-| Train in parallel | `SIM/run-training-parallel.sh` |
-| Train with graphics (debug) | `SIM/run-training-graphics.cmd` |
-| Inference | `python3 leda/leda-controller/ai_driver.py` |
-| Manual drive (debug) | `python3 leda/leda-controller/debug_drive.py` |
-| Boot Leda image | `leda/run-leda.sh` (or `.cmd`) |
+| Goal | How |
+|------|-----|
+| Train | Open Unity → menu **SHILATE → Training Controller** → press **Start Training**. The window enters Play mode and launches Python automatically. |
+| Inference (run a trained model) | Same window → **Run Model** → pick a `.zip` checkpoint. |
+| Manual drive (debug) | `python3 leda/leda-controller/debug_drive.py` while Unity is in Play mode. |
+| Boot Leda image | `leda/run-leda.sh` (or `.cmd`). |
 
-## How to Verify Training is Actually Happening
+The Mosquitto broker must be running on the configured host (`127.0.0.1:1883` by default) before pressing Start. The window's toolbar shows the MQTT status dot live.
 
-1. **TensorBoard**: `tensorboard --logdir /tmp/shilate_logs` — look for `rollout/ep_rew_mean` increasing.
-2. **Console**: `train.py` logs `shilate-train` messages; SB3 prints rollout/training tables every `n_steps`.
-3. **Checkpoint files**: `shilate_ppo_<N>_steps.zip` should appear in `--save-path` (`/tmp/shilate_model` by default).
-4. **MQTT traffic**: subscribe to `shilate/env<id>/obs` and `shilate/env<id>/reward` — rewards should arrive each step.
-5. **Unity console** (with `run-training-graphics`): `TrainingBridge` logs episode end with `_cumulativeReward`.
-6. **Episode count**: rising episode index in SB3 logs == environment is resetting and training.
+## How to Tell If Training Is Healthy (at a glance)
+
+The Training Controller window is designed so failures are obvious in under one second:
+
+1. **Health banner** — coloured strip near the top. Green = healthy; yellow = warning; red = critical; gray = disconnected/idle. The current banner text names the exact problem.
+2. **Snapshot row** — Episodes / Last reward / Rolling reward / Heartbeats. If Heartbeats stops climbing, Unity has stalled.
+3. **Issue log** — chronological list of every health-state transition for the session.
+4. **Metric graphs** — reward, policy loss, value loss, KL divergence; flat lines = no learning.
+5. **Game-view HUD** (F8 to toggle) — episode #, reward, timeout countdown, MQTT dot.
+6. **Tooling fallbacks** — TensorBoard at `--log-dir` (default `/tmp/shilate_logs`); checkpoints land in `--save-path` (default `/tmp/shilate_model`).
 
 ## Common "Where do I change X?" Map
 
 | To change… | Edit… |
 |------------|-------|
-| Reward shaping (progress/collision/finish/halfturn) | `SIM/Assets/scripts/TrainingBridge.cs` Inspector fields, or serialized defaults |
+| Reward shaping (progress/collision/finish/halfturn) | `SIM/Assets/scripts/TrainingBridge.cs` Inspector fields |
 | Episode timeout | `TrainingBridge.cs` → `episodeTimeout` |
 | Action space bounds | `leda/leda-controller/environment.py` → `action_space` |
 | Observation contents / size | `environment.py` → `_make_obs` and `RaycastSensor.cs` |
-| Number of raycasts | root `config.json` → `model.ray_count` (used by both sides) or `--ray-count` CLI |
+| Number of raycasts | root `config.json` → `model.ray_count` (the only knob — no CLI flag) |
 | Neural net architecture | `leda/leda-controller/model.py` → `get_policy_kwargs` |
-| PPO hyperparameters (lr, n_steps, batch, gamma, etc.) | `train.py` CLI flags or `PPO(...)` call inside `main()` |
-| Number of parallel envs | `--num-envs` flag |
-| Sim speed | `--timescale` flag → `TimeScaleController.cs` |
-| MQTT broker host/port | `--mqtt-host` / `--mqtt-port`, and Unity Inspector on `LedaBroker` |
+| PPO hyperparameters (lr, n_steps, batch) | Training Controller window → Settings, or `train.py` CLI flags |
+| MQTT broker host/port | Training Controller window → Settings (writes to the broker via `LedaBroker.Configure`) |
 | Track / obstacles | `SIM/Assets/scripts/ObstacleCourse.cs` + scene assets in `SIM/Assets/Scenes/` |
 | Vehicle physics | `SIM/Assets/scripts/VehicleController.cs` and ScriptableObjects in `SIM/Assets/scripts/ScriptableObjects/` |
-| Resume from checkpoint | `--resume-model path/to.zip` |
+| Resume from checkpoint | Training Controller window → Settings → "Model File (.zip)" (or `--resume-model` CLI) |
+| Health thresholds (obs timeout, reward-collapse ratio) | `SIM/Assets/scripts/Editor/Training/TrainingHealthEvaluator.cs` constants |
 
 ## MQTT Topic Conventions
 
-Topics are namespaced per env, e.g. `shilate/env0/...`:
-- `…/action` — Python → Unity: steer/throttle/brake
-- `…/obs` — Unity → Python: ray distances + speed + steer
-- `…/reward`, `…/done` — Unity → Python training signals
-- `…/timescale`, `…/gear`, `…/reset` — control commands
+Topics are namespaced under the fixed prefix `env0`:
+
+| Topic | Direction | Payload |
+|-------|-----------|---------|
+| `env0/leda/control/{throttle,steer,brake,gear,reset}` | Python → Unity | float / int |
+| `env0/vehicle/{speed,rpm,...}` | Unity → Python | telemetry floats |
+| `env0/vehicle/training/obs` | Unity → Python | observation vector |
+| `env0/vehicle/training/reward` | Unity → Python | scalar reward |
+| `env0/vehicle/training/done` | Unity → Python | episode-done flag |
+| `env0/vehicle/training/episode_end` | Unity → Editor | JSON `{episode, reward, steps, duration, reason}` |
+| `env0/vehicle/training/heartbeat` | Unity → Editor | JSON `{value, steps, reward}` (1 Hz unscaled) |
+
+(The `timescale` topic was removed alongside `TimeScaleController.cs`.)
 
 ## Update Protocol (automated)
 

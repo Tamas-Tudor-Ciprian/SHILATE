@@ -1,8 +1,9 @@
 """
 SHILATE Controller — shared MQTT base class for Leda-side vehicle control.
 
-Handles topic prefixing (envN/), telemetry subscription, and control publishing.
-Used by debug_drive.py, train.py, and ai_driver.py.
+Single-environment design: all topics use the hardcoded "env0/" prefix to match
+the Unity LedaBroker's default. Shared by debug_drive.py, train.py, and
+ai_driver.py.
 """
 
 import json
@@ -13,6 +14,10 @@ import time
 import paho.mqtt.client as mqtt
 
 log = logging.getLogger(__name__)
+
+# All Unity-side topics live under this prefix. Single-env design — do not
+# parametrize this. To run multiple envs, redesign the trainer instead.
+ENV_PREFIX = "env0"
 
 
 class VehicleController:
@@ -42,18 +47,18 @@ class VehicleController:
         "vehicle/training/reward",
         "vehicle/training/done",
         "vehicle/training/obs",
+        "vehicle/training/episode_end",
+        "vehicle/training/heartbeat",
     ]
 
     def __init__(
         self,
-        env_id: int = 0,
         mqtt_host: str = "localhost",
         mqtt_port: int = 1883,
         subscribe_sensors: bool = False,
         subscribe_training: bool = False,
     ):
-        self.env_id = env_id
-        self.prefix = f"env{env_id}"
+        self.prefix = ENV_PREFIX
         self.mqtt_host = mqtt_host
         self.mqtt_port = mqtt_port
         self._subscribe_sensors = subscribe_sensors
@@ -79,7 +84,7 @@ class VehicleController:
 
         # MQTT client
         self._client = mqtt.Client(
-            client_id=f"shilate-controller-env{env_id}",
+            client_id=f"shilate-controller-{ENV_PREFIX}",
             protocol=mqtt.MQTTv311,
         )
         self._client.on_connect = self._on_connect
@@ -192,10 +197,6 @@ class VehicleController:
         self.done_event.clear()
         self.obs_event.clear()
         self._publish("leda/control/reset", 1)
-
-    def set_timescale(self, scale: float):
-        """Set Unity Time.timeScale (clamped 1-10 on the Unity side)."""
-        self._publish("leda/control/timescale", round(scale, 2))
 
     def send_action(self, steer: float, throttle: float, brake: float):
         """Send a complete action tuple in one call."""

@@ -132,10 +132,6 @@ public static class CarFactory
         broker.remoteInput       = remoteInput;
         manual.remoteInput       = remoteInput;
 
-        // ── TimeScaleController ──
-        TimeScaleController tsController = car.AddComponent<TimeScaleController>();
-        tsController.broker = broker;
-
         // ── RaycastSensor ──
         RaycastSensor raycastSensor = car.AddComponent<RaycastSensor>();
         raycastSensor.broker = broker;
@@ -155,6 +151,14 @@ public static class CarFactory
 
         // Cross-wire obstacle course back to training bridge
         obstacleCourse.trainingBridge = trainingBridge;
+
+        // ── TrainingHUDOverlay (Editor Play-mode only) ──
+#if UNITY_EDITOR
+        var hud = car.AddComponent<TrainingHUDOverlay>();
+        hud.broker         = broker;
+        hud.vehicle        = vc;
+        hud.trainingBridge = trainingBridge;
+#endif
 
         // ── Camera ──
         Camera mainCam = Camera.main;
