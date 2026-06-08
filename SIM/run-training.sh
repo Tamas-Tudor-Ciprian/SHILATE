@@ -37,9 +37,23 @@ fi
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Block system/disk sleep while Unity runs so long training sessions survive
+# laptop-idle suspend. Display is intentionally NOT inhibited (monitor may sleep).
+# If systemd-inhibit is unavailable, warn and run Unity directly.
+INHIBIT_CMD=()
+if command -v systemd-inhibit >/dev/null 2>&1; then
+    INHIBIT_CMD=(systemd-inhibit
+        --what=sleep
+        --who="SHILATE"
+        --why="Unity training env $ENV_ID"
+        --mode=block)
+else
+    echo "[run-training] WARNING: systemd-inhibit not found; OS may suspend during training." >&2
+fi
+
 echo "[run-training] Launching Unity headless (env-id=$ENV_ID, timescale=$TIMESCALE, mqtt=$MQTT_HOST:$MQTT_PORT)"
 
-"$UNITY" \
+"${INHIBIT_CMD[@]}" "$UNITY" \
     -batchmode \
     -nographics \
     -projectPath "$PROJECT_DIR" \

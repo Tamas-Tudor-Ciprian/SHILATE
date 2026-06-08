@@ -49,6 +49,10 @@ public static class StandaloneBootstrap
             }
         }
 
+        // Keep simulating even when the Player window loses focus. Mirrors the
+        // ProjectSettings runInBackground flag and TrainingBootstrap.Launch().
+        Application.runInBackground = true;
+
         Application.targetFrameRate = -1;
         QualitySettings.vSyncCount = 0;
 

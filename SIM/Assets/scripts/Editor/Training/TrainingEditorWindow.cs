@@ -28,6 +28,25 @@ public class TrainingEditorWindow : EditorWindow
     DateTime _trainingStartTime;
     bool _mqttConnected;
 
+    // Tracks whether this window currently holds a SleepPreventer reference,
+    // so multiple stop paths (Stop button, ExitingPlayMode, HandleExited) can
+    // each safely call HoldSleep(false) without double-releasing.
+    bool _sleepHeld;
+
+    void HoldSleep(bool hold, string reason = null)
+    {
+        if (hold && !_sleepHeld)
+        {
+            SleepPreventer.Acquire(reason ?? "training");
+            _sleepHeld = true;
+        }
+        else if (!hold && _sleepHeld)
+        {
+            SleepPreventer.Release();
+            _sleepHeld = false;
+        }
+    }
+
     // Use SessionState to persist across play mode transitions
     const string DebugModeKey = "TrainingController_DebugMode";
     const string InferenceModeKey = "TrainingController_InferenceMode";
@@ -104,6 +123,10 @@ public class TrainingEditorWindow : EditorWindow
 
         EditorApplication.playModeStateChanged -= OnPlayModeChanged;
         EditorApplication.update -= OnEditorUpdate;
+
+        // Release any sleep inhibitor this window owns so closing the window
+        // never leaks an OS-level wakelock.
+        HoldSleep(false);
     }
 
     void OnEditorUpdate()
@@ -129,6 +152,7 @@ public class TrainingEditorWindow : EditorWindow
             DebugMode = false;
             InferenceMode = false;
             ProcessWasRunning = false;
+            HoldSleep(false);
         }
         else if (state == PlayModeStateChange.ExitingEditMode && isRunning && !DebugMode && !InferenceMode)
         {
@@ -211,6 +235,7 @@ public class TrainingEditorWindow : EditorWindow
             AddLog("Failed to start Python training process", LogType.Error);
             DebugMode = false;
             ProcessWasRunning = false;
+            HoldSleep(false);
             EditorApplication.ExitPlaymode();
             return;
         }
@@ -517,6 +542,7 @@ public class TrainingEditorWindow : EditorWindow
             DebugMode = false;
             InferenceMode = false;
             ProcessWasRunning = false;
+            HoldSleep(false);
         }
 
         GUI.enabled = true;
@@ -565,6 +591,7 @@ public class TrainingEditorWindow : EditorWindow
 
         DebugMode = debugMode;
         ProcessWasRunning = true;
+        HoldSleep(true, debugMode ? "debug training" : "training");
         _logEntries.Clear();
         if (_metricsParser != null) _metricsParser.Clear();
         _trainingStartTime = DateTime.Now;
@@ -599,6 +626,7 @@ public class TrainingEditorWindow : EditorWindow
                 AddLog("Failed to start training process", LogType.Error);
                 DebugMode = false;
                 ProcessWasRunning = false;
+                HoldSleep(false);
                 return;
             }
         }
@@ -637,6 +665,7 @@ public class TrainingEditorWindow : EditorWindow
 
         InferenceMode = true;
         ProcessWasRunning = true;
+        HoldSleep(true, "inference");
         _logEntries.Clear();
         if (_metricsParser != null) _metricsParser.Clear();
         _trainingStartTime = DateTime.Now;
@@ -654,6 +683,7 @@ public class TrainingEditorWindow : EditorWindow
             AddLog("Failed to start inference process", LogType.Error);
             InferenceMode = false;
             ProcessWasRunning = false;
+            HoldSleep(false);
             return;
         }
 
@@ -685,6 +715,10 @@ public class TrainingEditorWindow : EditorWindow
             : $"Training exited with code {exitCode}";
 
         AddLog(msg, exitCode == 0 ? LogType.Log : LogType.Warning);
+
+        // Python process has finished — release any sleep inhibitor we held for it.
+        // Safe if the Stop button / ExitingPlayMode already released; HoldSleep is idempotent.
+        HoldSleep(false);
     }
 
     void AddLog(string message, LogType type)

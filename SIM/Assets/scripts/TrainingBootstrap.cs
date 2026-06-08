@@ -50,6 +50,12 @@ public static class TrainingBootstrap
 
         Debug.Log($"[TrainingBootstrap] env-id={envId}, timescale={timescale}, mqtt={mqttHost}:{mqttPort}");
 
+        // Keep simulating even when the Editor/Player window loses focus.
+        // Belt-and-suspenders: ProjectSettings already has runInBackground=1,
+        // but force it here so training never silently pauses if that flag is
+        // toggled off in the future.
+        Application.runInBackground = true;
+
         // Uncap frame rate for maximum throughput
         Application.targetFrameRate = -1;
         QualitySettings.vSyncCount = 0;
