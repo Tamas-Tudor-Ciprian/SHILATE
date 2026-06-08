@@ -13,6 +13,15 @@
 !SIM/docs/
 !SIM/docs/**
 
+# ---------- Unified logs (TensorBoard) ----------
+!logs/
+!logs/tensorboard/
+!logs/tensorboard/.gitkeep
+
+# ---------- Trained model checkpoints ----------
+!models/
+!models/.gitkeep
+
 # ---------- Unity project (SIM) ----------
 !SIM/
 

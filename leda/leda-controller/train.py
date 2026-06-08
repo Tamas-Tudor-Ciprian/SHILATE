@@ -12,8 +12,8 @@ Usage:
     --batch-size       Minibatch size (default: 64)
     --mqtt-host        MQTT broker host (default: localhost)
     --mqtt-port        MQTT broker port (default: 1883)
-    --save-path        Model save directory (default: /tmp/shilate_model)
-    --log-dir          TensorBoard log directory (default: /tmp/shilate_logs)
+    --save-path        Model save directory (default: <project-root>/models)
+    --log-dir          TensorBoard log directory (default: <project-root>/logs/tensorboard)
     --resume-model     Path to a .zip model file to resume from
 
 The number of raycast sensors is read from ../../config.json (model.ray_count).
@@ -31,6 +31,9 @@ import logging
 import math
 import os
 import sys
+
+# Project root is two levels above this script (leda/leda-controller/ → root)
+_PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,8 +56,8 @@ def parse_args():
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--mqtt-host", default="localhost")
     p.add_argument("--mqtt-port", type=int, default=1883)
-    p.add_argument("--save-path", default="/tmp/shilate_model")
-    p.add_argument("--log-dir", default="/tmp/shilate_logs")
+    p.add_argument("--save-path", default=os.path.join(_PROJECT_ROOT, "models"))
+    p.add_argument("--log-dir", default=os.path.join(_PROJECT_ROOT, "logs", "tensorboard"))
     p.add_argument("--resume-model", default=None,
                    help="Path to a .zip model file to resume training from")
     return p.parse_args()

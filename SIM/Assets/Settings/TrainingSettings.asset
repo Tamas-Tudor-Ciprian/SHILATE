@@ -24,6 +24,6 @@ MonoBehaviour:
   debugTimescale: 1
   mqttHost: localhost
   mqttPort: 1883
-  savePath: ../leda/leda-controller/models
-  logDir: ../leda/leda-controller/logs
+  savePath: ../models
+  logDir: ../logs/tensorboard
   resumeModelPath: 
