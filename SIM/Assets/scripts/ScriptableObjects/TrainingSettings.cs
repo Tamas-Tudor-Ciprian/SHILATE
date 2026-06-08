@@ -42,10 +42,10 @@ public class TrainingSettings : ScriptableObject
 
     [Header("Output")]
     [Tooltip("Directory to save trained models")]
-    public string savePath = "../leda/leda-controller/models";
+    public string savePath = "../models";
 
     [Tooltip("Directory for TensorBoard logs")]
-    public string logDir = "../leda/leda-controller/logs";
+    public string logDir = "../logs/tensorboard";
 
     [Header("Resume Training")]
     [Tooltip("Path to a .zip model file to resume from (leave empty to train from scratch)")]
