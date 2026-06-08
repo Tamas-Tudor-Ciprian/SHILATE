@@ -298,6 +298,7 @@ public class TrainingEditorWindow : EditorWindow
     void OnGUI()
     {
         DrawToolbar();
+        DrawSetupWarning();
         DrawHealthBanner();
         DrawSnapshotRow();
 
@@ -315,6 +316,30 @@ public class TrainingEditorWindow : EditorWindow
 
         EditorGUILayout.Space(5);
         DrawControls();
+    }
+
+    /// <summary>
+    /// Shows a one-line warning bar when tensorboard is missing from the venv,
+    /// with a button that opens the Setup window directly.
+    /// </summary>
+    void DrawSetupWarning()
+    {
+        if (_settings == null) return;
+        string venvPath = _settings.GetAbsoluteVenvPath();
+        if (SetupEditorWindow.IsTensorboardInstalled(venvPath)) return;
+
+        var rect = GUILayoutUtility.GetRect(0f, 26f, GUILayout.ExpandWidth(true));
+        EditorGUI.DrawRect(rect, new Color(0.75f, 0.40f, 0.10f));
+
+        float btnW = 130f;
+        var labelRect = new Rect(rect.x + 8, rect.y + 4, rect.width - btnW - 16, rect.height - 8);
+        var btnRect   = new Rect(rect.xMax - btnW - 6, rect.y + 3, btnW, rect.height - 6);
+
+        GUI.Label(labelRect, "⚠  Python dependencies missing — training will crash.",
+            new GUIStyle(EditorStyles.miniLabel) { normal = { textColor = Color.white } });
+
+        if (GUI.Button(btnRect, "Install Now", EditorStyles.miniButton))
+            SetupEditorWindow.ShowWindow();
     }
 
     void DrawToolbar()
