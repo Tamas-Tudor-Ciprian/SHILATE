@@ -42,9 +42,6 @@ public class LedaBroker : MonoBehaviour
     /// <summary>Fired when a reset command is received from Leda.</summary>
     public event System.Action OnResetRequested;
 
-    /// <summary>Fired when a timescale command is received from Leda.</summary>
-    public event System.Action<float> OnTimeScaleRequested;
-
     void OnEnable()
     {
         _mqtt = new MqttClient(brokerHost, brokerPort, $"unity-shilate-{envPrefix}");
@@ -166,7 +163,7 @@ public class LedaBroker : MonoBehaviour
     /// <summary>The environment prefix for this instance (e.g. "env0").</summary>
     public string EnvPrefix => envPrefix;
 
-    /// <summary>Configure broker settings at runtime (used by TrainingBootstrap).</summary>
+    /// <summary>Configure broker settings at runtime (used by the Editor training window).</summary>
     public void Configure(string host, int port, string prefix)
     {
         brokerHost = host;
@@ -245,7 +242,8 @@ public class LedaBroker : MonoBehaviour
                     OnResetRequested?.Invoke();
                     break;
                 case "timescale":
-                    OnTimeScaleRequested?.Invoke(value);
+                    // Timescale control removed: training always runs at real time.
+                    // Accept and ignore so legacy clients don't error.
                     break;
                 default:
                     Debug.Log($"[LedaBroker] Unknown control command: {command}");

@@ -1,6 +1,10 @@
 """
-SHILATE Gymnasium Environment — wraps MQTT communication with Unity
-into a standard Gym interface for Stable-Baselines3 training.
+SHILATE Gymnasium Environment — wraps MQTT communication with a single Unity
+SHILATE instance into a standard Gym interface for Stable-Baselines3.
+
+This wrapper is intentionally single-environment. Parallel training and time
+acceleration were removed in favour of one Editor instance at real time so
+problems are visible from the Unity Editor.
 """
 
 import logging
@@ -15,7 +19,12 @@ from controller import VehicleController
 log = logging.getLogger(__name__)
 
 DEFAULT_RAY_COUNT = 9
-OBS_TIMEOUT = 5.0  # seconds to wait for observation before declaring stale
+OBS_TIMEOUT = 5.0  # seconds to wait for an observation before declaring it stale
+
+
+def _emit(marker: str, payload: str) -> None:
+    """Mirror train.py's structured stdout markers so the Editor sees env health."""
+    print(f"{marker} {payload}", flush=True)
 
 
 class ShilateEnv(gym.Env):
@@ -30,17 +39,13 @@ class ShilateEnv(gym.Env):
 
     def __init__(
         self,
-        env_id: int = 0,
         mqtt_host: str = "localhost",
         mqtt_port: int = 1883,
         ray_count: int = DEFAULT_RAY_COUNT,
-        timescale: float = 1.0,
     ):
         super().__init__()
 
-        self.env_id = env_id
         self.ray_count = ray_count
-        self._timescale = timescale
 
         # Observation: ray distances (0-1) + normalized speed + normalized steer
         obs_size = ray_count + 2
@@ -55,9 +60,8 @@ class ShilateEnv(gym.Env):
             dtype=np.float32,
         )
 
-        # MQTT controller
+        # MQTT controller (always env0)
         self._ctrl = VehicleController(
-            env_id=env_id,
             mqtt_host=mqtt_host,
             mqtt_port=mqtt_port,
             subscribe_sensors=True,
@@ -70,12 +74,13 @@ class ShilateEnv(gym.Env):
     def _ensure_connected(self):
         if not self._connected:
             if not self._ctrl.connect(timeout=15.0):
+                _emit("SHILATE-HEALTH", "mqtt_connect_failed")
                 raise ConnectionError(
-                    f"env{self.env_id}: Could not connect to MQTT at "
+                    f"Could not connect to MQTT at "
                     f"{self._ctrl.mqtt_host}:{self._ctrl.mqtt_port}"
                 )
             self._connected = True
-            self._ctrl.set_timescale(self._timescale)
+            _emit("SHILATE-HEALTH", "mqtt_connected")
             self._ctrl.set_gear("D")
 
     def reset(self, *, seed=None, options=None):
@@ -86,7 +91,6 @@ class ShilateEnv(gym.Env):
         self._step_count = 0
 
         # Car resets to Park gear — need brake then gear D
-        import time
         self._ctrl.set_brake(1.0)
         time.sleep(0.1)
         self._ctrl.set_gear("D")
@@ -96,7 +100,8 @@ class ShilateEnv(gym.Env):
         # Wait for first observation after reset
         self._ctrl.obs_event.clear()
         if not self._ctrl.obs_event.wait(timeout=OBS_TIMEOUT):
-            log.warning("env%d: Timeout waiting for observation after reset", self.env_id)
+            log.warning("Timeout waiting for observation after reset")
+            _emit("SHILATE-HEALTH", "obs_timeout phase=reset")
 
         obs = self._build_observation()
         return obs, {}
@@ -110,7 +115,8 @@ class ShilateEnv(gym.Env):
         # Wait for next observation from Unity
         self._ctrl.obs_event.clear()
         if not self._ctrl.obs_event.wait(timeout=OBS_TIMEOUT):
-            log.warning("env%d: Observation timeout at step %d", self.env_id, self._step_count)
+            log.warning("Observation timeout at step %d", self._step_count)
+            _emit("SHILATE-HEALTH", f"obs_timeout phase=step step={self._step_count}")
             # Return truncated episode on timeout
             obs = self._build_observation()
             return obs, -1.0, False, True, {"reason": "obs_timeout"}
@@ -147,7 +153,6 @@ class ShilateEnv(gym.Env):
     def close(self):
         if self._connected:
             self._ctrl.send_action(0.0, 0.0, 0.0)
-            self._ctrl.set_timescale(1.0)
             time.sleep(0.1)
             self._ctrl.disconnect()
             self._connected = False

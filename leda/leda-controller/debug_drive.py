@@ -3,7 +3,7 @@
 SHILATE Debug Drive — Terminal-based WASD vehicle control from Leda.
 
 Usage:
-    python3 debug_drive.py [--mqtt-host localhost] [--mqtt-port 1883] [--env-id 0]
+    python3 debug_drive.py [--mqtt-host localhost] [--mqtt-port 1883]
 
 Controls:
     W/S     — Throttle / Brake
@@ -46,8 +46,6 @@ def main(stdscr, ctrl: VehicleController):
     gear = "P"
     cur_gear = "P"
 
-    # Force real-time for debug mode
-    ctrl.set_timescale(1.0)
     # Shift to Drive: must hold brake first (Tesla safety rule)
     ctrl.set_brake(1.0)
     ctrl.send_action(0.0, 0.0, 1.0)
@@ -164,7 +162,6 @@ def parse_args():
     parser = argparse.ArgumentParser(description="SHILATE Debug Drive")
     parser.add_argument("--mqtt-host", default="localhost")
     parser.add_argument("--mqtt-port", type=int, default=1883)
-    parser.add_argument("--env-id", type=int, default=0)
     return parser.parse_args()
 
 
@@ -172,7 +169,6 @@ if __name__ == "__main__":
     args = parse_args()
 
     ctrl = VehicleController(
-        env_id=args.env_id,
         mqtt_host=args.mqtt_host,
         mqtt_port=args.mqtt_port,
     )

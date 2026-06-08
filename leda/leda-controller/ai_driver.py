@@ -8,9 +8,10 @@ Usage:
     --model         Path to trained SB3 model (required)
     --mqtt-host     MQTT broker host (default: localhost)
     --mqtt-port     MQTT broker port (default: 1883)
-    --env-id        Environment index (default: 0)
-    --ray-count     Number of raycast sensors (default: 9)
     --episodes      Number of episodes to run, 0=infinite (default: 0)
+
+Ray count is read from ../../config.json (model.ray_count). The driver always
+runs against a single Unity environment at real time.
 """
 
 import argparse
@@ -37,14 +38,10 @@ def handle_signal(sig, frame):
 
 
 def parse_args():
-    from config_loader import load_ray_count_from_config
-    default_ray_count = load_ray_count_from_config()
     p = argparse.ArgumentParser(description="SHILATE AI Driver")
     p.add_argument("--model", required=True, help="Path to trained model .zip")
     p.add_argument("--mqtt-host", default="localhost")
     p.add_argument("--mqtt-port", type=int, default=1883)
-    p.add_argument("--env-id", type=int, default=0)
-    p.add_argument("--ray-count", type=int, default=default_ray_count)
     p.add_argument("--episodes", type=int, default=0, help="0 = run forever")
     return p.parse_args()
 
@@ -53,16 +50,18 @@ def main():
     args = parse_args()
 
     from stable_baselines3 import PPO
+    from config_loader import load_ray_count_from_config
     from controller import VehicleController
+
+    ray_count = load_ray_count_from_config()
 
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    log.info("Loading model from %s", args.model)
+    log.info("Loading model from %s (rays=%d)", args.model, ray_count)
     model = PPO.load(args.model)
 
     ctrl = VehicleController(
-        env_id=args.env_id,
         mqtt_host=args.mqtt_host,
         mqtt_port=args.mqtt_port,
         subscribe_sensors=True,
@@ -73,11 +72,9 @@ def main():
         log.error("Could not connect to MQTT broker")
         sys.exit(1)
 
-    # Run at real-time for visualization
-    ctrl.set_timescale(1.0)
     ctrl.set_gear("D")
 
-    log.info("AI Driver running on env%d (model: %s)", args.env_id, args.model)
+    log.info("AI Driver running (model: %s)", args.model)
     log.info("Press Ctrl+C to stop")
 
     episode = 0
@@ -93,7 +90,7 @@ def main():
             break
 
         # Build observation
-        obs = build_observation(ctrl, args.ray_count)
+        obs = build_observation(ctrl, ray_count)
 
         # Run inference
         action, _ = model.predict(obs, deterministic=True)

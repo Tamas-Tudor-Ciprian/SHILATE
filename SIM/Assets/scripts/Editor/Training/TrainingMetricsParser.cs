@@ -34,15 +34,48 @@ public class TrainingMetricsParser
 
     public event Action<string, float> OnMetricParsed;
 
+    /// <summary>Fired for every <c>SHILATE-HEALTH &lt;signal&gt;</c> line emitted by train.py.</summary>
+    public event Action<string> OnHealthMarker;
+
     // SB3 format: |    metric_name           | 123.45      |
     // More flexible pattern to handle various spacing
     static readonly Regex MetricPattern = new(
         @"\|\s*(\w+)\s*\|\s*([-+]?\d+\.?\d*(?:[eE][-+]?\d+)?)\s*\|",
         RegexOptions.Compiled);
 
+    // SHILATE-METRIC key=value   |   SHILATE-HEALTH signal extra...
+    static readonly Regex StructuredMetricPattern = new(
+        @"^SHILATE-METRIC\s+(\w+)\s*=\s*([-+]?\d+\.?\d*(?:[eE][-+]?\d+)?)",
+        RegexOptions.Compiled);
+
+    static readonly Regex StructuredHealthPattern = new(
+        @"^SHILATE-HEALTH\s+(.+)$",
+        RegexOptions.Compiled);
+
     public void ParseLine(string line)
     {
         if (string.IsNullOrEmpty(line)) return;
+
+        // Structured marker lines emitted directly by train.py — preferred path
+        var healthMatch = StructuredHealthPattern.Match(line);
+        if (healthMatch.Success)
+        {
+            OnHealthMarker?.Invoke(healthMatch.Groups[1].Value.Trim());
+            return;
+        }
+
+        var structuredMetric = StructuredMetricPattern.Match(line);
+        if (structuredMetric.Success)
+        {
+            string name = structuredMetric.Groups[1].Value;
+            string valueStr = structuredMetric.Groups[2].Value;
+            if (float.TryParse(valueStr, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out float value))
+            {
+                RecordMetric(name, value);
+            }
+            return;
+        }
 
         // Try to match SB3 table format
         var matches = MetricPattern.Matches(line);
@@ -55,37 +88,43 @@ public class TrainingMetricsParser
                 System.Globalization.CultureInfo.InvariantCulture, out float value))
                 continue;
 
-            var metric = new Metric
-            {
-                Name = name,
-                Value = value,
-                Timestamp = DateTime.Now
-            };
+            RecordMetric(name, value);
+        }
+    }
 
-            switch (name)
-            {
-                case "ep_rew_mean":
-                    AddMetric(_rewardHistory, metric);
-                    OnMetricParsed?.Invoke(name, value);
-                    break;
-                case "ep_len_mean":
-                    AddMetric(_episodeLengthHistory, metric);
-                    OnMetricParsed?.Invoke(name, value);
-                    break;
-                case "loss":
-                case "policy_loss":
-                    AddMetric(_lossHistory, metric);
-                    OnMetricParsed?.Invoke(name, value);
-                    break;
-                case "value_loss":
-                    AddMetric(_valueLossHistory, metric);
-                    OnMetricParsed?.Invoke(name, value);
-                    break;
-                case "approx_kl":
-                    AddMetric(_klHistory, metric);
-                    OnMetricParsed?.Invoke(name, value);
-                    break;
-            }
+    void RecordMetric(string name, float value)
+    {
+        var metric = new Metric
+        {
+            Name = name,
+            Value = value,
+            Timestamp = DateTime.Now,
+        };
+
+        switch (name)
+        {
+            case "ep_rew_mean":
+                AddMetric(_rewardHistory, metric);
+                OnMetricParsed?.Invoke(name, value);
+                break;
+            case "ep_len_mean":
+                AddMetric(_episodeLengthHistory, metric);
+                OnMetricParsed?.Invoke(name, value);
+                break;
+            case "loss":
+            case "policy_loss":
+            case "policy_gradient_loss":
+                AddMetric(_lossHistory, metric);
+                OnMetricParsed?.Invoke(name, value);
+                break;
+            case "value_loss":
+                AddMetric(_valueLossHistory, metric);
+                OnMetricParsed?.Invoke(name, value);
+                break;
+            case "approx_kl":
+                AddMetric(_klHistory, metric);
+                OnMetricParsed?.Invoke(name, value);
+                break;
         }
     }
 

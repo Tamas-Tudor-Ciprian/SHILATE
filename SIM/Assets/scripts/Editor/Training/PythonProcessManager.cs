@@ -28,13 +28,13 @@ public class PythonProcessManager
     /// <summary>
     /// Starts the Python training process with the given settings.
     /// </summary>
-    public bool Start(TrainingSettings settings, bool debugMode = false)
+    public bool Start(TrainingSettings settings)
     {
         return StartScript(
             settings.GetAbsoluteVenvPath(),
             settings.GetAbsoluteTrainScriptPath(),
             settings.GetWorkingDirectory(),
-            settings.BuildCommandLineArgs(debugMode)
+            settings.BuildCommandLineArgs()
         );
     }
 
