@@ -245,24 +245,23 @@ public class SetupEditorWindow : EditorWindow
             return;
         }
 
-        // Build command:  pip install --upgrade pip && pip install -r requirements.txt
-        bool isWindows = Application.platform == RuntimePlatform.WindowsEditor;
-        string shellExe, shellArgs;
-        if (isWindows)
+        // Step 1 — upgrade pip (blocking, short). Run pip directly without a
+        // shell wrapper so quoting is never an issue regardless of path content.
+        _stateDetail = "Upgrading pip...";
+        Repaint();
+        AddLog("Step 1/2: Upgrading pip...");
+        if (!RunBlocking(pipExe, "install --upgrade pip", workDir, out string pipUpgradeErr))
         {
-            string cmd = $"\"{pipExe}\" install --quiet --upgrade pip && \"{pipExe}\" install -r \"{reqFile}\"";
-            shellExe  = "cmd.exe";
-            shellArgs = $"/c \"{cmd}\"";
+            SetFailed($"pip upgrade failed: {pipUpgradeErr}");
+            return;
         }
-        else
-        {
-            string cmd = $"'{pipExe}' install --quiet --upgrade pip && '{pipExe}' install -r '{reqFile}'";
-            shellExe  = "/bin/bash";
-            shellArgs = $"-c \"{cmd.Replace("\"", "\\\"")}\"";
-        }
+        AddLog("pip upgrade OK.");
 
+        // Step 2 — install requirements (async, output streamed into the window).
+        // Pass the requirements file path as a direct argument to pip — no shell
+        // intermediary, so there is no && quoting problem on any platform.
         _stateDetail = "Installing packages...";
-        AddLog($"Running: {shellExe} {shellArgs}");
+        AddLog($"Step 2/2: pip install -r \"{reqFile}\"");
 
         try
         {
@@ -270,8 +269,8 @@ public class SetupEditorWindow : EditorWindow
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName               = shellExe,
-                    Arguments              = shellArgs,
+                    FileName               = pipExe,
+                    Arguments              = $"install -r \"{reqFile}\"",
                     WorkingDirectory       = workDir,
                     UseShellExecute        = false,
                     RedirectStandardOutput = true,
@@ -292,7 +291,57 @@ public class SetupEditorWindow : EditorWindow
         }
         catch (Exception ex)
         {
-            SetFailed($"Failed to start process: {ex.Message}");
+            SetFailed($"Failed to start pip: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Runs an executable with the given arguments synchronously.
+    /// Captures stdout+stderr and appends them to the log.
+    /// Returns true on exit code 0; sets errorMessage on failure.
+    /// </summary>
+    bool RunBlocking(string exe, string args, string workDir, out string errorMessage)
+    {
+        errorMessage = null;
+        try
+        {
+            using var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName               = exe,
+                    Arguments              = args,
+                    WorkingDirectory       = workDir,
+                    UseShellExecute        = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError  = true,
+                    CreateNoWindow         = true,
+                }
+            };
+            proc.Start();
+            string stdout = proc.StandardOutput.ReadToEnd();
+            string stderr = proc.StandardError.ReadToEnd();
+            proc.WaitForExit();
+
+            if (!string.IsNullOrWhiteSpace(stdout))
+                foreach (var line in stdout.Split('\n'))
+                    if (!string.IsNullOrWhiteSpace(line)) AddLog(line.TrimEnd());
+
+            if (!string.IsNullOrWhiteSpace(stderr))
+                foreach (var line in stderr.Split('\n'))
+                    if (!string.IsNullOrWhiteSpace(line)) AddLog(line.TrimEnd(), isError: proc.ExitCode != 0);
+
+            if (proc.ExitCode != 0)
+            {
+                errorMessage = $"exit code {proc.ExitCode}";
+                return false;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            return false;
         }
     }
 
@@ -312,57 +361,15 @@ public class SetupEditorWindow : EditorWindow
         AddLog($"Using Python: {python}");
         AddLog($"Creating venv at: {venvPath}");
 
-        bool isWindows = Application.platform == RuntimePlatform.WindowsEditor;
-        string shellExe, shellArgs;
-        string cmd = $"\"{python}\" -m venv \"{venvPath}\"";
-        if (isWindows)
+        // Call python -m venv directly — no shell wrapper needed.
+        if (!RunBlocking(python, $"-m venv \"{venvPath}\"", Path.GetTempPath(), out string err))
         {
-            shellExe  = "cmd.exe";
-            shellArgs = $"/c \"{cmd}\"";
-        }
-        else
-        {
-            shellExe  = "/bin/bash";
-            shellArgs = $"-c \"{cmd.Replace("\"", "\\\"")}\"";
-        }
-
-        try
-        {
-            using var proc = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName               = shellExe,
-                    Arguments              = shellArgs,
-                    UseShellExecute        = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError  = true,
-                    CreateNoWindow         = true,
-                }
-            };
-
-            proc.Start();
-            string stdout = proc.StandardOutput.ReadToEnd();
-            string stderr = proc.StandardError.ReadToEnd();
-            proc.WaitForExit();
-
-            if (!string.IsNullOrWhiteSpace(stdout)) AddLog(stdout.Trim());
-            if (!string.IsNullOrWhiteSpace(stderr)) AddLog(stderr.Trim(), isError: true);
-
-            if (proc.ExitCode != 0)
-            {
-                SetFailed($"venv creation failed (exit {proc.ExitCode})");
-                return false;
-            }
-
-            AddLog("Venv created successfully.");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SetFailed($"venv creation threw: {ex.Message}");
+            SetFailed($"venv creation failed: {err}");
             return false;
         }
+
+        AddLog("Venv created successfully.");
+        return true;
     }
 
     // ─── Process callbacks ─────────────────────────────────────────────
