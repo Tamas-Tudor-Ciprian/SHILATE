@@ -453,7 +453,9 @@ public class VehicleController : MonoBehaviour
         if (bmwWheel == null) return;
         // Spin around local X (axle), steer around local Y — standard convention for properly centred GLB wheels
         Quaternion spin  = Quaternion.AngleAxis(spinAngle,  Vector3.right);
-        Quaternion steer = Quaternion.AngleAxis(steerAngle, Vector3.up);
+        
+        Vector3 steerAxis = new Vector3(0f, 0f, -1f);
+        Quaternion steer = Quaternion.AngleAxis(steerAngle, steerAxis);
         bmwWheel.localRotation = steer * spin * initLocalRot;
     }
 
