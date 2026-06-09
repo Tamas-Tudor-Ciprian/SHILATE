@@ -24,6 +24,12 @@ public class VehicleController : MonoBehaviour
     public Transform wheelMeshRL;
     public Transform wheelMeshRR;
 
+    [Header("BMW Visual Wheels")]
+    public Transform bmwWheelFL;
+    public Transform bmwWheelFR;
+    public Transform bmwWheelRL;
+    public Transform bmwWheelRR;
+
     [Header("Drivetrain (Tesla Model 3 RWD)")]
     [Tooltip("Peak motor torque applied to rear wheels (Nm)")]
     public float maxMotorTorque = 450f;
@@ -131,11 +137,25 @@ public class VehicleController : MonoBehaviour
     float _baseSideStiffnessRL;
     float _baseSideStiffnessRR;
 
+    // BMW visual wheel state
+    Quaternion _bmwInitLocalRotFL, _bmwInitLocalRotFR, _bmwInitLocalRotRL, _bmwInitLocalRotRR;
+    float      _bmwSpinAngleFL,    _bmwSpinAngleFR,    _bmwSpinAngleRL,    _bmwSpinAngleRR;
+
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
         _rb.centerOfMass = centerOfMassOffset;
         ApplyFrictionCurves();
+        CacheBMWWheelPoses();
+    }
+
+    void CacheBMWWheelPoses()
+    {
+        // Record each wheel's rest local rotation (baked GLB pose at zero steer/spin)
+        _bmwInitLocalRotFL = bmwWheelFL != null ? bmwWheelFL.localRotation : Quaternion.identity;
+        _bmwInitLocalRotFR = bmwWheelFR != null ? bmwWheelFR.localRotation : Quaternion.identity;
+        _bmwInitLocalRotRL = bmwWheelRL != null ? bmwWheelRL.localRotation : Quaternion.identity;
+        _bmwInitLocalRotRR = bmwWheelRR != null ? bmwWheelRR.localRotation : Quaternion.identity;
     }
 
     void ApplyFrictionCurves()
@@ -404,6 +424,39 @@ public class VehicleController : MonoBehaviour
         SyncWheel(wheelFR, wheelMeshFR);
         SyncWheel(wheelRL, wheelMeshRL);
         SyncWheel(wheelRR, wheelMeshRR);
+        SyncBMWWheels();
+    }
+
+    void SyncBMWWheels()
+    {
+        // Spin speed from car velocity: distance/circumference × 360 deg/rev
+        float radius        = wheelRL != null ? wheelRL.radius : 0.35f;
+        float forwardSpeed  = Vector3.Dot(_rb.linearVelocity, transform.forward); // m/s
+        float spinDPS       = (forwardSpeed / (2f * Mathf.PI * radius)) * 360f;   // degrees/sec
+
+        _bmwSpinAngleFL += spinDPS * Time.deltaTime;
+        _bmwSpinAngleFR += spinDPS * Time.deltaTime;
+        _bmwSpinAngleRL += spinDPS * Time.deltaTime;
+        _bmwSpinAngleRR += spinDPS * Time.deltaTime;
+
+        float steerFL = wheelFL != null ? wheelFL.steerAngle : 0f;
+        float steerFR = wheelFR != null ? wheelFR.steerAngle : 0f;
+
+        SyncBMWWheel(bmwWheelFL, _bmwInitLocalRotFL, _bmwSpinAngleFL, steerFL);
+        SyncBMWWheel(bmwWheelFR, _bmwInitLocalRotFR, _bmwSpinAngleFR, steerFR);
+        SyncBMWWheel(bmwWheelRL, _bmwInitLocalRotRL, _bmwSpinAngleRL, 0f);
+        SyncBMWWheel(bmwWheelRR, _bmwInitLocalRotRR, _bmwSpinAngleRR, 0f);
+    }
+
+    void SyncBMWWheel(Transform bmwWheel, Quaternion initLocalRot, float spinAngle, float steerAngle)
+    {
+        if (bmwWheel == null) return;
+        // Spin around local X (axle), steer around local Y — standard convention for properly centred GLB wheels
+        Quaternion spin  = Quaternion.AngleAxis(spinAngle,  Vector3.right);
+        
+        Vector3 steerAxis = new Vector3(0f, 0f, -1f);
+        Quaternion steer = Quaternion.AngleAxis(steerAngle, steerAxis);
+        bmwWheel.localRotation = steer * spin * initLocalRot;
     }
 
     void SyncWheel(WheelCollider collider, Transform mesh)

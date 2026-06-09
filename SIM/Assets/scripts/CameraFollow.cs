@@ -20,6 +20,14 @@ public class CameraFollow : MonoBehaviour
     [Range(1f, 20f)]
     public float lookSpeed = 8f;
 
+    void Start()
+    {
+        // Capture the camera's current editor-placed position as the offset so
+        // moving the camera in the Editor before pressing Play is respected.
+        if (target != null)
+            offset = target.InverseTransformPoint(transform.position);
+    }
+
     void LateUpdate()
     {
         if (target == null) return;

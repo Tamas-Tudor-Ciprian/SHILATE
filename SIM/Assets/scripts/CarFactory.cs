@@ -71,9 +71,6 @@ public static class CarFactory
         DestroyCollider(cabin.GetComponent<Collider>());
         cabin.GetComponent<Renderer>().enabled = false;
 
-        // ── BMW GLB visual ──
-        AttachBMWVisual(car);
-
         // ── Wheel dimensions ──
         const float wheelRadius         = 0.35f;
         const float suspensionDistance  = 0.2f;
@@ -100,6 +97,9 @@ public static class CarFactory
         vc.wheelRL    = wcRL;   vc.wheelRR    = wcRR;
         vc.wheelMeshFL = meshFL; vc.wheelMeshFR = meshFR;
         vc.wheelMeshRL = meshRL; vc.wheelMeshRR = meshRR;
+
+        // ── BMW GLB visual (must be after VehicleController so wheel refs can be wired) ──
+        AttachBMWVisual(car, vc);
 
         // ── ManualDriveInput ──
         ManualDriveInput manual = car.AddComponent<ManualDriveInput>();
@@ -166,11 +166,15 @@ public static class CarFactory
         {
             CameraFollow follow = mainCam.gameObject.GetComponent<CameraFollow>();
             if (follow == null)
+            {
                 follow = mainCam.gameObject.AddComponent<CameraFollow>();
+                // Snap to the default behind-the-car position so the first spawn
+                // looks correct. CameraFollow.Start() will capture this world position
+                // as the offset, so manual editor adjustments before Play are respected.
+                mainCam.transform.position = car.transform.TransformPoint(follow.offset);
+                mainCam.transform.LookAt(car.transform);
+            }
             follow.target = car.transform;
-
-            mainCam.transform.position = car.transform.TransformPoint(follow.offset);
-            mainCam.transform.LookAt(car.transform);
         }
 
         Debug.Log($"[CarFactory] Car built at {position}.");
@@ -179,7 +183,7 @@ public static class CarFactory
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    static void AttachBMWVisual(GameObject car)
+    static void AttachBMWVisual(GameObject car, VehicleController vc)
     {
         GameObject bmwPrefab = Resources.Load<GameObject>("green_bmw");
         if (bmwPrefab != null)
@@ -189,12 +193,27 @@ public static class CarFactory
             bmwInstance.transform.localPosition = new Vector3(-0.2f, -0.5f, 0f);
             bmwInstance.transform.localRotation = Quaternion.Euler(-90f, 90f, 270f);
             bmwInstance.transform.localScale    = new Vector3(0.3f, 0.3f, 0.3f);
+
+            // Wire BMW wheel transforms so VehicleController can drive their rotation
+            const string wheelsRoot = "root/GLTF_SceneRootNode/WHeelsandrims_2";
+            vc.bmwWheelRL = FindBMWWheel(bmwInstance.transform, wheelsRoot + "/wheel_bl",  "RL (back left)");
+            vc.bmwWheelRR = FindBMWWheel(bmwInstance.transform, wheelsRoot + "/wheel_br",  "RR (back right)");
+            vc.bmwWheelFL = FindBMWWheel(bmwInstance.transform, wheelsRoot + "/wheel_fl",   "FL (front left)");
+            vc.bmwWheelFR = FindBMWWheel(bmwInstance.transform, wheelsRoot + "/wheel_fr",  "FR (front right)");
         }
         else
         {
             Debug.LogWarning("[CarFactory] bmw.glb not found in Resources — using invisible collision body only. " +
                              "Place it in Assets/Resources/ after installing the glTFast package.");
         }
+    }
+
+    static Transform FindBMWWheel(Transform bmwRoot, string path, string label)
+    {
+        Transform t = bmwRoot.Find(path);
+        if (t == null)
+            Debug.LogWarning($"[CarFactory] BMW wheel '{label}' not found at path '{path}'. Check Hierarchy names.");
+        return t;
     }
 
     static Shader GetURPShader() => Shader.Find("Universal Render Pipeline/Lit");
