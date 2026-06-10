@@ -1,1 +1,88 @@
-% placeholder
+\chapter{Conclusions}\label{ch:conclusions}
+\thispagestyle{pagestyle}
+
+\section{Summary of Contributions}
+\label{sec:contributions}
+
+This thesis presented SHILATE, an open-source pipeline that trains a
+deep reinforcement learning agent inside a Unity physics simulation and
+deploys the resulting policy onto an Eclipse Leda SDV runtime stack.
+The main contributions are as follows.
+
+\textbf{An integrated simulation environment for SDV-targeted RL.} A
+Unity 2022 LTS scene was constructed programmatically, comprising a
+realistic rear-wheel-drive vehicle physics model, a 21-ray LiDAR-style
+sensor, and a circular obstacle course. The environment publishes
+observations and consumes control commands through MQTT at 10~Hz, using
+the same protocol and topic namespace as the deployment target, so that
+no protocol translation is required when moving from training to
+deployment.
+
+\textbf{A shaped reward function with quantified milestone bonuses.} A
+four-term reward signal was designed and ablated: a continuous progress
+reward, a collision penalty, a half-turn milestone bonus, and a
+lap-completion bonus. Ablation experiments confirmed that the
+intermediate milestone bonus accelerates convergence by approximately
+18{,}000 timesteps and that the magnitude of the collision penalty
+directly controls the agent's safety margin.
+
+\textbf{A Gymnasium/SB3 training pipeline with live Editor integration.}
+The MQTT interface is wrapped in a Gymnasium-compliant environment,
+allowing any Stable-Baselines3 algorithm to be substituted without
+modification. A Unity Editor window provides one-click training control,
+real-time health monitoring across five independently evaluated failure
+modes, and live metric graphs.
+
+\textbf{A complete SDV deployment chain.} A containerised
+MQTT-to-Kuksa bridge maps simulator telemetry to COVESA VSS paths, and
+a Velocitas vehicle application enforces operational limits on the
+running RL policy. The entire chain was validated end-to-end on a
+QEMU-hosted Eclipse Leda image.
+
+\section{Limitations}
+\label{sec:limitations}
+
+\textbf{Single training environment.} SHILATE supports exactly one
+Unity Editor instance at real time (\texttt{Time.timeScale = 1}).
+Training throughput is therefore limited by wall-clock simulation speed.
+
+\textbf{No sim-to-real gap mitigation.} The sensor model, vehicle
+physics, and obstacle geometry are all abstractions. No domain
+randomisation or adaptation mechanism is included, so a policy trained
+in SHILATE is unlikely to transfer directly to a physical vehicle
+without further fine-tuning.
+
+\textbf{Informational-only safety monitor.} The Velocitas application
+publishes alerts but does not currently override the agent's control
+commands. The deployment chain provides monitoring rather than
+enforcement.
+
+\textbf{Limited action space.} The current action space does not include
+gear selection or parking-brake inputs, restricting the range of
+manoeuvres available to the agent.
+
+\section{Future Work}
+\label{sec:future}
+
+\textbf{Multi-environment parallelisation.} Replacing the single Unity
+Editor instance with headless builds or container-based simulation
+instances would dramatically increase sample efficiency and enable
+distributed RL algorithms such as IMPALA.
+
+\textbf{Curriculum learning.} Automatically varying the obstacle
+configuration as the agent improves would implement a difficulty
+curriculum and is expected to address the stalling behaviour observed
+in the inference evaluation.
+
+\textbf{Physical hardware deployment.} Validating the deployment chain
+on a physical SDV platform --- such as a CAN-bus-instrumented RC vehicle
+running Eclipse Leda on embedded hardware --- would provide direct
+evidence of the pipeline's applicability to real automotive systems.
+
+\textbf{Safety monitor upgrade.} Extending the Velocitas application to
+publish override control commands when a limit is exceeded would close
+the loop from detection to intervention.
+
+\textbf{Richer observation space.} Adding front-facing camera images or
+occupancy-grid representations would bring the perception model closer to
+production ADAS systems, at the cost of increased training complexity.

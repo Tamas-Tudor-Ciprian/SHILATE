@@ -3,11 +3,15 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
 The style file: biblatex.bst
 A level-1 auxiliary file: chapters/1-Title.aux
-A level-1 auxiliary file: chapters/2-AbstractRO.aux
 A level-1 auxiliary file: chapters/3-AbstractEN.aux
 A level-1 auxiliary file: chapters/4-Introduction.aux
-A level-1 auxiliary file: chapters/5-Body.aux
-A level-1 auxiliary file: chapters/6-Conclusions.aux
+A level-1 auxiliary file: chapters/5-Background.aux
+A level-1 auxiliary file: chapters/6-SystemArchitecture.aux
+A level-1 auxiliary file: chapters/7-UnitySim.aux
+A level-1 auxiliary file: chapters/8-PythonRL.aux
+A level-1 auxiliary file: chapters/9-SDVIntegration.aux
+A level-1 auxiliary file: chapters/10-Experiments.aux
+A level-1 auxiliary file: chapters/11-Conclusions.aux
 Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
 Reallocated global_strs (elt_size=200001) to 20 items from 10.
 Reallocated glb_str_end (elt_size=4) to 20 items from 10.
@@ -28,44 +32,44 @@ Database file #2: bibliography.bib
 Biblatex version: 3.19
 Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
-You've used 2 entries,
+You've used 16 entries,
             6399 wiz_defined-function locations,
-            1218 strings with 9316 characters,
-and the built_in function-call counts, 5700 in all, are:
-= -- 340
-> -- 141
-< -- 18
-+ -- 139
-- -- 51
-* -- 304
-:= -- 764
+            1317 strings with 12979 characters,
+and the built_in function-call counts, 200508 in all, are:
+= -- 18061
+> -- 2166
+< -- 374
++ -- 7144
+- -- 978
+* -- 14320
+:= -- 26253
 add.period$ -- 0
-call.type$ -- 2
-change.case$ -- 7
+call.type$ -- 16
+change.case$ -- 143
 chr.to.int$ -- 42
-cite$ -- 2
-duplicate$ -- 500
-empty$ -- 525
-format.name$ -- 44
-if$ -- 1193
+cite$ -- 30
+duplicate$ -- 21539
+empty$ -- 15936
+format.name$ -- 1607
+if$ -- 38437
 int.to.chr$ -- 0
-int.to.str$ -- 2
+int.to.str$ -- 37
 missing$ -- 0
-newline$ -- 45
-num.names$ -- 38
-pop$ -- 374
+newline$ -- 766
+num.names$ -- 626
+pop$ -- 6423
 preamble$ -- 1
-purify$ -- 10
+purify$ -- 347
 quote$ -- 0
-skip$ -- 223
+skip$ -- 2912
 stack$ -- 0
-substring$ -- 557
-swap$ -- 122
-text.length$ -- 38
+substring$ -- 34673
+swap$ -- 2658
+text.length$ -- 444
 text.prefix$ -- 0
 top$ -- 1
-type$ -- 56
+type$ -- 531
 warning$ -- 0
-while$ -- 117
+while$ -- 3292
 width$ -- 0
-write$ -- 44
+write$ -- 751
