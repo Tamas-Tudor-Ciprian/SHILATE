@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  10 JUN 2026 15:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  10 JUN 2026 15:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1018,7 +1018,7 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
-<images/logo.png, id=32, 149.358pt x 48.18pt>
+<images/logo.png, id=76, 149.358pt x 48.18pt>
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 23.
@@ -1129,9 +1129,6 @@ nvergence, inference lap
  []
 
 
-LaTeX Warning: Reference `ch:background' on page 1 undefined on input line 87.
-
-
 LaTeX Warning: Reference `ch:architecture' on page 1 undefined on input line 90
 .
 
@@ -1182,6 +1179,10 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `NimbusSans' (encoding: TS1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
+
+
+LaTeX Warning: Reference `section:introduction' on page 1 undefined on input li
+ne 114.
 
 
 LaTeX Warning: Reference `fig:myfig' on page 1 undefined on input line 114.
@@ -1295,14 +1296,153 @@ Package pdftex.def Info: images/logo.png  used on input line 50.
  [10]
 \openout2 = `chapters/6-SystemArchitecture.aux'.
 
- (./chapters/6-SystemArchitecture.tex)
+ (./chapters/6-SystemArchitecture.tex
+Chapter 3.
+
+LaTeX Warning: Citation 'Towers2024' on page 11 undefined on input line 22.
+
+
+LaTeX Warning: Citation 'Raffin2021' on page 11 undefined on input line 23.
+
+
+LaTeX Warning: Citation 'EclipseLeda2023' on page 11 undefined on input line 29
+.
+
+
+LaTeX Warning: Citation 'OASIS2014' on page 11 undefined on input line 38.
+
+
+LaTeX Warning: Reference `table:mqtt-topics' on page 1 undefined on input line 
+40.
+
+
+Overfull \hbox (9.10979pt too wide) in paragraph at lines 49--49
+[]\T1/NimbusMono/m/n/12 env0/leda/control/steer| 
+ []
+
+
+Overfull \hbox (30.70978pt too wide) in paragraph at lines 51--51
+[]\T1/NimbusMono/m/n/12 env0/leda/control/throttle| 
+ []
+
+
+Overfull \hbox (9.10979pt too wide) in paragraph at lines 53--53
+[]\T1/NimbusMono/m/n/12 env0/leda/control/brake| 
+ []
+
+
+Overfull \hbox (9.10979pt too wide) in paragraph at lines 55--55
+[]\T1/NimbusMono/m/n/12 env0/leda/control/reset| 
+ []
+
+
+Overfull \hbox (23.50978pt too wide) in paragraph at lines 59--59
+[]\T1/NimbusMono/m/n/12 env0/vehicle/training/obs| 
+ []
+
+
+Overfull \hbox (45.10977pt too wide) in paragraph at lines 61--61
+[]\T1/NimbusMono/m/n/12 env0/vehicle/training/reward| 
+ []
+
+
+Overfull \hbox (30.70978pt too wide) in paragraph at lines 63--63
+[]\T1/NimbusMono/m/n/12 env0/vehicle/training/done| 
+ []
+
+
+Overfull \hbox (81.10976pt too wide) in paragraph at lines 65--65
+[]\T1/NimbusMono/m/n/12 env0/vehicle/training/episode_end| 
+ []
+
+
+Overfull \hbox (66.70976pt too wide) in paragraph at lines 67--67
+[]\T1/NimbusMono/m/n/12 env0/vehicle/training/heartbeat| 
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 71.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[11
+
+
+
+
+]
+Underfull \hbox (badness 4132) in paragraph at lines 88--90
+[]\T1/NimbusSans/m/n/12 (+20) Returns \T1/NimbusMono/m/n/12 (obs, reward, termi
+nated, truncated, info) \T1/NimbusSans/m/n/12 (+20) to Stable-
+ []
+
+LaTeX Font Info:    Font shape `T1/NimbusMono/b/n' will be
+(Font)              scaled to size 12.0pt on input line 100.
+
+Underfull \hbox (badness 1264) in paragraph at lines 103--108
+[]\T1/NimbusMono/b/n/12 TrainingSettings.asset \T1/NimbusSans/m/n/12 (+20) (Uni
+ty ScriptableObject): persists training knobs
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 112.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[12])
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 51.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [13]
 \openout2 = `chapters/7-UnitySim.aux'.
 
- (./chapters/7-UnitySim.tex)
+ (./chapters/7-UnitySim.tex
+Chapter 4.
+
+LaTeX Warning: Citation 'UnityManual2022' on page 14 undefined on input line 30
+.
+
+
+LaTeX Warning: Reference `table:vehicle-params' on page 1 undefined on input li
+ne 31.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 57--63
+[]\T1/NimbusMono/m/n/12 VehicleController.cs \T1/NimbusSans/m/n/12 (+20) transl
+ates the three-component action
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 74.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[14
+
+
+
+
+]
+
+LaTeX Warning: Citation 'OASIS2014' on page 15 undefined on input line 115.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 120--126
+[]\T1/NimbusMono/m/n/12 LedaBroker.cs \T1/NimbusSans/m/n/12 (+20) provides the 
+application-facing API, configured
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 135.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[15])
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 52.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [16]
 \openout2 = `chapters/8-PythonRL.aux'.
 
-
-(./chapters/8-PythonRL.tex)
+ (./chapters/8-PythonRL.tex)
 \openout2 = `chapters/9-SDVIntegration.aux'.
 
  (./chapters/9-SDVIntegration.tex)
@@ -1313,8 +1453,8 @@ Package pdftex.def Info: images/logo.png  used on input line 50.
 \openout2 = `chapters/11-Conclusions.aux'.
 
  (./chapters/11-Conclusions.tex)
-Chapter 3.
-<example_declaration.pdf, id=140, 597.51233pt x 845.0471pt>
+Chapter 5.
+<example_declaration.pdf, id=240, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
@@ -1323,7 +1463,7 @@ File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
 (pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-<example_declaration.pdf, id=143, page=1, 597.51233pt x 845.0471pt>
+<example_declaration.pdf, id=243, page=1, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
@@ -1338,13 +1478,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 60.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[11
-
-
-
-
-
-
+[17
 
 
 
@@ -1376,7 +1510,7 @@ File: example_declaration.pdf Graphic file (type pdf)
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
 
 (pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
- [12
+ [18
 
  <./example_declaration.pdf>] (./main.aux (./chapters/1-Title.aux)
 Package cleveref Info: loaded `english' language definitions on input line 12.
@@ -1403,8 +1537,8 @@ Package rerunfilecheck Warning: File `main.out' has changed.
 (rerunfilecheck)                or use package `bookmark'.
 
 Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: 6681DE398A6BD3E92F64F269C90666EE;962
-(rerunfilecheck)             After:  9A903933AD5EFD59C680C5226D07BBDA;3129.
+(rerunfilecheck)             Before: 9A903933AD5EFD59C680C5226D07BBDA;3129
+(rerunfilecheck)             After:  7D5FBBD7075D1521DEE4CCECE9887D56;5323.
 
 Package biblatex Warning: Please (re)run BibTeX on the file(s):
 (biblatex)                main
@@ -1415,42 +1549,32 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 28691 strings out of 474222
- 513122 string characters out of 5748733
- 1939975 words of memory out of 5000000
- 50323 multiletter control sequences out of 15000+600000
- 603196 words of font info for 130 fonts, out of 8000000 for 9000
+ 28816 strings out of 474222
+ 514776 string characters out of 5748733
+ 1944975 words of memory out of 5000000
+ 50384 multiletter control sequences out of 15000+600000
+ 605939 words of font info for 147 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 79i,17n,117p,1850b,2288s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-pdfTeX warning (dest): name{subsection.1.1.3} has been referenced but does not 
-exist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{subsection.1.1.2} has been referenced but does not 
-exist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{subsection.1.1.1} has been referenced but does not 
-exist, replaced by a fixed one
-
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/
-texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/sym
-bols/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-
-Regular.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.
-pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (13 pages, 246117 bytes).
+ 79i,17n,117p,1850b,2267s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols
+/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Bold
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb
+></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/s
+hare/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
+Output written on main.pdf (19 pages, 305426 bytes).
 PDF statistics:
- 257 PDF objects out of 1000 (max. 8388607)
- 196 compressed objects within 2 object streams
- 56 named destinations out of 1000 (max. 500000)
- 27218 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 371 PDF objects out of 1000 (max. 8388607)
+ 299 compressed objects within 3 object streams
+ 90 named destinations out of 1000 (max. 500000)
+ 33962 words of extra memory for PDF output out of 35830 (max. 10000000)
 

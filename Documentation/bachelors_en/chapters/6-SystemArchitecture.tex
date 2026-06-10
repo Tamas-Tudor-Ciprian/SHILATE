@@ -1,1 +1,135 @@
-% placeholder
+\chapter{System Architecture}\label{ch:architecture}
+\thispagestyle{pagestyle}
+
+\section{High-Level Overview}
+\label{sec:arch-overview}
+
+SHILATE is structured as three loosely coupled tiers, each running as an
+independent process or container and communicating exclusively through a
+Mosquitto MQTT broker. This design ensures that any tier can be replaced
+or upgraded without modifying the others, and that the same communication
+fabric used during training is available unchanged on the deployment
+target.
+
+\textbf{Tier 1 --- Unity Simulation.} A Unity 2022 LTS Editor instance
+runs the vehicle physics, the obstacle course, and the sensor model. It
+publishes observations and reward signals to MQTT and consumes control
+commands from the same broker. The Unity process also hosts the
+\textit{Training Controller} Editor window, which provides a
+developer-facing UI for health monitoring and training control.
+
+\textbf{Tier 2 --- Python RL Trainer.} A Python process wraps the MQTT
+interface in a Gymnasium-compliant environment \cite{Towers2024},
+instantiates a Stable-Baselines3 PPO agent \cite{Raffin2021}, and runs
+the training loop. It emits structured telemetry back through MQTT so the
+Editor window can display live metrics. After training, the same Python
+process can be re-invoked in inference mode with a saved checkpoint.
+
+\textbf{Tier 3 --- Eclipse Leda SDV Stack.} The Eclipse Leda SDV image
+\cite{EclipseLeda2023} runs on QEMU or physical hardware. It hosts a
+Mosquitto broker, a Kuksa databroker, an \texttt{mqtt-kuksa-feeder}
+container that maps MQTT telemetry to VSS paths, and a Velocitas vehicle
+application that monitors operational limits.
+
+\section{Communication Backbone}
+\label{sec:mqtt-topics}
+
+All inter-tier communication passes through a single Mosquitto MQTT 3.1.1
+broker \cite{OASIS2014}. The topic namespace uses the fixed prefix
+\texttt{env0/}, reflecting the single-environment design. The complete
+topic set is listed in \cref{table:mqtt-topics}.
+
+\begin{table}[H]
+\caption{MQTT topic map for the SHILATE training loop.}
+\label{table:mqtt-topics}
+\begin{tabular}{|p{5.5cm}|p{3cm}|p{4cm}|}
+  \hline
+  \textbf{Topic} & \textbf{Direction} & \textbf{Payload} \\
+  \hline
+  \texttt{env0/leda/control/steer}    & Python$\to$Unity & float $[-1,1]$ \\
+  \hline
+  \texttt{env0/leda/control/throttle} & Python$\to$Unity & float $[0,1]$ \\
+  \hline
+  \texttt{env0/leda/control/brake}    & Python$\to$Unity & float $[0,1]$ \\
+  \hline
+  \texttt{env0/leda/control/reset}    & Python$\to$Unity & ``1'' \\
+  \hline
+  \texttt{env0/vehicle/speed}         & Unity$\to$Python & float km/h \\
+  \hline
+  \texttt{env0/vehicle/training/obs}  & Unity$\to$Python & JSON array \\
+  \hline
+  \texttt{env0/vehicle/training/reward} & Unity$\to$Python & float \\
+  \hline
+  \texttt{env0/vehicle/training/done} & Unity$\to$Python & bool \\
+  \hline
+  \texttt{env0/vehicle/training/episode\_end} & Unity$\to$Editor & JSON object \\
+  \hline
+  \texttt{env0/vehicle/training/heartbeat}    & Unity$\to$Editor & JSON (1 Hz) \\
+  \hline
+\end{tabular}
+\end{table}
+
+QoS 0 (at-most-once delivery) is used throughout. Given that observations
+arrive at 10~Hz and each new observation makes the previous one
+irrelevant, occasional message loss is harmless and the absence of
+acknowledgement handshakes reduces loop latency significantly compared to
+QoS~1 or 2.
+
+\section{Training Data-Flow}
+\label{sec:dataflow}
+
+Each training step follows a synchronised request-response pattern over
+MQTT. The Python environment calls \texttt{step(action)}, which:
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item Publishes steer, throttle, and brake to the three control topics.
+  \item Blocks on a threading event until Unity publishes a new
+    \texttt{training/obs} message, or a 5-second timeout elapses.
+  \item Reads the co-published reward and done values.
+  \item Returns \texttt{(obs, reward, terminated, truncated, info)} to
+    Stable-Baselines3.
+\end{enumerate}
+This cycle runs at the Unity physics rate (approximately 50~Hz
+wall-clock), throttled by the 10~Hz sensor publication interval. The PPO
+rollout buffer accumulates 2048 transitions before a gradient update.
+
+\section{Configuration Management}
+\label{sec:config}
+
+Configuration is split across three locations:
+\begin{itemize}[topsep=1.15pt,itemsep=1.15pt]
+  \item \textbf{\texttt{config.json}} (repository root): holds
+    \texttt{model.ray\_count} (default 9 in the root copy; the simulation
+    runs 21 rays). Read by \texttt{config\_loader.py} with fallback.
+  \item \textbf{\texttt{TrainingSettings.asset}} (Unity ScriptableObject):
+    persists training knobs configured through the Editor window --- MQTT
+    host/port, virtual-environment path, script paths, PPO
+    hyperparameters, checkpoint save location, and optional resume-model
+    path. Survives Editor restarts without an on-disk config file.
+  \item \textbf{CLI flags} (\texttt{train.py}): hyperparameters from
+    TrainingSettings are forwarded as command-line arguments when
+    \texttt{PythonProcessManager} spawns the trainer, keeping the Python
+    process stateless with respect to the Editor.
+\end{itemize}
+
+\section{Deployment Architecture on Eclipse Leda}
+\label{sec:leda-arch}
+
+When a trained checkpoint is deployed onto the Leda image, three
+containers run simultaneously:
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item \textbf{\texttt{leda-controller}} (inference mode): loaded with
+    the \texttt{best\_model.zip} checkpoint; subscribes to
+    \texttt{env0/vehicle/training/obs} and publishes control commands.
+  \item \textbf{\texttt{mqtt-kuksa-feeder}}: bridges
+    \texttt{env0/vehicle/\#} telemetry topics to VSS paths in the Kuksa
+    databroker via gRPC.
+  \item \textbf{\texttt{velocitas-app}}: subscribes to
+    \texttt{Vehicle.Speed} and engine RPM in the Kuksa databroker and
+    publishes alerts to \texttt{leda/command/alert} when thresholds are
+    exceeded.
+\end{enumerate}
+Each container is described by a Kanto manifest
+(\texttt{kanto-manifest.json}) specifying the OCI image reference,
+environment variables, and restart policy. The provisioning script
+\texttt{leda/provision-device.sh} copies manifests to the device and
+triggers Kanto to pull and start the containers.
