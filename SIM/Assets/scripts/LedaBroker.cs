@@ -39,6 +39,11 @@ public class LedaBroker : MonoBehaviour
     float _reconnectTimer;
     const float ReconnectInterval = 3f;
 
+    // Python → Unity heartbeat watchdog
+    float _pythonHeartbeatTimer;
+    bool _pythonHeartbeatReceived;
+    const float PythonHeartbeatTimeout = 5f;
+
     /// <summary>Fired when a reset command is received from Leda.</summary>
     public event System.Action OnResetRequested;
 
@@ -93,6 +98,25 @@ public class LedaBroker : MonoBehaviour
         {
             _publishTimer = 0f;
             PublishSignals();
+        }
+
+        // Python heartbeat watchdog — zero controls and reset episode if Python goes silent
+        if (_pythonHeartbeatReceived)
+        {
+            _pythonHeartbeatTimer += Time.unscaledDeltaTime;
+            if (_pythonHeartbeatTimer >= PythonHeartbeatTimeout)
+            {
+                _pythonHeartbeatTimer = 0f;
+                _pythonHeartbeatReceived = false;
+                Debug.LogWarning("[LedaBroker] Python heartbeat lost — zeroing controls and resetting episode.");
+                if (remoteInput != null)
+                {
+                    remoteInput.Throttle = 0f;
+                    remoteInput.Steer = 0f;
+                    remoteInput.Brake = 1f;
+                }
+                OnResetRequested?.Invoke();
+            }
         }
     }
 
@@ -200,11 +224,14 @@ public class LedaBroker : MonoBehaviour
 
         _mqtt.Subscribe(envPrefix + "/leda/control/#");
         _mqtt.Subscribe(envPrefix + "/leda/command/#");
+        _mqtt.Subscribe(envPrefix + "/leda/heartbeat");
     }
 
     void HandleDisconnected(string reason)
     {
         _connected = false;
+        _pythonHeartbeatReceived = false;
+        _pythonHeartbeatTimer = 0f;
         Debug.LogWarning($"[LedaBroker] Disconnected: {reason}");
     }
 
@@ -215,6 +242,13 @@ public class LedaBroker : MonoBehaviour
         string localTopic = topic.StartsWith(prefix) ? topic.Substring(prefix.Length) : topic;
 
         // Parse control commands from Leda
+        if (localTopic == "leda/heartbeat")
+        {
+            _pythonHeartbeatTimer = 0f;
+            _pythonHeartbeatReceived = true;
+            return;
+        }
+
         if (localTopic.StartsWith("leda/control/"))
         {
             string command = localTopic.Substring("leda/control/".Length);

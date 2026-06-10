@@ -82,23 +82,35 @@ class VehicleController:
         self.obs_event = threading.Event()
         self.done_event = threading.Event()
 
+        # Python → Unity heartbeat
+        self._heartbeat_seq = 0
+        self._heartbeat_stop = threading.Event()
+        self._heartbeat_thread: threading.Thread | None = None
+
         # MQTT client
         self._client = mqtt.Client(
             client_id=f"shilate-controller-{ENV_PREFIX}",
             protocol=mqtt.MQTTv311,
         )
         self._client.on_connect = self._on_connect
+        self._client.on_disconnect = self._on_disconnect
         self._client.on_message = self._on_message
         self._connected = threading.Event()
 
     def connect(self, timeout: float = 10.0) -> bool:
         """Connect to the MQTT broker. Returns True on success."""
         try:
+            self._client.reconnect_delay_set(min_delay=1, max_delay=30)
             self._client.connect(self.mqtt_host, self.mqtt_port, keepalive=30)
             self._client.loop_start()
             if not self._connected.wait(timeout):
                 log.error("MQTT connection timeout after %.1fs", timeout)
                 return False
+            self._heartbeat_stop.clear()
+            self._heartbeat_thread = threading.Thread(
+                target=self._heartbeat_loop, daemon=True, name="shilate-heartbeat"
+            )
+            self._heartbeat_thread.start()
             return True
         except Exception as e:
             log.error("MQTT connection failed: %s", e)
@@ -106,8 +118,26 @@ class VehicleController:
 
     def disconnect(self):
         """Disconnect from the MQTT broker."""
+        self._heartbeat_stop.set()
+        if self._heartbeat_thread is not None:
+            self._heartbeat_thread.join(timeout=2.0)
+            self._heartbeat_thread = None
         self._client.loop_stop()
         self._client.disconnect()
+
+    def _heartbeat_loop(self) -> None:
+        """Publish a 1 Hz heartbeat on env0/leda/heartbeat so Unity can detect command loss."""
+        while not self._heartbeat_stop.wait(1.0):
+            if self._connected.is_set():
+                payload = json.dumps({"value": self._heartbeat_seq, "ts": time.time()})
+                self._client.publish(f"{self.prefix}/leda/heartbeat", payload)
+                self._heartbeat_seq += 1
+
+    def _on_disconnect(self, client, userdata, rc) -> None:
+        self._connected.clear()
+        if rc != 0:
+            log.warning("MQTT unexpectedly disconnected (rc=%d); paho will auto-reconnect", rc)
+            print("SHILATE-HEALTH mqtt_lost", flush=True)
 
     def _on_connect(self, client, userdata, flags, rc):
         if rc != 0:
