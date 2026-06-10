@@ -1,1 +1,119 @@
-% placeholder
+\chapter{Python RL Training Pipeline}\label{ch:python}
+\thispagestyle{pagestyle}
+
+\section{Gymnasium Environment Wrapper}
+\label{sec:gym-wrapper}
+
+The Python training pipeline is built on the Gymnasium API
+\cite{Towers2024}, which defines a standard interface
+(\texttt{reset()}, \texttt{step()}, \texttt{observation\_space},
+\texttt{action\_space}) that any Stable-Baselines3 algorithm can consume
+without modification. The wrapper class \texttt{ShilateEnv(gym.Env)} in
+\texttt{environment.py} translates between this interface and the MQTT
+broker.
+
+The observation space mirrors \cref{eq:obs}:
+\begin{equation*}
+  \mathcal{O} = \mathrm{Box}(0,\;1,\;\mathrm{shape}{=}(N{+}2,),\;\mathrm{dtype}{=}\texttt{float32}).
+\end{equation*}
+The action space is:
+\begin{equation*}
+  \mathcal{A} = \mathrm{Box}([-1,0,0],\;[1,1,1],\;\mathrm{shape}{=}(3,),\;\mathrm{dtype}{=}\texttt{float32}),
+\end{equation*}
+corresponding to steer $\in [-1,1]$, throttle $\in [0,1]$, and brake
+$\in [0,1]$.
+
+\texttt{reset()} sends a reset command to Unity, then blocks until
+either an \texttt{obs} message arrives or the 5-second
+\texttt{OBS\_TIMEOUT} elapses. \texttt{step(action)} publishes the three
+action components to their control topics, then blocks on a threading
+event until a new \texttt{obs} arrives alongside co-published
+\texttt{reward} and \texttt{done} values. The threading-event approach
+avoids busy polling and keeps CPU usage low while waiting.
+
+\section{PPO Agent Configuration}
+\label{sec:ppo-config}
+
+The PPO agent is instantiated from Stable-Baselines3 \cite{Raffin2021},
+which uses PyTorch \cite{Paszke2019} as its deep-learning backend. The
+environment is wrapped in a one-slot \texttt{DummyVecEnv} as required by
+the SB3 API. The neural network uses separate actor and critic branches:
+\begin{equation*}
+  \pi:\ \mathbb{R}^{N+2} \xrightarrow{256} \mathbb{R}^{128} \to \mathbb{R}^{|\mathcal{A}|},
+  \qquad
+  V:\ \mathbb{R}^{N+2} \xrightarrow{256} \mathbb{R}^{128} \to \mathbb{R}.
+\end{equation*}
+Default PPO hyperparameters are listed in \cref{table:ppo-params}.
+
+\begin{table}[H]
+\caption{Default PPO hyperparameters.}
+\label{table:ppo-params}
+\begin{tabular}{|p{5cm}|p{3cm}|p{4cm}|}
+  \hline
+  \textbf{Parameter} & \textbf{Default} & \textbf{CLI flag} \\
+  \hline
+  Total timesteps      & 100{,}000        & \texttt{--total-timesteps} \\
+  \hline
+  Learning rate        & $3 \times 10^{-4}$ & \texttt{--learning-rate} \\
+  \hline
+  Rollout steps $n$    & 2048             & \texttt{--n-steps} \\
+  \hline
+  Batch size           & 64               & \texttt{--batch-size} \\
+  \hline
+  Clip $\varepsilon$   & 0.2              & SB3 default \\
+  \hline
+  Discount $\gamma$    & 0.99             & SB3 default \\
+  \hline
+  GAE $\lambda$        & 0.95             & SB3 default \\
+  \hline
+\end{tabular}
+\end{table}
+
+\section{Training Loop and Health Telemetry}
+\label{sec:training-loop}
+
+The training loop is driven by \texttt{PPO.learn(total\_timesteps)}.
+A custom \texttt{HealthCallback(BaseCallback)} is attached and invoked
+at the end of each rollout. It inspects policy gradient loss, value loss,
+and KL divergence for NaN or infinite values and emits a
+\texttt{SHILATE-HEALTH nan\_in\_losses} marker to stdout if detected,
+causing the Editor banner to transition to \textit{Critical}.
+
+All metrics are transmitted to the Unity Editor through two channels:
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item \textbf{SB3 tabular output.} Stable-Baselines3 prints a formatted
+    table to stdout every $n$ steps.
+    \texttt{TrainingMetricsParser.cs} parses the rows
+    \texttt{rollout/ep\_rew\_mean},
+    \texttt{train/policy\_gradient\_loss},
+    \texttt{train/value\_loss}, and \texttt{train/approx\_kl}.
+  \item \textbf{Structured markers.} The \texttt{emit()} helper writes
+    lines of the form \texttt{SHILATE-METRIC key=value} and
+    \texttt{SHILATE-HEALTH signal} to stdout, enabling the Editor parser
+    to extract specific values without fragile regex matching.
+\end{enumerate}
+Model checkpoints are saved every approximately 10{,}000 timesteps;
+\texttt{best\_model.zip} is maintained by an \texttt{EvalCallback}.
+
+\section{Inference Mode}
+\label{sec:inference}
+
+\texttt{ai\_driver.py} loads a saved \texttt{.zip} checkpoint and runs
+the policy in a closed-loop inference loop. Observations are constructed
+from the same MQTT source as the training environment. The policy is
+evaluated with \texttt{deterministic=True}, disabling Gaussian
+exploration noise. Episode telemetry (speed, steer, throttle, brake) is
+logged every 50 steps. The script runs a fixed episode count
+(\texttt{--episodes}) or loops indefinitely (\texttt{--episodes 0}).
+
+\section{Cross-Platform Process Management}
+\label{sec:process-mgr}
+
+\texttt{PythonProcessManager.cs} spawns and terminates the Python
+process from within the Unity Editor. On Windows it invokes
+\texttt{cmd.exe /c} with the \texttt{Scripts\textbackslash{}activate}
+venv path; on Linux/macOS it uses \texttt{bash -c} with
+\texttt{bin/activate}. Graceful shutdown sends SIGTERM (or the Windows
+equivalent Ctrl+C event) to the process group, allowing the Python
+process to flush TensorBoard logs and save the final checkpoint before
+Play mode exits.

@@ -29,4 +29,16 @@
 \contentsline {section}{\numberline {4.4}Reward Function}{15}{section.4.4}%
 \contentsline {section}{\numberline {4.5}MQTT Bridge in Unity}{15}{section.4.5}%
 \contentsline {section}{\numberline {4.6}Training Controller Editor Window}{15}{section.4.6}%
-\contentsline {chapter}{\numberline {5}Bibliography}{17}{chapter.5}%
+\contentsline {chapter}{\numberline {5}Python RL Training Pipeline}{17}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Gymnasium Environment Wrapper}{17}{section.5.1}%
+\contentsline {section}{\numberline {5.2}PPO Agent Configuration}{17}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Training Loop and Health Telemetry}{18}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Inference Mode}{18}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Cross-Platform Process Management}{18}{section.5.5}%
+\contentsline {chapter}{\numberline {6}SDV Integration with Eclipse Leda}{19}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Eclipse Leda Overview}{19}{section.6.1}%
+\contentsline {section}{\numberline {6.2}MQTT-to-Kuksa Bridge}{19}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Velocitas Vehicle Application}{19}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Container Deployment}{20}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Leda Telemetry Broker}{20}{section.6.5}%
+\contentsline {chapter}{\numberline {7}Bibliography}{21}{chapter.7}%

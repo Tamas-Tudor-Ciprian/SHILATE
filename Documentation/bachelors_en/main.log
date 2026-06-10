@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  10 JUN 2026 15:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  10 JUN 2026 15:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1018,7 +1018,7 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
-<images/logo.png, id=76, 149.358pt x 48.18pt>
+<images/logo.png, id=128, 149.358pt x 48.18pt>
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 23.
@@ -1127,13 +1127,6 @@ Underfull \hbox (badness 1019) in paragraph at lines 79--81
 []\T1/NimbusSans/m/n/12 (+20) Evaluate the pipeline quantitatively: training co
 nvergence, inference lap
  []
-
-
-LaTeX Warning: Reference `ch:architecture' on page 1 undefined on input line 90
-.
-
-
-LaTeX Warning: Reference `ch:unity' on page 1 undefined on input line 91.
 
 
 LaTeX Warning: Reference `ch:python' on page 1 undefined on input line 92.
@@ -1312,10 +1305,6 @@ LaTeX Warning: Citation 'EclipseLeda2023' on page 11 undefined on input line 29
 LaTeX Warning: Citation 'OASIS2014' on page 11 undefined on input line 38.
 
 
-LaTeX Warning: Reference `table:mqtt-topics' on page 1 undefined on input line 
-40.
-
-
 Overfull \hbox (9.10979pt too wide) in paragraph at lines 49--49
 []\T1/NimbusMono/m/n/12 env0/leda/control/steer| 
  []
@@ -1402,10 +1391,6 @@ LaTeX Warning: Citation 'UnityManual2022' on page 14 undefined on input line 30
 .
 
 
-LaTeX Warning: Reference `table:vehicle-params' on page 1 undefined on input li
-ne 31.
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 57--63
 []\T1/NimbusMono/m/n/12 VehicleController.cs \T1/NimbusSans/m/n/12 (+20) transl
 ates the three-component action
@@ -1442,19 +1427,136 @@ Package pdftex.def Info: images/logo.png  used on input line 52.
  [16]
 \openout2 = `chapters/8-PythonRL.aux'.
 
- (./chapters/8-PythonRL.tex)
+ (./chapters/8-PythonRL.tex
+Chapter 5.
+
+LaTeX Warning: Citation 'Towers2024' on page 17 undefined on input line 8.
+
+
+LaTeX Warning: Citation 'Raffin2021' on page 17 undefined on input line 37.
+
+
+LaTeX Warning: Citation 'Paszke2019' on page 17 undefined on input line 38.
+
+
+LaTeX Warning: Reference `table:ppo-params' on page 1 undefined on input line 4
+6.
+
+
+Overfull \hbox (4.98892pt too wide) in paragraph at lines 55--56
+[]\T1/NimbusMono/m/n/12 --total-timesteps| 
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 81.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[17
+
+
+
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 84--90
+[]\T1/NimbusSans/b/n/12 (+20) SB3 tabular output. \T1/NimbusSans/m/n/12 (+20) S
+table-Baselines3
+ []
+
+
+Underfull \hbox (badness 2384) in paragraph at lines 90--94
+[]\T1/NimbusSans/b/n/12 (+20) Structured markers. \T1/NimbusSans/m/n/12 (+20) T
+he \T1/NimbusMono/m/n/12 emit() \T1/NimbusSans/m/n/12 (+20) helper writes lines
+ of the form
+ []
+
+
+Underfull \hbox (badness 1596) in paragraph at lines 90--94
+\T1/NimbusMono/m/n/12 SHILATE-METRIC key=value \T1/NimbusSans/m/n/12 (+20) and 
+\T1/NimbusMono/m/n/12 SHILATE-HEALTH signal \T1/NimbusSans/m/n/12 (+20) to stdo
+ut,
+ []
+
+)
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 53.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [18]
 \openout2 = `chapters/9-SDVIntegration.aux'.
 
- (./chapters/9-SDVIntegration.tex)
+ (./chapters/9-SDVIntegration.tex
+Chapter 6.
+
+LaTeX Warning: Citation 'EclipseLeda2023' on page 19 undefined on input line 7.
+
+
+
+LaTeX Warning: Citation 'EclipseKuksa2024' on page 19 undefined on input line 2
+7.
+
+
+LaTeX Warning: Reference `table:vss-map' on page 1 undefined on input line 29.
+
+
+Overfull \hbox (95.6706pt too wide) in paragraph at lines 40--41
+[]\T1/NimbusMono/m/n/12 Vehicle.Powertrain.CombustionEngine.Speed| 
+ []
+
+
+Overfull \hbox (52.47061pt too wide) in paragraph at lines 42--43
+[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.SteeringWheel.Angle| 
+ []
+
+
+Overfull \hbox (52.47061pt too wide) in paragraph at lines 44--45
+[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.Brake.PedalPosition| 
+ []
+
+
+Overfull \hbox (2.07063pt too wide) in paragraph at lines 46--47
+[]\T1/NimbusMono/m/n/12 Vehicle.OBD.ThrottlePosition| 
+ []
+
+
+LaTeX Warning: Citation 'EclipseVelocitas2024' on page 19 undefined on input li
+ne 58.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 63--66
+[]\T1/NimbusSans/b/n/12 (+20) Overspeed\T1/NimbusSans/m/n/12 (+20) : if \T1/Nim
+busMono/m/n/12 Vehicle.Speed
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 72.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[19
+
+
+
+
+]
+Underfull \hbox (badness 5403) in paragraph at lines 76--86
+[]\T1/NimbusSans/m/n/12 (+20) All three service containers (\T1/NimbusMono/m/n/
+12 leda-controller\T1/NimbusSans/m/n/12 (+20) , \T1/NimbusMono/m/n/12 mqtt-kuks
+a-feeder\T1/NimbusSans/m/n/12 (+20) ,
+ []
+
+)
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 54.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [20]
 \openout2 = `chapters/10-Experiments.aux'.
 
-
-(./chapters/10-Experiments.tex)
+ (./chapters/10-Experiments.tex)
 \openout2 = `chapters/11-Conclusions.aux'.
 
  (./chapters/11-Conclusions.tex)
-Chapter 5.
-<example_declaration.pdf, id=240, 597.51233pt x 845.0471pt>
+Chapter 7.
+<example_declaration.pdf, id=333, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
@@ -1463,7 +1565,7 @@ File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
 (pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-<example_declaration.pdf, id=243, page=1, 597.51233pt x 845.0471pt>
+<example_declaration.pdf, id=336, page=1, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
@@ -1478,13 +1580,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 60.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[17
-
-
-
-
-
-
+[21
 
 
 
@@ -1510,7 +1606,7 @@ File: example_declaration.pdf Graphic file (type pdf)
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
 
 (pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
- [18
+ [22
 
  <./example_declaration.pdf>] (./main.aux (./chapters/1-Title.aux)
 Package cleveref Info: loaded `english' language definitions on input line 12.
@@ -1537,8 +1633,8 @@ Package rerunfilecheck Warning: File `main.out' has changed.
 (rerunfilecheck)                or use package `bookmark'.
 
 Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: 9A903933AD5EFD59C680C5226D07BBDA;3129
-(rerunfilecheck)             After:  7D5FBBD7075D1521DEE4CCECE9887D56;5323.
+(rerunfilecheck)             Before: 7D5FBBD7075D1521DEE4CCECE9887D56;5323
+(rerunfilecheck)             After:  F0410FAA04D76E83ECAB9263FB1E632B;7559.
 
 Package biblatex Warning: Please (re)run BibTeX on the file(s):
 (biblatex)                main
@@ -1549,11 +1645,11 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 28816 strings out of 474222
- 514776 string characters out of 5748733
+ 28885 strings out of 474222
+ 515828 string characters out of 5748733
  1944975 words of memory out of 5000000
- 50384 multiletter control sequences out of 15000+600000
- 605939 words of font info for 147 fonts, out of 8000000 for 9000
+ 50429 multiletter control sequences out of 15000+600000
+ 606975 words of font info for 151 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  79i,17n,117p,1850b,2267s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
@@ -1571,10 +1667,10 @@ cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols
 ></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/s
 hare/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/tex
 live/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (19 pages, 305426 bytes).
+Output written on main.pdf (23 pages, 325592 bytes).
 PDF statistics:
- 371 PDF objects out of 1000 (max. 8388607)
- 299 compressed objects within 3 object streams
- 90 named destinations out of 1000 (max. 500000)
- 33962 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 468 PDF objects out of 1000 (max. 8388607)
+ 391 compressed objects within 4 object streams
+ 110 named destinations out of 1000 (max. 500000)
+ 35090 words of extra memory for PDF output out of 35830 (max. 10000000)
 
