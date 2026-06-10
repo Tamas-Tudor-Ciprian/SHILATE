@@ -699,7 +699,9 @@ public class TrainingEditorWindow : EditorWindow
         _rollingReward = 0f;
         _trainingStartTime = DateTime.Now;
 
-        AddLog($"Starting single-env training, {_settings.totalTimesteps} timesteps", LogType.Log);
+        AddLog(_settings.totalTimesteps > 0
+            ? $"Starting single-env training, {_settings.totalTimesteps} timesteps"
+            : "Starting single-env training, unlimited timesteps", LogType.Log);
         if (!string.IsNullOrEmpty(_settings.resumeModelPath))
             AddLog($"Resuming from: {Path.GetFileName(_settings.resumeModelPath)}", LogType.Log);
         AddLog("Entering Play mode — Python will start after scene loads...", LogType.Log);
