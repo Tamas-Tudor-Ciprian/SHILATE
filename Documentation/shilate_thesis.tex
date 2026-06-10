@@ -520,7 +520,348 @@ and VSS.
 \clearpage
 
 % ============================================================
-%  PLACEHOLDER: Chapters 3–8 will be added in subsequent stages
+%  CHAPTER 3 — SYSTEM ARCHITECTURE
+% ============================================================
+\markboth{Chapter 3 — System Architecture}{}
+\section*{\centering CHAPTER 3\\[0.3cm] SYSTEM ARCHITECTURE}
+\addcontentsline{toc}{section}{Chapter 3 \quad System Architecture}
+\vspace{2\baselineskip}
+
+\subsection*{3.1 \quad HIGH-LEVEL OVERVIEW}
+\addcontentsline{toc}{subsection}{3.1 \quad High-Level Overview}
+
+\indent SHILATE is structured as three loosely coupled tiers, each running as an
+independent process or container, and communicating exclusively through a
+Mosquitto MQTT broker. This design ensures that any tier can be replaced or
+upgraded without modifying the others, and that the same communication fabric
+used during training is available unchanged on the deployment target.
+
+\textbf{Tier 1 — Unity Simulation.} A Unity 2022 LTS Editor instance runs the
+vehicle physics, the obstacle course, and the sensor model. It publishes
+observations and reward signals to MQTT and consumes control commands from the
+same broker. The Unity process also hosts the Training Controller Editor
+window, which provides a developer-facing UI for health monitoring and
+training control.
+
+\textbf{Tier 2 — Python RL Trainer.} A Python process (managed by the Training
+Controller) wraps the MQTT interface in a Gymnasium-compliant environment,
+instantiates a Stable-Baselines3 PPO agent, and runs the training loop. It
+emits structured telemetry back through the MQTT broker so the Editor window
+can display live metrics. After training, the same Python process can be
+re-invoked in inference mode with a saved checkpoint.
+
+\textbf{Tier 3 — Eclipse Leda SDV Stack.} The Eclipse Leda SDV image runs on
+QEMU (or physical hardware). It hosts a Mosquitto broker, a Kuksa databroker,
+an \texttt{mqtt-kuksa-feeder} container that maps MQTT vehicle telemetry to VSS
+paths, and a Velocitas vehicle application that monitors operational limits.
+During deployment the Python inference container is also launched within Leda
+via the Kanto container manager.
+
+\subsection*{3.2 \quad COMMUNICATION BACKBONE}
+\addcontentsline{toc}{subsection}{3.2 \quad Communication Backbone}
+
+\indent All inter-tier communication passes through a single Mosquitto MQTT 3.1.1
+broker. The topic namespace uses the fixed prefix \texttt{env0/}, reflecting the
+single-environment design of the current system. Table~\ref{tab:mqtt-topics}
+summarises the complete topic set.
+
+\begin{table}[H]
+  \centering
+  \caption{MQTT topic map for the SHILATE training loop.}
+  \label{tab:mqtt-topics}
+  \vspace{0.5\baselineskip}
+  \begin{tabular}{>{\ttfamily}lll}
+    \toprule
+    \textbf{Topic} & \textbf{Direction} & \textbf{Payload} \\
+    \midrule
+    env0/leda/control/steer    & Python $\to$ Unity & float $[-1, 1]$ \\
+    env0/leda/control/throttle & Python $\to$ Unity & float $[0, 1]$ \\
+    env0/leda/control/brake    & Python $\to$ Unity & float $[0, 1]$ \\
+    env0/leda/control/gear     & Python $\to$ Unity & int (0=N, 1=D, 2=R) \\
+    env0/leda/control/reset    & Python $\to$ Unity & ``1'' \\
+    env0/vehicle/speed         & Unity $\to$ Python & float km/h \\
+    env0/vehicle/rpm           & Unity $\to$ Python & float RPM \\
+    env0/vehicle/steering      & Unity $\to$ Python & float degrees \\
+    env0/vehicle/training/obs  & Unity $\to$ Python & JSON array (rays + speed + steer) \\
+    env0/vehicle/training/reward & Unity $\to$ Python & float \\
+    env0/vehicle/training/done & Unity $\to$ Python & ``true'' / ``false'' \\
+    env0/vehicle/training/episode\_end & Unity $\to$ Editor & JSON object \\
+    env0/vehicle/training/heartbeat    & Unity $\to$ Editor & JSON object (1 Hz) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+QoS 0 (at-most-once delivery) is used throughout. Given that observations
+arrive at 10 Hz and each new observation makes the previous one irrelevant,
+occasional message loss is harmless and the absence of acknowledgement
+handshakes reduces loop latency significantly compared to QoS 1 or 2.
+
+\subsection*{3.3 \quad TRAINING DATA-FLOW}
+\addcontentsline{toc}{subsection}{3.3 \quad Training Data-Flow}
+
+\indent Each training step follows a synchronised request-response pattern over MQTT.
+The Python environment calls \texttt{step(action)}, which:
+\begin{enumerate}[leftmargin=2.5cm]
+  \item Publishes \texttt{steer}, \texttt{throttle}, and \texttt{brake} to the
+    three control topics.
+  \item Blocks on a threading event until Unity publishes a new
+    \texttt{training/obs} message (or a 5-second timeout elapses).
+  \item Reads the co-published \texttt{training/reward} and
+    \texttt{training/done} values.
+  \item Returns \texttt{(obs, reward, terminated, truncated, info)} to
+    Stable-Baselines3.
+\end{enumerate}
+
+This cycle runs at the Unity physics rate (approximately 50 Hz wall-clock),
+throttled by the 10 Hz sensor publication interval. The PPO rollout buffer
+accumulates 2048 such transitions before a gradient update is performed.
+
+\subsection*{3.4 \quad CONFIGURATION MANAGEMENT}
+\addcontentsline{toc}{subsection}{3.4 \quad Configuration Management}
+
+\indent Configuration is split across three locations, each serving a different
+consumer:
+
+\begin{itemize}
+  \item \textbf{\texttt{config.json}} (repository root): holds \texttt{model.ray\_count}
+    (default 9 in the root copy; the simulation uses 21). Both the Python trainer
+    and the inference script read this file through \texttt{config\_loader.py},
+    which falls back to the hard-coded default if the key is absent or the file
+    is malformed.
+  \item \textbf{\texttt{TrainingSettings.asset}} (Unity ScriptableObject): persists
+    the training knobs that a researcher configures through the Editor window ---
+    MQTT host/port, Python virtual-environment path, script paths, PPO
+    hyperparameters, checkpoint save location, and an optional resume-model path.
+    Unity's asset serialisation keeps these settings across Editor restarts
+    without requiring a configuration file on disk.
+  \item \textbf{CLI flags} (\texttt{train.py}): the same hyperparameters exposed in
+    the TrainingSettings UI are passed as command-line arguments when
+    \texttt{PythonProcessManager} spawns the training script, so the Python
+    process is entirely stateless with respect to the Unity Editor.
+\end{itemize}
+
+\subsection*{3.5 \quad DEPLOYMENT ARCHITECTURE ON ECLIPSE LEDA}
+\addcontentsline{toc}{subsection}{3.5 \quad Deployment Architecture on Eclipse Leda}
+
+\indent When a trained checkpoint is to be deployed onto the Leda image, three
+containers are active simultaneously:
+
+\begin{enumerate}[leftmargin=2.5cm]
+  \item \textbf{\texttt{leda-controller}} (inference mode): loaded with the
+    \texttt{best\_model.zip} checkpoint; subscribes to \texttt{env0/vehicle/training/obs}
+    and publishes control commands.
+  \item \textbf{\texttt{mqtt-kuksa-feeder}}: bridges \texttt{env0/vehicle/\#} telemetry
+    topics to VSS paths in the Kuksa databroker via gRPC.
+  \item \textbf{\texttt{velocitas-app}}: a Velocitas vehicle application that subscribes
+    to \texttt{Vehicle.Speed} and \texttt{Vehicle.Powertrain.CombustionEngine.Speed}
+    in the Kuksa databroker and publishes alerts to
+    \texttt{leda/command/alert} when thresholds are exceeded.
+\end{enumerate}
+
+Each container is described by a Kanto container manifest
+(\texttt{kanto-manifest.json}), which specifies the OCI image reference,
+environment variables, and restart policy. The provisioning script
+\texttt{leda/provision-device.sh} copies manifests to the Leda device and
+triggers Kanto to pull and start the containers.
+
+\clearpage
+
+% ============================================================
+%  CHAPTER 4 — UNITY SIMULATION DESIGN
+% ============================================================
+\markboth{Chapter 4 — Unity Simulation Design}{}
+\section*{\centering CHAPTER 4\\[0.3cm] UNITY SIMULATION DESIGN}
+\addcontentsline{toc}{section}{Chapter 4 \quad Unity Simulation Design}
+\vspace{2\baselineskip}
+
+\subsection*{4.1 \quad SCENE CONSTRUCTION}
+\addcontentsline{toc}{subsection}{4.1 \quad Scene Construction}
+
+\indent The simulation scene is constructed programmatically at runtime rather than
+authored in the Unity Editor. \texttt{RuntimeSceneBuilder.cs} runs on scene
+load and checks whether the required game objects are present; if they are
+absent, it invokes \texttt{CarFactory} to spawn the full vehicle hierarchy and
+\texttt{SpawnObstacleCourse} to instantiate the track. This approach guarantees
+that the scene is always in a well-defined initial state regardless of how the
+Editor project was last saved.
+
+The obstacle course is a circular ring generated by \texttt{ObstacleCourse.cs}.
+The ring is bounded by two concentric cylindrical walls: the inner wall has a
+radius of 25 metres and the outer wall a radius of 40 metres, giving a track
+width of 15 metres. Twelve obstacle objects are distributed around the ring at
+equal angular intervals. Wall height is 3 metres, sufficient to be detected by
+the vehicle's raycasts but low enough to avoid occluding the camera. The vehicle
+is spawned at position $(32.5, 0.5, 0)$ --- on the track centreline, facing the
+initial direction of travel.
+
+\subsection*{4.2 \quad VEHICLE PHYSICS MODEL}
+\addcontentsline{toc}{subsection}{4.2 \quad Vehicle Physics Model}
+
+\indent The vehicle is a rear-wheel-drive configuration assembled by
+\texttt{CarFactory.cs}. The chassis mass is 1500 kg. Four \texttt{WheelCollider}
+components provide the physics contact model, using Unity's built-in
+Pacejka-inspired tyre model. Key parameters are listed in
+Table~\ref{tab:vehicle-params}.
+
+\begin{table}[H]
+  \centering
+  \caption{Key vehicle physics parameters.}
+  \label{tab:vehicle-params}
+  \vspace{0.5\baselineskip}
+  \begin{tabular}{lrl}
+    \toprule
+    \textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
+    \midrule
+    Chassis mass           & 1500   & kg \\
+    Maximum motor torque   & 450    & Nm \\
+    Maximum steer angle    & 35     & degrees \\
+    Final drive ratio      & 9.0    & -- \\
+    Maximum brake torque   & 3000   & Nm \\
+    Regenerative brake     & 150    & Nm \\
+    Creep enabled          & true   & -- \\
+    Maximum speed          & 150    & km/h \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\texttt{VehicleController.cs} translates the three-component action vector
+$[a_\text{steer}, a_\text{throttle}, a_\text{brake}]$ received from
+\texttt{RemoteDriveInput.cs} into individual WheelCollider motor torques and
+steer angles. A creep behaviour applies a small constant torque in drive gear
+when both throttle and brake inputs are near zero, mirroring the behaviour of a
+real automatic-transmission vehicle. Regenerative braking applies a torque
+opposing wheel rotation whenever the throttle is released, and is modelled as a
+constant regen torque rather than a speed-proportional term for simplicity.
+
+\subsection*{4.3 \quad PERCEPTION LAYER}
+\addcontentsline{toc}{subsection}{4.3 \quad Perception Layer}
+
+\indent The vehicle's sole sensor is a LiDAR-inspired raycast fan implemented in
+\texttt{RaycastSensor.cs}. Twenty-one rays are cast in the vehicle's horizontal
+plane, spanning a $120^{\circ}$ arc centred on the forward axis. The ray length
+is 50 metres. Each ray returns a normalised distance $d_i \in [0, 1]$, where
+$0$ indicates contact at the vehicle origin and $1$ indicates no contact within
+50 metres (the ray does not hit anything within range). The sensor publishes the
+full ray array to \texttt{env0/vehicle/training/obs} at 10 Hz.
+
+The observation vector received by the Python environment is:
+
+\begin{equation}
+  \mathbf{o} = \left[ d_0,\, d_1,\, \ldots,\, d_{N-1},\,
+                      \frac{v}{v_{\max}},\,
+                      \frac{\delta + 1}{2} \right] \in \mathbb{R}^{N+2},
+  \label{eq:obs}
+\end{equation}
+
+\noindent where $N$ is the configured ray count (read from \texttt{config.json}),
+$v$ is the current vehicle speed in km/h, $v_{\max} = 150$ km/h, and $\delta$
+is the current steer angle normalised to $[-1, 1]$. The steer component is
+rescaled to $[0, 1]$ for consistency with the ray distances. All elements of
+$\mathbf{o}$ therefore lie in $[0, 1]$, which simplifies network initialisation.
+
+\subsection*{4.4 \quad REWARD FUNCTION}
+\addcontentsline{toc}{subsection}{4.4 \quad Reward Function}
+
+\indent The reward function is the central mechanism through which the agent learns
+to navigate the course. It is computed in \texttt{TrainingBridge.cs} and must
+strike a balance between encouraging forward progress, penalising unsafe
+interactions with the environment, and providing sufficiently informative
+milestones to overcome sparse-reward traps.
+
+The per-step reward at time $t$ is:
+
+\begin{equation}
+  r_t = r_{\text{progress}} + r_{\text{collision}} + r_{\text{milestone}},
+  \label{eq:reward}
+\end{equation}
+
+\noindent where each term is defined as follows:
+
+\begin{itemize}
+  \item \textbf{Progress reward}: $r_{\text{progress}} = c_p \cdot \Delta p_t$,
+    where $\Delta p_t$ is the signed change in track progress (checkpoints
+    passed) since the last step, and $c_p = 2$. Progress is computed by
+    \texttt{ObstacleCourse.cs} as the number of discrete waypoints the vehicle
+    has passed in the forward direction.
+  \item \textbf{Collision penalty}: $r_{\text{collision}} = c_c = -5$ on any
+    time step where the vehicle's collider reports contact with a wall or
+    obstacle. The penalty is applied once per contact event, not accumulated
+    over the duration of contact.
+  \item \textbf{Milestone bonus}: $r_{\text{milestone}} = c_f = +50$ on
+    episode completion (full lap); $r_{\text{milestone}} = c_h = +25$ upon
+    completing the first half-turn of the course. Both bonuses apply at most
+    once per episode.
+\end{itemize}
+
+An episode terminates either when a full lap is completed, when the vehicle is
+stationary for an extended period, or when the episode timeout of 60 seconds
+(wall-clock, not scaled) is reached. Timeout terminations are reported to Python
+as \texttt{truncated=True} so that Stable-Baselines3 bootstraps the value
+estimate from the final state rather than treating the transition as a terminal
+failure.
+
+\subsection*{4.5 \quad MQTT BRIDGE IN UNITY}
+\addcontentsline{toc}{subsection}{4.5 \quad MQTT Bridge in Unity}
+
+\indent Unity does not ship a production-grade MQTT client. SHILATE includes a
+minimal custom \texttt{MqttClient.cs} that implements the MQTT 3.1.1 wire
+protocol \cite{OASIS2014} natively in C\# without external dependencies,
+keeping the Unity project self-contained. The client handles \texttt{CONNECT},
+\texttt{PUBLISH}, \texttt{SUBSCRIBE}, \texttt{PINGREQ/PINGRESP}, and
+\texttt{DISCONNECT} packet types, with a configurable keep-alive of 30 seconds.
+
+\texttt{LedaBroker.cs} sits above \texttt{MqttClient.cs} and provides the
+application-facing API. It is configured via \texttt{LedaBroker.Configure(host,
+port, "env0")} at startup, publishes vehicle telemetry from
+\texttt{VehicleTelemetryBridge.cs} at 10 Hz, and receives control commands from
+\texttt{RemoteDriveInput.cs}. A Python heartbeat timeout mechanism detects when
+the Python process has stopped sending control commands (using a 5-second
+threshold) and stops applying actions, leaving the vehicle stationary until the
+Python process reconnects.
+
+\subsection*{4.6 \quad TRAINING CONTROLLER EDITOR WINDOW}
+\addcontentsline{toc}{subsection}{4.6 \quad Training Controller Editor Window}
+
+\indent The SHILATE Training Controller (\texttt{SHILATE} $\to$ \texttt{Training
+Controller}) is an EditorWindow that eliminates the need for manual terminal
+management during a training session. Its layout from top to bottom is:
+
+\begin{enumerate}[leftmargin=2.5cm]
+  \item \textbf{Toolbar}: training duration, MQTT connection indicator (colour dot).
+  \item \textbf{Health banner}: a colour-coded strip showing the current health
+    state emitted by \texttt{TrainingHealthEvaluator.cs}. States are
+    \emph{Idle} (grey), \emph{Healthy} (green), \emph{Warning} (yellow),
+    \emph{Critical} (red), and \emph{Disconnected} (grey). The banner text
+    names the triggering condition explicitly (e.g., ``No observation received
+    for 5 s'').
+  \item \textbf{Snapshot row}: episode count, last-episode reward, 10-episode
+    rolling mean reward, and heartbeat counter.
+  \item \textbf{Settings panel} (collapsible): all \texttt{TrainingSettings}
+    fields exposed as GUI controls.
+  \item \textbf{Metric graphs}: scrolling time-series plots of
+    \texttt{rollout/ep\_rew\_mean}, \texttt{train/policy\_gradient\_loss},
+    \texttt{train/value\_loss}, and \texttt{train/approx\_kl}.
+  \item \textbf{Issue log}: timestamped list of every health-state transition.
+  \item \textbf{Raw stdout} (collapsible): unfiltered Python process output.
+  \item \textbf{Controls}: \emph{Start Training} / \emph{Run Model} / \emph{Stop}.
+\end{enumerate}
+
+The \emph{Start Training} button enters Play mode programmatically and, once
+the scene is loaded and the MQTT broker connection is confirmed, launches the
+Python training script with the arguments from \texttt{TrainingSettings}. This
+one-click workflow ensures that the simulation and the trainer always start in
+the correct order.
+
+The health evaluator monitors five independent failure modes: MQTT
+disconnection, Python process crash, observation gap exceeding 5 seconds,
+heartbeat/reward gap exceeding 60 seconds, and reward collapse (more than 50\%
+drop over a 10-episode window). Any triggered condition transitions the banner
+to \emph{Warning} or \emph{Critical} and appends an entry to the issue log.
+
+\clearpage
+
+% ============================================================
+%  PLACEHOLDER: Chapters 5–8 will be added in subsequent stages
 % ============================================================
 
 \end{document}
