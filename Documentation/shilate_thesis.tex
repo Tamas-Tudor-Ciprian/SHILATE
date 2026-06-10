@@ -100,6 +100,15 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
+% --- Bibliography ---
+\usepackage[
+  backend=bibtex,
+  style=numeric,
+  sorting=nyt,
+  citestyle=numeric-comp
+]{biblatex}
+\addbibresource{shilate_thesis.bib}
+
 % --- Hyperlinks (last) ---
 \usepackage{bookmark}
 \usepackage{hyperref}
@@ -233,7 +242,285 @@ simulation, PPO, MQTT, Eclipse Leda, Kuksa, Stable-Baselines3, Gymnasium.
 \setcounter{page}{1}
 
 % ============================================================
-%  PLACEHOLDER: Chapters will be added in subsequent stages
+%  CHAPTER 1 — INTRODUCTION
+% ============================================================
+\markboth{Chapter 1 — Introduction}{}
+\section*{\centering CHAPTER 1\\[0.3cm] INTRODUCTION}
+\addcontentsline{toc}{section}{Chapter 1 \quad Introduction}
+\vspace{2\baselineskip}
+
+\subsection*{1.1 \quad MOTIVATION AND CONTEXT}
+\addcontentsline{toc}{subsection}{1.1 \quad Motivation and Context}
+
+\indent The automotive industry is undergoing a fundamental architectural shift.
+Traditional vehicles are increasingly giving way to software-defined vehicles
+(SDVs) --- platforms in which electronic control units are consolidated onto
+high-performance compute hardware and the vehicle's behaviour is governed by
+software layers that can be updated over the air. This transformation enables
+capabilities that were previously inconceivable: dynamic reconfiguration of
+driving characteristics, continuous safety-critical updates without a workshop
+visit, and the integration of machine-learning-based components directly into
+the vehicle runtime.
+
+At the same time, deep reinforcement learning (RL) has matured into a practical
+engineering tool. Algorithms such as Proximal Policy Optimization (PPO)
+\cite{Schulman2017} achieve human-competitive or superhuman performance in
+continuous control tasks ranging from robotic locomotion to game playing, with
+comparatively modest tuning effort. The natural question that arises is
+therefore: \emph{how can an RL-trained policy be moved, end-to-end, from a
+training simulation onto an SDV runtime stack in a reproducible and maintainable
+way?}
+
+This question is not merely academic. Automotive-grade deployment requires that
+a trained model run inside a standardised software container, interact with
+vehicle signals through a well-defined data layer, and remain subject to
+functional-safety monitors that can intervene when the model operates outside
+its intended envelope. Bridging this gap between laboratory RL and production
+SDV middleware is the core motivation behind the work presented in this thesis.
+
+\subsection*{1.2 \quad PROBLEM STATEMENT}
+\addcontentsline{toc}{subsection}{1.2 \quad Problem Statement}
+
+\indent Existing RL research in the autonomous driving domain concentrates
+almost exclusively on training performance --- reward curves, sample efficiency,
+and policy robustness. The software engineering challenge of taking a trained
+checkpoint and deploying it as a first-class citizen of an SDV runtime stack is
+largely unexplored in the open-source community. Concretely, the following
+sub-problems remain unaddressed in an integrated, open-source pipeline:
+
+\begin{enumerate}[leftmargin=2.5cm, label=\textbf{P\arabic*.}]
+  \item \textbf{Simulation-to-middleware coupling.} A physics simulator and an
+    SDV middleware stack speak fundamentally different protocols; a
+    communication bridge that is both low-latency and decoupled from either
+    system is needed.
+  \item \textbf{Standardised vehicle-signal representation.} Raw simulator
+    outputs (floating-point physics quantities) must be mapped onto
+    industry-standard vehicle signal specifications (VSS) so that the SDV
+    safety layer can interpret them without simulator-specific knowledge.
+  \item \textbf{Operational safety monitoring.} A deployed RL policy may
+    extrapolate outside its training distribution; a lightweight, declarative
+    safety monitor must be able to override the policy's actions in real time.
+  \item \textbf{Reproducible training workflow.} The entire pipeline --- from
+    launching the simulation to saving a deployable checkpoint --- must be
+    reproducible from a single control surface without manual orchestration.
+\end{enumerate}
+
+\subsection*{1.3 \quad OBJECTIVES}
+\addcontentsline{toc}{subsection}{1.3 \quad Objectives}
+
+\indent This thesis addresses the above problems through the design, implementation, and
+evaluation of \textbf{SHILATE} (Software-defined-vehicle Hardware-In-the-Loop
+Autonomous Training Environment). The specific objectives are:
+
+\begin{enumerate}[leftmargin=2.5cm, label=\textbf{O\arabic*.}]
+  \item Design and implement a Unity-based physics simulation of a rear-wheel-drive
+    vehicle navigating an instrumented obstacle course.
+  \item Define a shaped reward function that guides a PPO agent to complete
+    laps reliably and safely, and expose a Gymnasium-compliant Python interface
+    over MQTT.
+  \item Implement a real-time health-monitoring and training-control layer inside
+    the Unity Editor so that a researcher can observe and intervene in a training
+    run without leaving the development environment.
+  \item Construct an SDV deployment chain using Eclipse Leda, the Kuksa vehicle
+    signal databroker, and a Velocitas vehicle application that enforces
+    operational limits on the running policy.
+  \item Evaluate the pipeline quantitatively: training convergence, inference
+    lap performance, and end-to-end signal propagation through the SDV stack.
+\end{enumerate}
+
+\subsection*{1.4 \quad THESIS STRUCTURE}
+\addcontentsline{toc}{subsection}{1.4 \quad Thesis Structure}
+
+\indent The remainder of this document is organised as follows. Chapter~2 reviews the
+theoretical background in reinforcement learning, SDV middleware, and
+communication protocols, and situates SHILATE among related work. Chapter~3
+presents the overall system architecture and the rationale for key design
+decisions. Chapter~4 describes the Unity simulation in detail, covering the
+vehicle model, perception layer, reward function, and training control
+interface. Chapter~5 documents the Python RL training pipeline, including the
+Gymnasium wrapper, PPO configuration, and health telemetry. Chapter~6 explains
+the SDV integration through Eclipse Leda, focusing on signal mapping and
+safety monitoring. Chapter~7 reports experimental results. Chapter~8 concludes
+with a summary of contributions, limitations, and directions for future work.
+
+\clearpage
+
+% ============================================================
+%  CHAPTER 2 — BACKGROUND AND RELATED WORK
+% ============================================================
+\markboth{Chapter 2 — Background \& Related Work}{}
+\section*{\centering CHAPTER 2\\[0.3cm] BACKGROUND AND RELATED WORK}
+\addcontentsline{toc}{section}{Chapter 2 \quad Background and Related Work}
+\vspace{2\baselineskip}
+
+\subsection*{2.1 \quad REINFORCEMENT LEARNING FUNDAMENTALS}
+\addcontentsline{toc}{subsection}{2.1 \quad Reinforcement Learning Fundamentals}
+
+\indent Reinforcement learning is a computational framework for sequential decision
+making under uncertainty \cite{Sutton2018}. An agent interacts with an
+environment modelled as a Markov Decision Process (MDP), defined by the tuple
+$(\mathcal{S}, \mathcal{A}, P, R, \gamma)$, where $\mathcal{S}$ is the state
+space, $\mathcal{A}$ is the action space, $P: \mathcal{S} \times \mathcal{A}
+\times \mathcal{S} \rightarrow [0,1]$ is the transition kernel, $R:
+\mathcal{S} \times \mathcal{A} \rightarrow \mathbb{R}$ is the reward function,
+and $\gamma \in [0,1)$ is the discount factor. The agent's goal is to learn a
+policy $\pi: \mathcal{S} \rightarrow \mathcal{A}$ (or a distribution over
+actions) that maximises the expected discounted return $G_t = \sum_{k=0}^{\infty}
+\gamma^k R_{t+k+1}$.
+
+\textbf{Policy gradient methods} optimise the policy directly by computing the
+gradient of the expected return with respect to the policy parameters
+$\theta$. The foundational result is the policy gradient theorem:
+
+\begin{equation}
+  \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}
+    \left[ \nabla_\theta \log \pi_\theta(a|s) \cdot Q^{\pi_\theta}(s, a) \right],
+\end{equation}
+
+\noindent where $Q^{\pi_\theta}(s,a)$ is the action-value function under the
+current policy. In practice, a learned value function (critic) $V_\phi(s)$
+is used to compute the advantage $A(s,a) = Q(s,a) - V_\phi(s)$, which
+reduces gradient variance without introducing bias.
+
+\textbf{Actor-critic} architectures maintain both a policy network (actor) and a
+value network (critic), trained simultaneously. This combination underpins
+most modern continuous-control RL algorithms, including the one used in this
+work.
+
+\subsection*{2.2 \quad PROXIMAL POLICY OPTIMIZATION}
+\addcontentsline{toc}{subsection}{2.2 \quad Proximal Policy Optimization}
+
+\indent Proximal Policy Optimization \cite{Schulman2017} is a policy gradient algorithm
+designed to take the largest possible improvement step on a policy without
+destabilising training. It addresses the instability of earlier methods such
+as TRPO by replacing the constrained optimisation with a clipped surrogate
+objective that is cheap to compute and easy to implement:
+
+\begin{equation}
+  L^{\text{CLIP}}(\theta) = \mathbb{E}_t \left[
+    \min\!\left( r_t(\theta)\,\hat{A}_t,\;
+      \text{clip}\!\left(r_t(\theta),\,1-\epsilon,\,1+\epsilon\right)\hat{A}_t
+    \right)
+  \right],
+\end{equation}
+
+\noindent where $r_t(\theta) = \pi_\theta(a_t|s_t) / \pi_{\theta_\text{old}}(a_t|s_t)$
+is the probability ratio between the updated and old policies, $\hat{A}_t$ is
+the estimated advantage at time step $t$, and $\epsilon$ is a clipping
+hyperparameter (typically $0.2$).
+
+The full training objective combines the clipped policy loss, a value function
+regression term, and an entropy bonus:
+\begin{equation}
+  L(\theta) = L^{\text{CLIP}}(\theta)
+            - c_1 L^{\text{VF}}(\theta)
+            + c_2 H[\pi_\theta(\cdot|s_t)],
+\end{equation}
+
+\noindent where $c_1$ and $c_2$ are scaling coefficients. PPO is well suited to
+the vehicle control domain because: (i) the continuous action space
+(steer, throttle, brake) maps naturally onto the Gaussian policy it employs;
+(ii) it is on-policy, avoiding the distribution-shift issues that complicate
+off-policy methods in safety-critical settings; and (iii) its
+data-collection strategy (rollout buffers of fixed length) integrates
+cleanly with a simulation that runs at real time in a separate process.
+
+The Stable-Baselines3 library \cite{Raffin2021} provides the PPO implementation
+used in this project; it has been validated against reference implementations
+across a range of benchmark tasks.
+
+\subsection*{2.3 \quad SIMULATION-TO-REAL TRANSFER IN AUTONOMOUS DRIVING}
+\addcontentsline{toc}{subsection}{2.3 \quad Simulation-to-Real Transfer in Autonomous Driving}
+
+\indent Training autonomous driving policies in simulation rather than on physical
+hardware is standard practice, motivated by safety, cost, and the ability to
+reset episodes deterministically \cite{Kiran2021}. The primary risk is the
+\emph{sim-to-real gap}: discrepancies between simulated and real sensor readings,
+physics, and environmental conditions cause policies that perform well in
+simulation to degrade when deployed.
+
+Prominent simulation platforms include CARLA \cite{Dosovitskiy2017}, an
+Unreal-Engine-based open-source simulator that models urban driving at high
+visual fidelity, and the Unity ML-Agents Toolkit \cite{Juliani2020}, which
+provides a general-purpose RL training framework tightly integrated with the
+Unity Editor. SHILATE uses raw Unity physics without ML-Agents, for two
+reasons: first, it avoids an opaque intermediate API layer and gives direct
+control over the observation and reward structures; second, and more
+importantly, the training process lives entirely in Python and communicates
+through a standard MQTT broker, which is precisely the protocol used by the
+target SDV deployment stack. The simulation therefore serves simultaneously as
+a training environment and as an emulation of the vehicle bus interface.
+
+\subsection*{2.4 \quad SOFTWARE-DEFINED VEHICLES AND THE VSS DATA MODEL}
+\addcontentsline{toc}{subsection}{2.4 \quad Software-Defined Vehicles and the VSS Data Model}
+
+\indent The COVESA Vehicle Signal Specification (VSS) \cite{COVESA2023} is a
+hierarchical, vendor-neutral data model for vehicle signals, adopted by the
+Eclipse SDV working group as the canonical representation for in-vehicle data.
+VSS paths follow a dotted-name convention, e.g., \texttt{Vehicle.Speed} (km/h),
+\texttt{Vehicle.Powertrain.CombustionEngine.Speed} (RPM), and
+\texttt{Vehicle.Chassis.SteeringWheel.Angle} (degrees).
+
+The Eclipse Kuksa databroker \cite{EclipseKuksa2024} implements a VSS-aligned
+gRPC/REST server that acts as the vehicle signal hub. Producers (e.g., an
+MQTT bridge receiving simulator telemetry) write to VSS paths; consumers (e.g.,
+a safety application) subscribe to changes or poll current values. This
+decoupled producer/consumer model is a cornerstone of the SDV architecture
+used in this project.
+
+Eclipse Velocitas \cite{EclipseVelocitas2024} builds on top of Kuksa by
+providing a vehicle-application SDK and a deployment scaffold. A Velocitas app
+subscribes to VSS signals, implements business logic, and publishes alerts or
+control signals back to the vehicle bus. In SHILATE, the Velocitas application
+monitors the live RL agent for speed and RPM limit violations.
+
+\subsection*{2.5 \quad MQTT AND PUBLISH-SUBSCRIBE MESSAGING}
+\addcontentsline{toc}{subsection}{2.5 \quad MQTT and Publish-Subscribe Messaging}
+
+\indent MQTT 3.1.1 \cite{OASIS2014} is a lightweight publish-subscribe protocol
+designed for constrained IoT environments. A central broker (Mosquitto, in
+this project) decouples producers and consumers: a publisher pushes a message
+to a topic string, and all subscribers to that topic receive it, with no
+direct network coupling between the two parties. The protocol supports three
+Quality-of-Service (QoS) levels; SHILATE uses QoS 0 (at-most-once delivery)
+throughout, which minimises latency at the cost of possible message loss ---
+an acceptable trade-off in a training loop where the next observation replaces
+the current one within tens of milliseconds.
+
+The MQTT protocol is also natively supported by the Eclipse Leda SDV image,
+which ships Mosquitto as a core service. This means the same communication
+fabric used during simulation training can be reused without modification on
+the deployment target, eliminating the need for a protocol-translation layer
+between training and production.
+
+\subsection*{2.6 \quad RELATED WORK}
+\addcontentsline{toc}{subsection}{2.6 \quad Related Work}
+
+\indent A substantial body of work addresses RL for autonomous driving within
+simulation \cite{Kiran2021}. OpenAI's \texttt{gym-car-racing} environment
+\cite{Brockman2016} provides a top-down racetrack with pixel observations; it
+is widely used as a benchmark but offers no path to real vehicle deployment.
+CARLA-based RL studies \cite{Dosovitskiy2017} achieve high visual realism but
+operate as closed systems with no integration to SDV middleware.
+
+The Unity ML-Agents toolkit \cite{Juliani2020} enables RL training within
+Unity but couples the Python trainer tightly to Unity's \texttt{side-channel}
+API, making it difficult to reuse the same Python environment against a
+physical vehicle. SHILATE deliberately avoids this coupling: the Python
+environment communicates with Unity only through MQTT, the same protocol the
+Leda SDV image uses for vehicle bus telemetry.
+
+From the SDV side, the Eclipse Kuksa and Velocitas communities have
+demonstrated containerised vehicle applications that read VSS signals and
+enforce policies, but without an RL training pipeline attached. SHILATE
+contributes the missing link: a training-to-deployment chain that is agnostic
+to both the simulation engine and the SDV stack as long as both speak MQTT
+and VSS.
+
+\clearpage
+
+% ============================================================
+%  PLACEHOLDER: Chapters 3–8 will be added in subsequent stages
 % ============================================================
 
 \end{document}

@@ -16,6 +16,9 @@
 # ---------- Documentation ----------
 !Documentation/
 !Documentation/*.tex
+!Documentation/*.bib
+!Documentation/figures/
+!Documentation/figures/**
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/media/
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/media/**
