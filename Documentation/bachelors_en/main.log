@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  10 JUN 2026 15:29
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  10 JUN 2026 15:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -861,9 +861,11 @@ File: T1NimbusSans.fd 2015/09/19 Font definitions for T1/NimbusSans (msharpe).
 LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 12.0pt on input line 38.
  (./main.aux
-(./chapters/1-Title.aux) (./chapters/2-AbstractRO.aux)
-(./chapters/3-AbstractEN.aux) (./chapters/4-Introduction.aux)
-(./chapters/5-Body.aux) (./chapters/6-Conclusions.aux))
+(./chapters/1-Title.aux) (./chapters/3-AbstractEN.aux)
+(./chapters/4-Introduction.aux) (./chapters/5-Background.aux)
+(./chapters/6-SystemArchitecture.aux) (./chapters/7-UnitySim.aux)
+(./chapters/8-PythonRL.aux) (./chapters/9-SDVIntegration.aux)
+(./chapters/10-Experiments.aux) (./chapters/11-Conclusions.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 38.
@@ -1016,7 +1018,7 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
-<images/logo.png, id=64, 149.358pt x 48.18pt>
+<images/logo.png, id=32, 149.358pt x 48.18pt>
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 23.
@@ -1028,7 +1030,10 @@ Package pdftex.def Info: images/logo.png  used on input line 23.
  <./images/logo.png>])
 \openout2 = `chapters/3-AbstractEN.aux'.
 
- (./chapters/3-AbstractEN.tex)
+ (./chapters/3-AbstractEN.tex
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/it' will be
+(Font)              scaled to size 12.0pt on input line 24.
+)
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 41.
@@ -1125,9 +1130,30 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
+
+LaTeX Warning: Reference `fig:myfig' on page 1 undefined on input line 21.
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 23--25
 
  []
+
+
+LaTeX Warning: Reference `example:citation' on page 1 undefined on input line 2
+6.
+
+
+LaTeX Warning: Reference `fig:myfig' on page 1 undefined on input line 27.
+
+
+LaTeX Warning: Reference `table:table1' on page 1 undefined on input line 27.
+
+
+LaTeX Warning: Reference `code:polym' on page 1 undefined on input line 27.
+
+
+LaTeX Warning: Reference `example:table_url' on page 1 undefined on input line 
+27.
 
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
@@ -1172,9 +1198,7 @@ Package pdftex.def Info: images/logo.png  used on input line 49.
 
 (./chapters/11-Conclusions.tex)
 Chapter 2.
-LaTeX Font Info:    Font shape `T1/NimbusSans/m/it' will be
-(Font)              scaled to size 12.0pt on input line 58.
-<example_declaration.pdf, id=136, 597.51233pt x 845.0471pt>
+<example_declaration.pdf, id=84, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
@@ -1183,7 +1207,7 @@ File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
 (pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-<example_declaration.pdf, id=139, page=1, 597.51233pt x 845.0471pt>
+<example_declaration.pdf, id=87, page=1, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
@@ -1255,84 +1279,30 @@ L3 programming layer <2024-01-22>
  ***********
 
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: There were undefined references.
 
-
-Package rerunfilecheck Warning: File `main.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: 17E8BB695F5C4293B62257EF61E9394F;1847
-(rerunfilecheck)             After:  6681DE398A6BD3E92F64F269C90666EE;962.
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: 6681DE398A6BD3E92F64F269C90666EE;962.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 28597 strings out of 474222
- 511833 string characters out of 5748733
+ 28581 strings out of 474222
+ 511675 string characters out of 5748733
  1936975 words of memory out of 5000000
- 50305 multiletter control sequences out of 15000+600000
- 598438 words of font info for 104 fonts, out of 8000000 for 9000
+ 50280 multiletter control sequences out of 15000+600000
+ 600162 words of font info for 112 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  79i,17n,117p,1850b,2288s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-pdfTeX warning (dest): name{code.2.1} has been referenced but does not exist, r
-eplaced by a fixed one
-
-
-pdfTeX warning (dest): name{Item.13} has been referenced but does not exist, re
-placed by a fixed one
-
-
-pdfTeX warning (dest): name{table.caption.6} has been referenced but does not e
-xist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{figure.caption.5} has been referenced but does not 
-exist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{chapter.4} has been referenced but does not exist, 
-replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.3.2} has been referenced but does not exist
-, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.3.1} has been referenced but does not exist
-, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{chapter.3} has been referenced but does not exist, 
-replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.2.4} has been referenced but does not exist
-, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.2.3} has been referenced but does not exist
-, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.2.2} has been referenced but does not exist
-, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.2.1} has been referenced but does not exist
-, replaced by a fixed one
-
-</usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/share/
-texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/texlive/
-texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (8 pages, 135090 bytes).
+</usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb></
+usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/texliv
+e/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
+Output written on main.pdf (8 pages, 136735 bytes).
 PDF statistics:
- 210 PDF objects out of 1000 (max. 8388607)
- 174 compressed objects within 2 object streams
- 37 named destinations out of 1000 (max. 500000)
- 27282 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 153 PDF objects out of 1000 (max. 8388607)
+ 117 compressed objects within 2 object streams
+ 25 named destinations out of 1000 (max. 500000)
+ 27218 words of extra memory for PDF output out of 29859 (max. 10000000)
 
