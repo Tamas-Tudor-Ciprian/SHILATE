@@ -21,8 +21,8 @@ public class TrainingSettings : ScriptableObject
     public string trainScriptPath = "../leda/leda-controller/train.py";
 
     [Header("Training Parameters")]
-    [Tooltip("Total training timesteps")]
-    public int totalTimesteps = 100000;
+    [Tooltip("Total training timesteps. Set to 0 for unlimited (train until manually stopped).")]
+    public int totalTimesteps = 0;
 
     [Tooltip("PPO learning rate")]
     public float learningRate = 3e-4f;
@@ -112,7 +112,8 @@ public class TrainingSettings : ScriptableObject
     {
         var args = new System.Text.StringBuilder();
 
-        args.Append($"--total-timesteps {totalTimesteps} ");
+        if (totalTimesteps > 0)
+            args.Append($"--total-timesteps {totalTimesteps} ");
         args.Append($"--learning-rate {learningRate.ToString(System.Globalization.CultureInfo.InvariantCulture)} ");
         args.Append($"--n-steps {nSteps} ");
         args.Append($"--batch-size {batchSize} ");
