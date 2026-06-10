@@ -804,7 +804,43 @@ public class TrainingEditorWindow : EditorWindow
 
         AddLog(msg, exitCode == 0 ? LogType.Log : LogType.Error);
         _health.NotifyProcessExited(exitCode);
-        HoldSleep(false);
+
+        // Auto-restart: if training was still active and this wasn't a deliberate
+        // clean stop (exit 0 via the Stop button sets TrainingActive=false first),
+        // relaunch Python so training continues after a crash or heartbeat-triggered kill.
+        if (TrainingActive && !InferenceMode && exitCode != 0)
+        {
+            AddLog("Python process died unexpectedly — restarting in 2 s...", LogType.Warning);
+            EditorApplication.delayCall += () =>
+            {
+                if (!TrainingActive || InferenceMode) return; // user stopped in the meantime
+                System.Threading.Tasks.Task.Delay(2000).ContinueWith(_ =>
+                    EditorApplication.delayCall += () =>
+                    {
+                        if (!TrainingActive || InferenceMode || _processManager.IsRunning) return;
+                        AddLog("Restarting Python training process...", LogType.Log);
+                        if (!_processManager.Start(_settings))
+                        {
+                            AddLog("Auto-restart failed — stopping training.", LogType.Error);
+                            TrainingActive = false;
+                            HoldSleep(false);
+                            EditorApplication.ExitPlaymode();
+                        }
+                        else
+                        {
+                            HoldSleep(true);
+                            _health.StartTraining();
+                            AddLog("Python process restarted.", LogType.Log);
+                        }
+                    }
+                );
+            };
+        }
+        else
+        {
+            HoldSleep(false);
+        }
+
         // Beep on a non-zero exit so the user notices even if focused elsewhere.
         if (exitCode != 0)
             EditorApplication.Beep();
