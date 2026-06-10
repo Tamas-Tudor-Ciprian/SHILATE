@@ -861,7 +861,275 @@ to \emph{Warning} or \emph{Critical} and appends an entry to the issue log.
 \clearpage
 
 % ============================================================
-%  PLACEHOLDER: Chapters 5–8 will be added in subsequent stages
+%  CHAPTER 5 — PYTHON RL TRAINING PIPELINE
+% ============================================================
+\markboth{Chapter 5 — Python RL Training Pipeline}{}
+\section*{\centering CHAPTER 5\\[0.3cm] PYTHON RL TRAINING PIPELINE}
+\addcontentsline{toc}{section}{Chapter 5 \quad Python RL Training Pipeline}
+\vspace{2\baselineskip}
+
+\subsection*{5.1 \quad GYMNASIUM ENVIRONMENT WRAPPER}
+\addcontentsline{toc}{subsection}{5.1 \quad Gymnasium Environment Wrapper}
+
+\indent The Python training pipeline is built on the Gymnasium API
+\cite{Towers2024}, which defines a standard interface (\texttt{reset()},
+\texttt{step()}, \texttt{observation\_space}, \texttt{action\_space}) that any
+Stable-Baselines3 algorithm can consume without modification. The wrapper class
+\texttt{ShilateEnv(gym.Env)} in \texttt{environment.py} translates between
+this interface and the MQTT broker.
+
+\textbf{Observation space.} As derived in Equation~\ref{eq:obs}, the
+observation is a $\mathbb{R}^{N+2}$ vector where every element lies in
+$[0, 1]$. The space is declared as:
+\begin{equation*}
+  \mathcal{O} = \text{Box}(0,\; 1,\; \text{shape}=(N+2,),\; \text{dtype}=\texttt{float32}).
+\end{equation*}
+
+\textbf{Action space.} The agent outputs three continuous values:
+\begin{equation*}
+  \mathcal{A} = \text{Box}\!\left([-1,\,0,\,0],\; [1,\,1,\,1],\; \text{shape}=(3,),\; \text{dtype}=\texttt{float32}\right),
+\end{equation*}
+corresponding to steer $\in [-1, 1]$, throttle $\in [0, 1]$, and
+brake $\in [0, 1]$ respectively.
+
+\textbf{Episode lifecycle.} \texttt{reset()} sends a \texttt{reset} command to
+Unity, then blocks until either an \texttt{obs} message arrives or the 5-second
+\texttt{OBS\_TIMEOUT} elapses. If the timeout fires, the episode is marked
+truncated and Stable-Baselines3 bootstraps the value estimate rather than
+treating the transition as terminal.
+
+\texttt{step(action)} publishes the three action components to their respective
+control topics (see Table~\ref{tab:mqtt-topics}), then blocks on a threading
+event until a new \texttt{obs} arrives alongside a co-published
+\texttt{reward} and \texttt{done}. The threading-event approach avoids busy
+polling and allows the GIL to be released while waiting, keeping CPU usage low.
+
+\subsection*{5.2 \quad PPO AGENT CONFIGURATION}
+\addcontentsline{toc}{subsection}{5.2 \quad PPO Agent Configuration}
+
+\indent The PPO agent is instantiated from Stable-Baselines3 \cite{Raffin2021},
+which in turn uses PyTorch \cite{Paszke2019} as its deep-learning backend.
+The environment is wrapped in a one-slot \texttt{DummyVecEnv} as required by
+the SB3 API, even though only a single environment is used.
+
+The neural network architecture, specified via \texttt{model.py}, uses separate
+actor and critic branches to allow the value function to learn a different
+feature representation from the policy. Each branch is a two-layer multilayer
+perceptron:
+\begin{equation*}
+  \pi:\; \mathbb{R}^{N+2} \xrightarrow{256} \mathbb{R}^{128} \to \mathbb{R}^{|\mathcal{A}|},
+  \qquad
+  V:\; \mathbb{R}^{N+2} \xrightarrow{256} \mathbb{R}^{128} \to \mathbb{R}.
+\end{equation*}
+
+Default PPO hyperparameters are listed in Table~\ref{tab:ppo-params}. These
+values follow the recommendations of \cite{Raffin2021} for continuous-action
+environments and can be overridden through the Training Controller UI or via
+\texttt{train.py} CLI flags.
+
+\begin{table}[H]
+  \centering
+  \caption{Default PPO hyperparameters.}
+  \label{tab:ppo-params}
+  \vspace{0.5\baselineskip}
+  \begin{tabular}{lrl}
+    \toprule
+    \textbf{Parameter} & \textbf{Default} & \textbf{CLI flag} \\
+    \midrule
+    Total timesteps      & 100\,000  & \texttt{--total-timesteps} \\
+    Learning rate        & $3 \times 10^{-4}$ & \texttt{--learning-rate} \\
+    Rollout steps ($n$)  & 2048      & \texttt{--n-steps} \\
+    Batch size           & 64        & \texttt{--batch-size} \\
+    Clipping ($\epsilon$)& 0.2       & (SB3 default) \\
+    Discount ($\gamma$)  & 0.99      & (SB3 default) \\
+    GAE $\lambda$        & 0.95      & (SB3 default) \\
+    Entropy coefficient  & 0.0       & (SB3 default) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection*{5.3 \quad TRAINING LOOP AND HEALTH TELEMETRY}
+\addcontentsline{toc}{subsection}{5.3 \quad Training Loop and Health Telemetry}
+
+\indent The training loop is driven by \texttt{PPO.learn(total\_timesteps)}.
+A custom \texttt{HealthCallback(BaseCallback)} is attached to the training
+process and invoked at the end of each rollout. It inspects the most-recent
+policy gradient loss, value loss, and KL divergence for NaN or infinite values;
+if any are detected it emits a \texttt{SHILATE-HEALTH nan\_in\_losses} marker
+to stdout, which \texttt{TrainingHealthEvaluator.cs} uses to transition the
+Editor banner to \emph{Critical}.
+
+All metrics are transmitted to the Unity Editor through two mechanisms:
+
+\begin{enumerate}[leftmargin=2.5cm]
+  \item \textbf{SB3 tabular output.}  Stable-Baselines3 prints a formatted
+    table to stdout every \texttt{n\_steps}. \texttt{TrainingMetricsParser.cs}
+    parses the rows \texttt{rollout/ep\_rew\_mean},
+    \texttt{train/policy\_gradient\_loss}, \texttt{train/value\_loss}, and
+    \texttt{train/approx\_kl} from the raw text stream.
+  \item \textbf{Structured markers.} The \texttt{emit()} helper in
+    \texttt{train.py} writes lines of the form
+    \texttt{SHILATE-METRIC key=value} and \texttt{SHILATE-HEALTH signal} to
+    stdout, enabling the Editor parser to extract specific values without
+    fragile regex matching against the SB3 table format.
+\end{enumerate}
+
+Model checkpoints are saved by a \texttt{CheckpointCallback} every
+approximately 10\,000 timesteps to the configured save directory, and the
+\texttt{EvalCallback} saves the best-performing checkpoint as
+\texttt{best\_model.zip}.
+
+\subsection*{5.4 \quad INFERENCE MODE}
+\addcontentsline{toc}{subsection}{5.4 \quad Inference Mode}
+
+\indent \texttt{ai\_driver.py} loads a saved \texttt{.zip} checkpoint and runs the
+policy in a closed-loop inference loop. It constructs observations from the
+same MQTT source as the training environment, ensuring that no changes are
+required to the Unity side. The policy is evaluated with
+\texttt{deterministic=True}, which disables the Gaussian exploration noise
+added during training. Episode telemetry (speed, steer, throttle, brake) is
+logged every 50 steps to facilitate post-run analysis. The script can run a
+fixed number of episodes (\texttt{--episodes}) or loop indefinitely
+(\texttt{--episodes 0}).
+
+\subsection*{5.5 \quad CROSS-PLATFORM PROCESS MANAGEMENT}
+\addcontentsline{toc}{subsection}{5.5 \quad Cross-Platform Process Management}
+
+\indent \texttt{PythonProcessManager.cs} is responsible for spawning and terminating
+the Python process from within the Unity Editor. Because the Editor runs on
+both Windows and Linux (WSL2 is a common development environment), the manager
+must handle platform-specific virtual-environment activation. On Windows, it
+invokes \texttt{cmd.exe /c} with the \texttt{Scripts\textbackslash activate}
+path; on Linux/macOS, it uses \texttt{bash -c} with \texttt{bin/activate}.
+
+Graceful shutdown is handled by sending a \texttt{SIGTERM} signal (or the
+Windows equivalent Ctrl+C event) to the process group, giving the Python
+process time to flush TensorBoard logs and save the final checkpoint before the
+Editor exits Play mode. If the process does not terminate within a configurable
+timeout, \texttt{Kill()} is called as a fallback.
+
+\clearpage
+
+% ============================================================
+%  CHAPTER 6 — SDV INTEGRATION WITH ECLIPSE LEDA
+% ============================================================
+\markboth{Chapter 6 — SDV Integration with Eclipse Leda}{}
+\section*{\centering CHAPTER 6\\[0.3cm] SDV INTEGRATION WITH ECLIPSE LEDA}
+\addcontentsline{toc}{section}{Chapter 6 \quad SDV Integration with Eclipse Leda}
+\vspace{2\baselineskip}
+
+\subsection*{6.1 \quad ECLIPSE LEDA OVERVIEW}
+\addcontentsline{toc}{subsection}{6.1 \quad Eclipse Leda Overview}
+
+\indent Eclipse Leda \cite{EclipseLeda2023} is an SDV distribution built on the
+Yocto Project. It packages a curated set of Eclipse SDV middleware components
+--- Mosquitto MQTT broker, Kuksa databroker, Kanto container manager, and
+OpenTelemetry collector --- into a bootable image that can run on QEMU
+(x86-64) or on supported ARM hardware such as the Raspberry Pi 4. Its primary
+purpose is to serve as a reference platform for developing and validating SDV
+software stacks before deploying to a real vehicle ECU.
+
+SHILATE targets the QEMU image (\texttt{sdv-image-all-qemux86-64.wic.qcow2})
+included in the repository. The \texttt{leda/run-leda.sh} script launches the
+image with a bridged network interface so that the host machine and the QEMU
+guest share a Mosquitto broker at \texttt{127.0.0.1:1883}.
+
+\subsection*{6.2 \quad MQTT-TO-KUKSA BRIDGE}
+\addcontentsline{toc}{subsection}{6.2 \quad MQTT-to-Kuksa Bridge}
+
+\indent The \texttt{mqtt-kuksa-feeder} container (\texttt{leda/mqtt-kuksa-feeder/feeder.py})
+subscribes to the \texttt{vehicle/\#} wildcard on the Mosquitto broker and
+forwards each received message to the Kuksa databroker as a VSS path write via
+gRPC. The mapping is declared in \texttt{config.json} and shown in
+Table~\ref{tab:vss-map}.
+
+\begin{table}[H]
+  \centering
+  \caption{MQTT topic to VSS path mapping in the Kuksa feeder.}
+  \label{tab:vss-map}
+  \vspace{0.5\baselineskip}
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{MQTT topic} & \textbf{VSS path} \\
+    \midrule
+    \texttt{vehicle/speed}    & \texttt{Vehicle.Speed} \\
+    \texttt{vehicle/rpm}      & \texttt{Vehicle.Powertrain.CombustionEngine.Speed} \\
+    \texttt{vehicle/steering} & \texttt{Vehicle.Chassis.SteeringWheel.Angle} \\
+    \texttt{vehicle/brake}    & \texttt{Vehicle.Chassis.Brake.PedalPosition} \\
+    \texttt{vehicle/throttle} & \texttt{Vehicle.OBD.ThrottlePosition} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The Kuksa databroker provides a gRPC API for both write and subscribe
+operations. After the feeder writes a signal, any subscriber --- including the
+Velocitas vehicle application --- is notified with the new value within the
+same event loop tick.
+
+\subsection*{6.3 \quad VELOCITAS VEHICLE APPLICATION}
+\addcontentsline{toc}{subsection}{6.3 \quad Velocitas Vehicle Application}
+
+\indent The Velocitas vehicle application (\texttt{leda/velocitas-app/app.py})
+implements the operational safety monitor for the RL agent. It subscribes to
+five VSS signals via the Kuksa databroker, logs a telemetry summary every
+5 seconds, and enforces two hard limits:
+
+\begin{itemize}
+  \item \textbf{Overspeed}: if \texttt{Vehicle.Speed} exceeds 120 km/h, the
+    application publishes an alert to \texttt{leda/command/alert} with the
+    payload \texttt{\{"type":"overspeed","value":<speed>\}}.
+  \item \textbf{RPM redline}: if
+    \texttt{Vehicle.Powertrain.CombustionEngine.Speed} exceeds 6500 RPM, an
+    analogous alert is published with \texttt{\{"type":"rpm\_redline","value":<rpm>\}}.
+\end{itemize}
+
+These alerts are currently informational --- they are logged and published to
+MQTT for a potential external safety controller to act upon. The architecture
+is designed so that the safety monitor can be upgraded to a command-injection
+path (e.g., overriding the throttle control topic) without modifying any other
+component of the stack.
+
+\subsection*{6.4 \quad CONTAINER DEPLOYMENT}
+\addcontentsline{toc}{subsection}{6.4 \quad Container Deployment}
+
+\indent Both \texttt{mqtt-kuksa-feeder} and \texttt{velocitas-app} ship with
+Dockerfiles that produce minimal Python 3.11 slim images. The
+\texttt{leda-controller} inference container uses a Dockerfile that installs
+the \texttt{requirements.txt} dependencies (PyTorch, Stable-Baselines3,
+Gymnasium, Paho-MQTT) and sets the entry-point to \texttt{train.py} or
+\texttt{ai\_driver.py} depending on the \texttt{MODE} environment variable.
+
+Each container is described by a Kanto container manifest
+(\texttt{kanto-manifest.json}), which specifies:
+\begin{itemize}
+  \item The OCI image reference (local or registry).
+  \item Environment variables: \texttt{MQTT\_HOST}, \texttt{MQTT\_PORT},
+    \texttt{MODE} (\texttt{train} or \texttt{infer}), \texttt{TOTAL\_TIMESTEPS},
+    \texttt{MODEL\_PATH}.
+  \item Restart policy: \texttt{always} for the feeder and Velocitas app;
+    \texttt{no} for the inference container (which runs a fixed episode count).
+\end{itemize}
+
+Provisioning is automated by \texttt{leda/provision-device.sh}, which uses SSH
+to copy manifests to the Leda device and invoke the Kanto CLI to pull and
+start the containers.
+
+\subsection*{6.5 \quad LEDA TELEMETRY BROKER}
+\addcontentsline{toc}{subsection}{6.5 \quad Leda Telemetry Broker}
+
+\indent In addition to MQTT, the Leda image runs a lightweight telemetry broker
+implemented in Rust. The broker listens on TCP port 7878 and acts as a
+multiplexing relay: any client that connects and sends telemetry data has that
+data forwarded to all other connected clients. This enables tools such as
+\texttt{netcat} or custom dashboards to observe the live telemetry stream
+without subscribing to individual MQTT topics. The binary is compiled from
+\texttt{telemetry\_broker.rs} using the standard Rust toolchain (\texttt{rustc
+telemetry\_broker.rs}).
+
+\clearpage
+
+% ============================================================
+%  PLACEHOLDER: Chapters 7–8 will be added in the final stage
 % ============================================================
 
 \end{document}
