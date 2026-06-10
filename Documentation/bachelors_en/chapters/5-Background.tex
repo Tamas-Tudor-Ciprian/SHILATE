@@ -1,1 +1,132 @@
-% placeholder
+\chapter{Background and Related Work}\label{ch:background}
+\thispagestyle{pagestyle}
+
+\section{Reinforcement Learning Fundamentals}
+\label{sec:rl-fundamentals}
+
+Reinforcement learning is a computational framework for sequential
+decision making under uncertainty \cite{Sutton2018}. An agent interacts
+with an environment modelled as a Markov Decision Process (MDP), defined
+by the tuple $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$, where
+$\mathcal{S}$ is the state space, $\mathcal{A}$ is the action space,
+$P: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \rightarrow [0,1]$
+is the transition kernel, $R: \mathcal{S} \times \mathcal{A} \rightarrow
+\mathbb{R}$ is the reward function, and $\gamma \in [0,1)$ is the
+discount factor. The agent's goal is to learn a policy
+$\pi: \mathcal{S} \rightarrow \mathcal{A}$ that maximises the expected
+discounted return $G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$.
+
+Policy gradient methods optimise the policy directly via the gradient of
+the expected return with respect to policy parameters $\theta$.  The
+fundamental result is the policy gradient theorem:
+\begin{equation}
+  \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}
+  \left[ \nabla_\theta \log \pi_\theta(a|s) \cdot Q^{\pi_\theta}(s,a) \right].
+  \label{eq:pg-theorem}
+\end{equation}
+Actor-critic architectures maintain both a policy network (actor) and a
+value network (critic) trained simultaneously; a learned baseline
+$V_\phi(s)$ reduces gradient variance through the advantage estimate
+$A(s,a) = Q(s,a) - V_\phi(s)$.
+
+\section{Proximal Policy Optimization}
+\label{sec:ppo}
+
+Proximal Policy Optimization \cite{Schulman2017} takes the largest
+possible improvement step on a policy without destabilising training. It
+replaces Trust Region Policy Optimization's constrained optimisation with
+a clipped surrogate objective:
+\begin{equation}
+  L^{\mathrm{CLIP}}(\theta) = \mathbb{E}_t \left[
+    \min\!\left( r_t(\theta)\,\hat{A}_t,\;
+      \mathrm{clip}\!\left(r_t(\theta),\,1{-}\varepsilon,\,1{+}\varepsilon\right)\hat{A}_t
+    \right)
+  \right],
+  \label{eq:ppo-clip}
+\end{equation}
+where $r_t(\theta) = \pi_\theta(a_t|s_t) / \pi_{\theta_{\mathrm{old}}}(a_t|s_t)$
+is the probability ratio, $\hat{A}_t$ is the estimated advantage, and
+$\varepsilon$ (typically $0.2$) is the clipping threshold. The full
+objective adds a value-function regression term and an entropy bonus:
+\begin{equation}
+  L(\theta) = L^{\mathrm{CLIP}}(\theta) - c_1 L^{\mathrm{VF}}(\theta)
+             + c_2 H[\pi_\theta(\cdot|s_t)].
+  \label{eq:ppo-full}
+\end{equation}
+PPO is well suited to the vehicle control domain because its continuous
+Gaussian policy maps naturally onto a steer/throttle/brake action space,
+and its on-policy rollout structure integrates cleanly with a
+wall-clock-rate simulation running in a separate process. The
+Stable-Baselines3 library \cite{Raffin2021} provides the production
+implementation used in this project, validated against reference
+benchmarks.
+
+\section{Simulation-to-Real Transfer in Autonomous Driving}
+\label{sec:sim2real}
+
+Training autonomous driving policies in simulation rather than on physical
+hardware is standard practice, motivated by safety, cost, and the ability
+to reset episodes deterministically \cite{Kiran2021}. The primary risk is
+the \textit{sim-to-real gap}: discrepancies between simulated and real
+sensor readings, physics, and environmental conditions cause policies that
+perform well in simulation to degrade on deployment.
+
+Prominent platforms include CARLA \cite{Dosovitskiy2017}, an
+Unreal-Engine-based open-source simulator modelling urban driving at high
+visual fidelity, and the Unity ML-Agents Toolkit \cite{Juliani2020}, which
+provides a general-purpose RL training framework tightly integrated with
+the Unity Editor. SHILATE uses raw Unity physics without ML-Agents for
+two reasons: it avoids an opaque intermediate API layer, and the training
+process communicates exclusively through MQTT --- the same protocol used
+by the target SDV stack --- so no additional bridge is required for
+deployment.
+
+\section{Software-Defined Vehicles and the VSS Data Model}
+\label{sec:sdv-vss}
+
+The COVESA Vehicle Signal Specification (VSS) \cite{COVESA2023} is a
+hierarchical, vendor-neutral data model for vehicle signals. VSS paths
+follow a dotted-name convention, e.g.\ \texttt{Vehicle.Speed} (km/h),
+\texttt{Vehicle.Powertrain.CombustionEngine.Speed} (RPM), and
+\texttt{Vehicle.Chassis.SteeringWheel.Angle} (degrees).
+
+The Eclipse Kuksa databroker \cite{EclipseKuksa2024} implements a
+VSS-aligned gRPC server acting as the vehicle signal hub. Producers write
+to VSS paths; consumers subscribe to changes. Eclipse Velocitas
+\cite{EclipseVelocitas2024} builds on Kuksa with a vehicle-application
+SDK and deployment scaffold. In SHILATE, the Velocitas application
+monitors the running RL agent for speed and RPM limit violations.
+
+\section{MQTT and Publish-Subscribe Messaging}
+\label{sec:mqtt}
+
+MQTT 3.1.1 \cite{OASIS2014} is a lightweight publish-subscribe protocol
+designed for constrained IoT environments. A central broker decouples
+producers and consumers: a publisher pushes a message to a topic string
+and all subscribers to that topic receive it with no direct network
+coupling between the two parties. SHILATE uses QoS~0 (at-most-once
+delivery) throughout, which minimises latency at the cost of possible
+message loss --- acceptable in a training loop where the next observation
+replaces the current one within tens of milliseconds. The MQTT protocol
+is also natively supported by the Eclipse Leda SDV image, which ships
+Mosquitto as a core service.
+
+\section{Related Work}
+\label{sec:related}
+
+A substantial body of work addresses RL for autonomous driving within
+simulation \cite{Kiran2021}. OpenAI's \texttt{gym-car-racing}
+\cite{Brockman2016} provides a top-down racetrack benchmark but offers no
+path to real vehicle deployment. CARLA-based RL studies
+\cite{Dosovitskiy2017} achieve high visual realism but operate as closed
+systems with no integration to SDV middleware. The Unity ML-Agents toolkit
+\cite{Juliani2020} enables RL training within Unity but couples the Python
+trainer tightly to Unity's side-channel API, making it difficult to reuse
+the same environment against a physical vehicle.
+
+From the SDV side, the Eclipse Kuksa and Velocitas communities have
+demonstrated containerised vehicle applications that read VSS signals and
+enforce policies, but without an RL training pipeline attached. SHILATE
+contributes the missing link: a training-to-deployment chain that is
+agnostic to both the simulation engine and the SDV stack as long as both
+speak MQTT and VSS.

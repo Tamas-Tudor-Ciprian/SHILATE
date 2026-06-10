@@ -1,5 +1,98 @@
-\chapter{Introduction}\label{section:introduction}
+\chapter{Introduction}\label{ch:introduction}
 \thispagestyle{pagestyle}
+
+\section{Motivation and Context}
+\label{sec:motivation}
+
+The automotive industry is undergoing a fundamental architectural shift.
+Traditional vehicles are increasingly giving way to software-defined vehicles
+(SDVs) --- platforms in which electronic control units are consolidated onto
+high-performance compute hardware and the vehicle's behaviour is governed by
+software layers that can be updated over the air \cite{EclipseLeda2023}. This
+transformation enables capabilities that were previously inconceivable: dynamic
+reconfiguration of driving characteristics, continuous safety-critical updates
+without a workshop visit, and the integration of machine-learning-based
+components directly into the vehicle runtime.
+
+At the same time, deep reinforcement learning (RL) has matured into a practical
+engineering tool. Algorithms such as Proximal Policy Optimization (PPO)
+\cite{Schulman2017} achieve human-competitive or superhuman performance in
+continuous control tasks, with comparatively modest tuning effort. The natural
+question that arises is: \textit{how can an RL-trained policy be moved,
+end-to-end, from a training simulation onto an SDV runtime stack in a
+reproducible and maintainable way?}
+
+This question is not merely academic. Automotive-grade deployment requires that
+a trained model run inside a standardised software container, interact with
+vehicle signals through a well-defined data layer, and remain subject to
+functional-safety monitors that can intervene when the model operates outside
+its intended envelope. Bridging this gap between laboratory RL and production
+SDV middleware is the core motivation behind the work presented in this thesis.
+
+\section{Problem Statement}
+\label{sec:problem}
+
+Existing RL research in the autonomous driving domain concentrates almost
+exclusively on training performance --- reward curves, sample efficiency, and
+policy robustness \cite{Kiran2021}. The software engineering challenge of
+taking a trained checkpoint and deploying it as a first-class citizen of an SDV
+runtime stack is largely unexplored in the open-source community. Concretely,
+the following sub-problems remain unaddressed in an integrated, open-source
+pipeline:
+
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item \textbf{Simulation-to-middleware coupling.} A physics simulator and an
+    SDV middleware stack speak fundamentally different protocols; a
+    communication bridge that is both low-latency and decoupled from either
+    system is needed.
+  \item \textbf{Standardised vehicle-signal representation.} Raw simulator
+    outputs must be mapped onto industry-standard Vehicle Signal Specification
+    (VSS) paths so that the SDV safety layer can interpret them without
+    simulator-specific knowledge.
+  \item \textbf{Operational safety monitoring.} A deployed RL policy may
+    extrapolate outside its training distribution; a lightweight, declarative
+    safety monitor must be able to flag or override the policy's actions in
+    real time.
+  \item \textbf{Reproducible training workflow.} The entire pipeline --- from
+    launching the simulation to saving a deployable checkpoint --- must be
+    reproducible from a single control surface without manual orchestration.
+\end{enumerate}
+
+\section{Objectives}
+\label{sec:objectives}
+
+This thesis addresses the above problems through the design, implementation, and
+evaluation of \textbf{SHILATE} (Software-defined-vehicle Hardware-In-the-Loop
+Autonomous Training Environment). The specific objectives are:
+
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item Design and implement a Unity-based physics simulation of a rear-wheel-drive
+    vehicle navigating an instrumented obstacle course.
+  \item Define a shaped reward function that guides a PPO agent to complete laps
+    reliably and safely, and expose a Gymnasium-compliant Python interface over MQTT.
+  \item Implement a real-time health-monitoring and training-control layer inside
+    the Unity Editor so that a researcher can observe and intervene in a training
+    run without leaving the development environment.
+  \item Construct an SDV deployment chain using Eclipse Leda, the Kuksa vehicle
+    signal databroker, and a Velocitas vehicle application that enforces
+    operational limits on the running policy.
+  \item Evaluate the pipeline quantitatively: training convergence, inference
+    lap performance, and end-to-end signal propagation through the SDV stack.
+\end{enumerate}
+
+\section{Thesis Structure}
+\label{sec:structure}
+
+The remainder of this document is organised as follows.
+\Cref{ch:background} reviews theoretical background in reinforcement learning,
+SDV middleware, and communication protocols, and situates SHILATE among related
+work.
+\Cref{ch:architecture} presents the overall system architecture.
+\Cref{ch:unity} describes the Unity simulation in detail.
+\Cref{ch:python} documents the Python RL training pipeline.
+\Cref{ch:sdv} explains the SDV integration through Eclipse Leda.
+\Cref{ch:experiments} reports experimental results.
+\Cref{ch:conclusions} concludes with a summary of contributions and future work.
 
 
 \section{\LaTeX\ Instructions}
