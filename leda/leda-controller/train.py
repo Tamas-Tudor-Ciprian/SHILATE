@@ -6,7 +6,7 @@ environment running inside the Unity Editor.
 Usage:
     python3 train.py [options]
 
-    --total-timesteps  Total training timesteps (default: 100000)
+    --total-timesteps  Total training timesteps (default: unlimited)
     --learning-rate    Learning rate (default: 3e-4)
     --n-steps          Steps per rollout (default: 2048)
     --batch-size       Minibatch size (default: 64)
@@ -32,6 +32,8 @@ import math
 import os
 import sys
 
+_UNLIMITED = sys.maxsize  # effective "no limit" for SB3 (requires an int)
+
 # Project root is two levels above this script (leda/leda-controller/ → root)
 _PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
@@ -50,7 +52,8 @@ def emit(marker: str, payload: str) -> None:
 
 def parse_args():
     p = argparse.ArgumentParser(description="SHILATE RL Training (single env)")
-    p.add_argument("--total-timesteps", type=int, default=100_000)
+    p.add_argument("--total-timesteps", type=int, default=None,
+                   help="Total training timesteps. Omit (or leave blank in the UI) to train indefinitely.")
     p.add_argument("--learning-rate", type=float, default=3e-4)
     p.add_argument("--n-steps", type=int, default=2048)
     p.add_argument("--batch-size", type=int, default=64)
@@ -78,10 +81,14 @@ def main():
 
     ray_count = load_ray_count_from_config()
 
+    # Resolve unlimited training: SB3 requires an int, so use sys.maxsize.
+    unlimited = args.total_timesteps is None
+    total_timesteps = _UNLIMITED if unlimited else args.total_timesteps
+
     log.info("═══════════════════════════════════════════════════")
     log.info("  SHILATE RL Training — single env, real time")
     log.info("═══════════════════════════════════════════════════")
-    log.info("  Total timesteps:  %d", args.total_timesteps)
+    log.info("  Total timesteps:  %s", "unlimited" if unlimited else total_timesteps)
     log.info("  Learning rate:    %s", args.learning_rate)
     log.info("  n_steps:          %d", args.n_steps)
     log.info("  Batch size:       %d", args.batch_size)
@@ -134,10 +141,12 @@ def main():
         )
         log.info("PPO model created")
 
-    # Checkpoint callback
+    # Checkpoint callback — save every 50k steps when running unlimited,
+    # otherwise every 10% of the total budget (min 1000 steps).
+    _checkpoint_freq = 50_000 if unlimited else max(total_timesteps // 10, 1000)
     os.makedirs(args.save_path, exist_ok=True)
     checkpoint_cb = CheckpointCallback(
-        save_freq=max(args.total_timesteps // 10, 1000),
+        save_freq=_checkpoint_freq,
         save_path=args.save_path,
         name_prefix="shilate_ppo",
     )
@@ -186,11 +195,14 @@ def main():
     health_cb = HealthCallback()
 
     # Train
-    log.info("Starting training for %d timesteps...", args.total_timesteps)
+    if unlimited:
+        log.info("Starting training — no timestep limit (Ctrl-C to stop)...")
+    else:
+        log.info("Starting training for %d timesteps...", total_timesteps)
     emit("SHILATE-HEALTH", "training_started")
     try:
         model.learn(
-            total_timesteps=args.total_timesteps,
+            total_timesteps=total_timesteps,
             callback=[checkpoint_cb, health_cb],
             tb_log_name="shilate_ppo",
             reset_num_timesteps=args.resume_model is None,
