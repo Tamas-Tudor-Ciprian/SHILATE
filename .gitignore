@@ -19,6 +19,8 @@
 !Documentation/*.bib
 !Documentation/figures/
 !Documentation/figures/**
+!Documentation/bachelors_en/
+!Documentation/bachelors_en/**
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/media/
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/media/**

@@ -1,0 +1,46 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global}
+  \entry{einstein}{article}{}
+    \name{author}{1}{}{%
+      {{hash=EA}{%
+         family={Einstein},
+         familyi={E\bibinitperiod},
+         given={Albert},
+         giveni={A\bibinitperiod},
+      }}%
+    }
+    \keyw{physics}
+    \strng{namehash}{EA1}
+    \strng{fullhash}{EA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb http://dx.doi.org/10.1002/andp.19053221004
+    \endverb
+    \field{number}{10}
+    \field{pages}{891\bibrangedash 921}
+    \field{title}{{Zur Elektrodynamik bewegter K{\"o}rper}. ({German}) [{On}
+  the electrodynamics of moving bodies]}
+    \field{volume}{322}
+    \field{journaltitle}{Annalen der Physik}
+    \field{year}{1905}
+  \endentry
+\enddatalist
+\endinput

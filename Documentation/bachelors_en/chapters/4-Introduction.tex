@@ -1,0 +1,52 @@
+\chapter{Introduction}\label{section:introduction}
+\thispagestyle{pagestyle}
+
+
+\section{\LaTeX\ Instructions}
+\subsection{Structure} \label{section:structure}
+Each file belonging to the document can be found in \texttt{bachelors\_en/}.
+The main file of the template is \texttt{main.tex}, which must be compiled using pdflatex (usually the default option). Files in \texttt{components/} define the template and \textbf{should not be modified}.
+
+In \texttt{customs.tex} reside the personal data which appear in places not directly accessible by the user and should be modified. Every file in \texttt{chapters/} represents a chapter where the content of the thesis is written. Under \texttt{images/} will be placed all the images used in the document.
+
+\subsection{Authenticity Declaration}
+The blank declaration can be obtained in two ways:
+\begin{itemize}
+	\item from \texttt{main.tex} residing in \texttt{authenticity\_declaration/}, an unsigned variant is created after filling personal data in \texttt{customs.tex}, similarly with the structure of \cref{section:structure}.
+	\item from the document at \url{https://ac.upt.ro/finalizare-studii/}, in section \enquote{Documente importante}. This should be manually filled with personal data.
+\end{itemize}
+Regardless of the option chosen, the document must be printed, \textbf{physically signed(with a pen)} and scanned in order to be attached. In \texttt{customs.tex}, the path must be changed from the example to the signed and scanned PDF document, which will be saved in \texttt{bachelors\_ro/}.
+
+\subsection{Other \LaTeX\ elements}
+References to other elements in the document (excepting citations and links): \cref{section:introduction}; \cref{fig:myfig}.
+
+For each reference, a \texttt{\textbackslash label} is needed, which will be inserted anywhere in the text or immediatley after chapter/section titles, and in figures/tables/code fragments.
+\\[\baselineskip]
+
+Citations will be added using bibtex, example: \cref{example:citation}.
+Inserting images (\cref{fig:myfig}), tables (\cref{table:table1}) and code fragments (\cref{code:polym}) will be added using the corresponding code. For tables, an external formatting tool is recommended: (example \cref{example:table_url}).
+
+\section{General Information}
+
+Each chapter must have a clear structure, will begin on a new page and will have a title. It will be followed by two blank 12 pt. lines.
+
+Each sub-section title (e.g. 1.2 General information) shall begin after a 12 points blank line after the text and shall be followed by a 12 points blank line.
+
+The text of the paper will be justified. It is recommended to check the spelling of the text with the help of the speller of the Word program. It is recommended that the thesis paper should not exceed a number of 100 pages, annexes included.
+
+
+Rules applying to the text of the paper:
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt,label=\alph*.]
+   \item Margins of the page – the following values will be used:
+   \begin{itemize}[topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+     \item interior: 2 cm 
+     \item exterior: 2 cm 
+     \item up: 2,5 cm (header included)
+     \item down: 2 cm
+   \end{itemize}
+   \item Line spacing – the text shall apply a 1.15 line spacing 
+   \item Indentation – text within regular paragraphs will be aligned between the left and the right margins (justified). The first line of each paragraph will have a 1.5 cm indentation. There will be an exception for chapter titles, which will be aligned left, just like the titles of the tables and of the figures (see explanations below);
+   \item Font – the 12 points Nimbus Sans font will be used, as well as the specific diacritics of the paper language (ex: ă, ş, ţ, î, â - for the Romanian language);
+   \item Page numbering -  Page numbering runs from the title page to the last page of the paper, but the page number appears starts on the Introduction page. The page number is inserted at the bottom of the page, centered.
+   \item f.	Page header – it shall be inserted starting with the introduction page and contains, in successive lines, the following text, aligned left and with the size of 8 points: (i) the text Politehnica University of Timișoara ; (ii) the name of the program of study and the year of the paper defense; (iii) the name of the candidate (left) and the title of the paper. At the right of the header, the UPT logo may be inserted; 
+\end{enumerate}
