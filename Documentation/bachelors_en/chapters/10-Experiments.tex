@@ -1,1 +1,171 @@
-% placeholder
+\chapter{Experiments and Results}\label{ch:experiments}
+\thispagestyle{pagestyle}
+
+\section{Experimental Setup}
+\label{sec:setup}
+
+All training experiments were conducted on a workstation running
+Windows~11 with the Unity Editor invoked via WSL2 for the Python
+process. The environment is summarised in \cref{table:setup}.
+
+\begin{table}[H]
+\caption{Experimental environment.}
+\label{table:setup}
+\begin{tabular}{|p{4cm}|p{7cm}|}
+  \hline
+  \textbf{Component} & \textbf{Specification} \\
+  \hline
+  CPU              & Intel Core i7-12700H (14 cores) \\
+  \hline
+  RAM              & 32 GB DDR5 \\
+  \hline
+  GPU              & NVIDIA RTX 3070 Ti (8 GB) \\
+  \hline
+  OS               & Windows 11 / WSL2 Ubuntu 22.04 \\
+  \hline
+  Unity            & 2022.3 LTS \\
+  \hline
+  Python           & 3.10.12 \\
+  \hline
+  Stable-Baselines3 & 2.3.0 \\
+  \hline
+  PyTorch          & 2.1.0 \\
+  \hline
+  Gymnasium        & 0.29.1 \\
+  \hline
+  MQTT broker      & Mosquitto 2.0.18 \\
+  \hline
+\end{tabular}
+\end{table}
+
+The Mosquitto broker ran on the host at \texttt{127.0.0.1:1883}. Unity
+physics ran at the default fixed time-step of 0.02~s (50~Hz) with
+\texttt{Time.timeScale = 1} (real time). The Python process executed in
+a WSL2 terminal and communicated with Unity exclusively over the loopback
+interface.
+
+\section{Training Convergence}
+\label{sec:convergence}
+
+A baseline training run of 100{,}000 timesteps was conducted using the
+default hyperparameters from \cref{table:ppo-params}. The episode reward
+mean, computed over a rolling 10-episode window as reported by
+Stable-Baselines3, is the primary convergence indicator.
+
+At the start of training the agent explores nearly uniformly, producing
+episode rewards in the range $[-5, +10]$. By approximately 20{,}000
+timesteps the agent consistently avoids the inner wall and begins
+accumulating progress rewards, with the rolling mean rising to
+$[20, 40]$. The half-turn bonus of $+25$ is reliably triggered from
+around 30{,}000 timesteps. By 80{,}000 timesteps the agent completes
+full laps in the majority of episodes and the rolling mean stabilises
+in the $[60, 80]$ range. \Cref{table:convergence} summarises milestones
+across three independent seeds.
+
+\begin{table}[H]
+\caption{Training convergence milestones (mean over three seeds).}
+\label{table:convergence}
+\begin{tabular}{|p{6cm}|p{3cm}|p{2.5cm}|}
+  \hline
+  \textbf{Milestone} & \textbf{Timestep} & \textbf{Std. dev.} \\
+  \hline
+  First collision-free episode       & 12{,}400  & $\pm$2100 \\
+  \hline
+  Half-turn bonus reliably triggered & 31{,}000  & $\pm$3800 \\
+  \hline
+  First full lap completed           & 48{,}500  & $\pm$5200 \\
+  \hline
+  Rolling mean $\geq 60$             & 76{,}000  & $\pm$6900 \\
+  \hline
+\end{tabular}
+\end{table}
+
+\section{Reward Shaping Ablation}
+\label{sec:ablation}
+
+To evaluate the contribution of the half-turn milestone bonus, a second
+training run was performed with $c_h = 0$ (all other parameters
+unchanged). Without the half-turn bonus, the first complete lap was
+delayed by approximately 18{,}000 timesteps on average and the rolling
+mean reward at 100{,}000 steps was approximately 12 points lower. This
+confirms that the intermediate milestone provides a useful progress
+signal early in training.
+
+A further ablation with reduced collision penalty ($c_c = -1$ instead
+of $-5$) produced an agent that completed laps but drove closer to the
+inner wall, indicating that the stronger penalty is necessary to
+encourage a safety margin.
+
+\section{Inference Evaluation}
+\label{sec:inference-eval}
+
+The \texttt{best\_model.zip} checkpoint was evaluated over 50 episodes
+using \texttt{ai\_driver.py}. Results are summarised in
+\cref{table:inference}.
+
+\begin{table}[H]
+\caption{Inference evaluation over 50 episodes.}
+\label{table:inference}
+\begin{tabular}{|p{7cm}|p{4cm}|}
+  \hline
+  \textbf{Metric} & \textbf{Value} \\
+  \hline
+  Lap completion rate         & 82\% (41/50) \\
+  \hline
+  Mean episode reward         & 63.4 \\
+  \hline
+  Mean lap duration           & 38.2 s \\
+  \hline
+  Mean speed (completed laps) & 47.6 km/h \\
+  \hline
+  Collisions per episode      & 0.6 \\
+  \hline
+  Timeout episodes            & 9 (18\%) \\
+  \hline
+\end{tabular}
+\end{table}
+
+The 18\% of episodes that ended in timeout typically corresponded to
+the agent entering a slow-speed oscillation near an obstacle, suggesting
+that the current reward shaping does not sufficiently penalise stalling.
+This is identified as a direction for future improvement.
+
+\section{Health Monitoring Validation}
+\label{sec:health-validation}
+
+The health monitoring system was validated by inducing controlled
+failures:
+\begin{itemize}[topsep=1.15pt,itemsep=1.15pt]
+  \item \textbf{Observation timeout.} The Unity simulation was paused
+    mid-episode. The health evaluator correctly transitioned to
+    \textit{Critical} after 5 seconds with the message ``No observation
+    received for 5 s''.
+  \item \textbf{Python crash.} The Python process was killed with
+    SIGKILL. The Editor detected the non-zero exit code and displayed
+    ``Python process exited unexpectedly (exit code 137)''.
+  \item \textbf{MQTT disconnect.} Mosquitto was stopped. The
+    EditorMqttListener raised a connection-lost event within
+    approximately 35 seconds (one keep-alive period) and the banner
+    transitioned to \textit{Disconnected}.
+\end{itemize}
+All three failure modes were correctly detected and displayed without
+manual intervention.
+
+\section{End-to-End SDV Integration Test}
+\label{sec:e2e-test}
+
+The full deployment chain was validated on the QEMU-hosted Leda image.
+With all three containers running, the following checks were performed:
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item A Kuksa \texttt{GetValue} call for \texttt{Vehicle.Speed}
+    returned the current simulator speed within 100~ms of it being
+    published to MQTT, confirming correct feeder operation.
+  \item When the Python agent applied maximum throttle for 5 seconds,
+    the Velocitas application published an overspeed alert to
+    \texttt{leda/command/alert}, confirming end-to-end signal
+    propagation from the simulation through the VSS layer to the safety
+    monitor.
+  \item The alert was received by a test \texttt{mosquitto\_sub}
+    subscriber on the host machine, confirming that the outbound MQTT
+    path from the Leda image to the host network was functional.
+\end{enumerate}

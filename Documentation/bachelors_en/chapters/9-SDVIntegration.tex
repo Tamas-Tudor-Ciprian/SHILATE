@@ -1,1 +1,95 @@
-% placeholder
+\chapter{SDV Integration with Eclipse Leda}\label{ch:sdv}
+\thispagestyle{pagestyle}
+
+\section{Eclipse Leda Overview}
+\label{sec:leda-overview}
+
+Eclipse Leda \cite{EclipseLeda2023} is an SDV distribution built on the
+Yocto Project. It packages a curated set of Eclipse SDV middleware
+components --- Mosquitto MQTT broker, Kuksa databroker, Kanto container
+manager, and OpenTelemetry collector --- into a bootable image that runs
+on QEMU (x86-64) or on supported ARM hardware such as the Raspberry Pi~4.
+Its primary purpose is to serve as a reference platform for developing
+and validating SDV software stacks before deploying to a real vehicle
+ECU.
+
+SHILATE targets the QEMU image
+(\texttt{sdv-image-all-qemux86-64.wic.qcow2}) included in the
+repository. The \texttt{leda/run-leda.sh} script launches the image with
+a bridged network interface so that the host machine and the QEMU guest
+share a Mosquitto broker at \texttt{127.0.0.1:1883}.
+
+\section{MQTT-to-Kuksa Bridge}
+\label{sec:feeder}
+
+The \texttt{mqtt-kuksa-feeder} container subscribes to the
+\texttt{vehicle/\#} wildcard on the Mosquitto broker and forwards each
+received message to the Kuksa databroker \cite{EclipseKuksa2024} as a
+VSS path write via gRPC. The topic-to-VSS mapping is shown in
+\cref{table:vss-map}.
+
+\begin{table}[H]
+\caption{MQTT topic to VSS path mapping.}
+\label{table:vss-map}
+\begin{tabular}{|p{5cm}|p{7cm}|}
+  \hline
+  \textbf{MQTT topic} & \textbf{VSS path} \\
+  \hline
+  \texttt{vehicle/speed}    & \texttt{Vehicle.Speed} \\
+  \hline
+  \texttt{vehicle/rpm}      & \texttt{Vehicle.Powertrain.CombustionEngine.Speed} \\
+  \hline
+  \texttt{vehicle/steering} & \texttt{Vehicle.Chassis.SteeringWheel.Angle} \\
+  \hline
+  \texttt{vehicle/brake}    & \texttt{Vehicle.Chassis.Brake.PedalPosition} \\
+  \hline
+  \texttt{vehicle/throttle} & \texttt{Vehicle.OBD.ThrottlePosition} \\
+  \hline
+\end{tabular}
+\end{table}
+
+After the feeder writes a signal, any subscriber --- including the
+Velocitas vehicle application --- is notified with the new value within
+the same event loop tick.
+
+\section{Velocitas Vehicle Application}
+\label{sec:velocitas}
+
+The Velocitas vehicle application \cite{EclipseVelocitas2024}
+implements the operational safety monitor for the RL agent. It subscribes
+to five VSS signals via the Kuksa databroker, logs a telemetry summary
+every 5 seconds, and enforces two hard limits:
+\begin{itemize}[topsep=1.15pt,itemsep=1.15pt]
+  \item \textbf{Overspeed}: if \texttt{Vehicle.Speed} exceeds 120~km/h,
+    an alert is published to \texttt{leda/command/alert} with payload
+    \texttt{\{"type":"overspeed","value":<speed>\}}.
+  \item \textbf{RPM redline}: if engine RPM exceeds 6500, an analogous
+    alert is published.
+\end{itemize}
+Alerts are currently informational; the architecture is designed so that
+the safety monitor can be upgraded to a command-injection path without
+modifying any other component.
+
+\section{Container Deployment}
+\label{sec:containers}
+
+All three service containers (\texttt{leda-controller},
+\texttt{mqtt-kuksa-feeder}, \texttt{velocitas-app}) ship with Dockerfiles
+producing minimal Python~3.11 slim images. Each is described by a Kanto
+container manifest (\texttt{kanto-manifest.json}) specifying the OCI
+image reference, environment variables
+(\texttt{MQTT\_HOST}, \texttt{MQTT\_PORT}, \texttt{MODE},
+\texttt{MODEL\_PATH}), and restart policy. Provisioning is automated by
+\texttt{leda/provision-device.sh}, which uses SSH to copy manifests to
+the Leda device and invoke the Kanto CLI to pull and start the
+containers.
+
+\section{Leda Telemetry Broker}
+\label{sec:telemetry-broker}
+
+In addition to MQTT, the Leda image runs a lightweight telemetry broker
+implemented in Rust. The broker listens on TCP port~7878 and acts as a
+multiplexing relay: any client that connects and sends telemetry data has
+that data forwarded to all other connected clients. This enables tools
+such as \texttt{netcat} or custom dashboards to observe the live
+telemetry stream without subscribing to individual MQTT topics.
