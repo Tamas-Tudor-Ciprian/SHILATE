@@ -1,0 +1,239 @@
+% !TEX program = pdflatex
+% SHILATE Bachelor's Thesis
+% Software-Defined Vehicle Reinforcement Learning: From Simulation to SDV Deployment
+% Author: [Candidate Name]
+% Supervisor: [Supervisor Name]
+% Politehnica University of Timisoara, 2026
+
+% ============================================================
+%  PREAMBLE
+% ============================================================
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+
+\documentclass[12pt,a4paper]{article}
+
+% --- Encoding & fonts ---
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
+
+% --- Page geometry (UPT thesis: mirror margins) ---
+\usepackage[
+  a4paper,
+  top=2.5cm,
+  bottom=2cm,
+  inner=2cm,
+  outer=2cm,
+  includeheadfoot
+]{geometry}
+
+% --- Line spacing ---
+\usepackage{setspace}
+\setstretch{1.15}
+
+% --- Headers / footers ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\fontsize{8}{10}\selectfont
+  Politehnica University of Timisoara \\
+  Computer Engineering, 2026 \\
+  \leftmark}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{38pt}
+
+% --- Mathematics ---
+\usepackage{amsmath,amssymb}
+
+% --- Graphics ---
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{figures/}}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+
+% --- Tables ---
+\usepackage{longtable,booktabs,array,multirow}
+\usepackage{calc}
+
+% --- Lists & spacing ---
+\usepackage{enumitem}
+\setlength{\parindent}{1.5cm}
+\setlength{\parskip}{0pt}
+
+% --- Code listings ---
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codeblue}{rgb}{0.0,0.3,0.7}
+\definecolor{codegreen}{rgb}{0.0,0.5,0.0}
+\definecolor{codeback}{rgb}{0.97,0.97,0.97}
+\lstset{
+  backgroundcolor=\color{codeback},
+  basicstyle=\ttfamily\small,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  commentstyle=\color{codegreen},
+  keepspaces=true,
+  keywordstyle=\color{codeblue}\bfseries,
+  numberstyle=\tiny\color{codegray},
+  numbers=left,
+  stringstyle=\color{codegray},
+  tabsize=2,
+  frame=single,
+  rulecolor=\color{codegray},
+}
+
+% --- Miscellaneous ---
+\usepackage{microtype}
+\usepackage{etoolbox}
+\usepackage{footnotehyper}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% --- Hyperlinks (last) ---
+\usepackage{bookmark}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=black,
+  pdftitle={SHILATE: Software-Defined Vehicle Reinforcement Learning},
+  pdfauthor={[Candidate Name]},
+}
+\usepackage{xurl}
+\urlstyle{same}
+
+% ============================================================
+%  TITLE PAGE DATA
+% ============================================================
+\title{}
+\author{}
+\date{}
+
+% ============================================================
+%  DOCUMENT START
+% ============================================================
+\begin{document}
+
+% Suppress page number on title and abstract pages
+\pagenumbering{roman}
+\pagestyle{empty}
+
+% ============================================================
+%  TITLE PAGE
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\fontsize{10}{13}\selectfont
+    \textbf{POLITEHNICA UNIVERSITY OF TIMISOARA}\\[0.3cm]
+    \textbf{Faculty of Automation and Computers}\\[0.3cm]
+    \textbf{Computer Engineering Study Programme}
+  }
+
+  \vspace{2.5cm}
+
+  {\fontsize{20}{26}\selectfont\bfseries\MakeUppercase{%
+    SHILATE: Software-Defined Vehicle\\[0.4cm]
+    Reinforcement Learning ---\\[0.4cm]
+    From Simulation to SDV Deployment%
+  }\par}
+
+  \vspace{1.5cm}
+
+  {\fontsize{14}{18}\selectfont
+    \textbf{BACHELOR'S THESIS}
+  }
+
+  \vspace{3cm}
+
+  \begin{flushleft}
+    {\fontsize{14}{18}\selectfont
+      \textbf{Candidate: Firstname, Lastname}\\[0.8cm]
+      \textbf{Scientific Supervisor: Prof.dr.ing. Firstname, Lastname}
+    }
+  \end{flushleft}
+
+  \vfill
+
+  {\fontsize{14}{18}\selectfont June 2026}
+\end{titlepage}
+
+\clearpage
+
+% ============================================================
+%  ABSTRACT
+% ============================================================
+\vspace*{3\baselineskip}
+
+\begin{center}
+  {\fontsize{20}{26}\selectfont\bfseries ABSTRACT}
+\end{center}
+
+\vspace{2\baselineskip}
+
+The proliferation of software-defined vehicle (SDV) platforms has opened an
+opportunity to combine modern deep reinforcement learning (RL) with real
+automotive runtime stacks. This thesis presents \textbf{SHILATE} --- a
+complete, open-source pipeline that trains a Proximal Policy Optimization (PPO)
+agent inside a Unity physics simulation and deploys the resulting policy onto an
+Eclipse Leda SDV stack, bridging the gap between laboratory RL research and
+realistic vehicle software deployment.
+
+The simulation component is built in Unity 2022 LTS. A single rear-wheel-drive
+vehicle navigates a circular obstacle course instrumented with a 21-ray
+LiDAR-style sensor. The training bridge computes a shaped reward signal from
+progress, collision events, and episode milestones, and communicates with the
+Python training process exclusively over MQTT, keeping the two subsystems fully
+decoupled. A dedicated Editor window (\emph{SHILATE Training Controller})
+provides real-time health monitoring, metric graphs, and one-click training
+control without leaving the Unity Editor.
+
+The Python training stack wraps the simulation in a Gymnasium-compliant
+environment, configures Stable-Baselines3 PPO with a two-layer actor-critic
+network, and streams structured telemetry back to the Editor. Trained
+checkpoints are subsequently deployed to the Eclipse Leda SDV image via a
+containerised MQTT-to-Kuksa bridge and a Velocitas vehicle application that
+enforces operational limits (overspeed, RPM redline) on the running agent.
+
+Experimental results demonstrate that the PPO agent converges reliably on the
+obstacle course within 100k interaction steps and that the end-to-end deployment
+chain correctly propagates vehicle telemetry from the simulation through the
+VSS data layer to the Velocitas safety monitor. The project shows that an
+integrated sim-to-SDV pipeline is achievable with commodity open-source
+tooling, and identifies curriculum learning and multi-environment
+parallelisation as natural extensions for future work.
+
+\textbf{Keywords:} reinforcement learning, software-defined vehicle, Unity
+simulation, PPO, MQTT, Eclipse Leda, Kuksa, Stable-Baselines3, Gymnasium.
+
+\clearpage
+
+% ============================================================
+%  TABLE OF CONTENTS
+% ============================================================
+\pagestyle{fancy}
+\tableofcontents
+\clearpage
+
+% Switch to Arabic page numbering starting from the Introduction
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ============================================================
+%  PLACEHOLDER: Chapters will be added in subsequent stages
+% ============================================================
+
+\end{document}
