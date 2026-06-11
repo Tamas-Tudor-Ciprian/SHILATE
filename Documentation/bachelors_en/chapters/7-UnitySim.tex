@@ -98,6 +98,13 @@ void CastRays()
 }
 \end{lstlisting}
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.70\textwidth]{images/car_model_transparent.png}
+  \caption{Vehicle mesh with transparent body, showing the collision geometry used by the WheelCollider components.}
+  \label{fig:car-transparent}
+\end{figure}
+
 Dividing by \texttt{rayLength} normalises each reading into $[0, 1]$:
 a value of 1 means the ray reached full range without hitting anything
 while values near 0 indicate an obstacle very close to the bumper.
@@ -219,6 +226,14 @@ from top to bottom comprises:
   \item \textbf{Controls}: \textit{Start Training} / \textit{Run Model}
     / \textit{Stop}.
 \end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/enviroment_overview.png}
+  \caption{Unity Editor during a live training session. The Scene view shows the obstacle course with the 21-ray LiDAR fan, the circular track walls, and the vehicle. The Training Controller panel displays the HEALTHY banner, episode metrics, and live loss graphs.}
+  \label{fig:env-overview}
+\end{figure}
+
 The \textit{Start Training} button enters Play mode programmatically and,
 once the scene is loaded and the MQTT connection is confirmed, launches
 the Python training script with arguments from TrainingSettings. The
