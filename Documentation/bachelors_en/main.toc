@@ -4,52 +4,47 @@
 \contentsline {section}{\numberline {1.2}Problem Statement}{5}{section.1.2}%
 \contentsline {section}{\numberline {1.3}Objectives}{6}{section.1.3}%
 \contentsline {section}{\numberline {1.4}Thesis Structure}{6}{section.1.4}%
-\contentsline {section}{\numberline {1.5}\LaTeX \ Instructions}{6}{section.1.5}%
-\contentsline {subsection}{\numberline {1.5.1}Structure}{6}{subsection.1.5.1}%
-\contentsline {subsection}{\numberline {1.5.2}Authenticity Declaration}{7}{subsection.1.5.2}%
-\contentsline {subsection}{\numberline {1.5.3}Other \LaTeX \ elements}{7}{subsection.1.5.3}%
-\contentsline {section}{\numberline {1.6}General Information}{7}{section.1.6}%
-\contentsline {chapter}{\numberline {2}Background and Related Work}{9}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Reinforcement Learning Fundamentals}{9}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Proximal Policy Optimization}{9}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Simulation-to-Real Transfer in Autonomous Driving}{9}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Software-Defined Vehicles and the VSS Data Model}{10}{section.2.4}%
-\contentsline {section}{\numberline {2.5}MQTT and Publish-Subscribe Messaging}{10}{section.2.5}%
-\contentsline {section}{\numberline {2.6}Related Work}{10}{section.2.6}%
-\contentsline {chapter}{\numberline {3}System Architecture}{12}{chapter.3}%
-\contentsline {section}{\numberline {3.1}High-Level Overview}{12}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Communication Backbone}{12}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Training Data-Flow}{13}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Configuration Management}{13}{section.3.4}%
-\contentsline {section}{\numberline {3.5}Deployment Architecture on Eclipse Leda}{14}{section.3.5}%
-\contentsline {chapter}{\numberline {4}Unity Simulation Design}{15}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Scene Construction}{15}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Vehicle Physics Model}{15}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Perception Layer}{16}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Reward Function}{16}{section.4.4}%
-\contentsline {section}{\numberline {4.5}MQTT Bridge in Unity}{16}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Training Controller Editor Window}{16}{section.4.6}%
-\contentsline {chapter}{\numberline {5}Python RL Training Pipeline}{18}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Gymnasium Environment Wrapper}{18}{section.5.1}%
-\contentsline {section}{\numberline {5.2}PPO Agent Configuration}{18}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Training Loop and Health Telemetry}{19}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Inference Mode}{19}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Cross-Platform Process Management}{19}{section.5.5}%
-\contentsline {chapter}{\numberline {6}SDV Integration with Eclipse Leda}{20}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Eclipse Leda Overview}{20}{section.6.1}%
-\contentsline {section}{\numberline {6.2}MQTT-to-Kuksa Bridge}{20}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Velocitas Vehicle Application}{20}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Container Deployment}{21}{section.6.4}%
-\contentsline {section}{\numberline {6.5}Leda Telemetry Broker}{21}{section.6.5}%
-\contentsline {chapter}{\numberline {7}Experiments and Results}{22}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Experimental Setup}{22}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Training Convergence}{22}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Reward Shaping Ablation}{23}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Inference Evaluation}{23}{section.7.4}%
-\contentsline {section}{\numberline {7.5}Health Monitoring Validation}{23}{section.7.5}%
-\contentsline {section}{\numberline {7.6}End-to-End SDV Integration Test}{24}{section.7.6}%
-\contentsline {chapter}{\numberline {8}Conclusions}{25}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Summary of Contributions}{25}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Limitations}{25}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Future Work}{26}{section.8.3}%
-\contentsline {chapter}{\numberline {9}Bibliography}{27}{chapter.9}%
+\contentsline {chapter}{\numberline {2}Background and Related Work}{7}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Reinforcement Learning Fundamentals}{7}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Proximal Policy Optimization}{7}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Simulation-to-Real Transfer in Autonomous Driving}{7}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Software-Defined Vehicles and the VSS Data Model}{8}{section.2.4}%
+\contentsline {section}{\numberline {2.5}MQTT and Publish-Subscribe Messaging}{8}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Related Work}{8}{section.2.6}%
+\contentsline {chapter}{\numberline {3}System Architecture}{10}{chapter.3}%
+\contentsline {section}{\numberline {3.1}High-Level Overview}{10}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Communication Backbone}{10}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Training Data-Flow}{11}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Configuration Management}{11}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Deployment Architecture on Eclipse Leda}{12}{section.3.5}%
+\contentsline {chapter}{\numberline {4}Unity Simulation Design}{13}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Scene Construction}{13}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Vehicle Physics Model}{13}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Perception Layer}{14}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Reward Function}{14}{section.4.4}%
+\contentsline {section}{\numberline {4.5}MQTT Bridge in Unity}{14}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Training Controller Editor Window}{14}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Python RL Training Pipeline}{16}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Gymnasium Environment Wrapper}{16}{section.5.1}%
+\contentsline {section}{\numberline {5.2}PPO Agent Configuration}{16}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Training Loop and Health Telemetry}{17}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Inference Mode}{17}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Cross-Platform Process Management}{17}{section.5.5}%
+\contentsline {chapter}{\numberline {6}SDV Integration with Eclipse Leda}{18}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Eclipse Leda Overview}{18}{section.6.1}%
+\contentsline {section}{\numberline {6.2}MQTT-to-Kuksa Bridge}{18}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Velocitas Vehicle Application}{18}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Container Deployment}{19}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Leda Telemetry Broker}{19}{section.6.5}%
+\contentsline {chapter}{\numberline {7}Experiments and Results}{20}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Experimental Setup}{20}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Training Convergence}{20}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Reward Shaping Ablation}{21}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Inference Evaluation}{21}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Health Monitoring Validation}{21}{section.7.5}%
+\contentsline {section}{\numberline {7.6}End-to-End SDV Integration Test}{22}{section.7.6}%
+\contentsline {chapter}{\numberline {8}Conclusions}{23}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Summary of Contributions}{23}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Limitations}{23}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Future Work}{24}{section.8.3}%
+\contentsline {chapter}{\numberline {9}Bibliography}{25}{chapter.9}%

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  10 JUN 2026 15:38
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  11 JUN 2026 13:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1018,7 +1018,7 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
-<images/logo.png, id=176, 149.358pt x 48.18pt>
+<images/logo.png, id=200, 149.358pt x 48.18pt>
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 23.
@@ -1111,16 +1111,6 @@ Package pdftex.def Info: images/logo.png  used on input line 49.
 
  (./chapters/4-Introduction.tex
 Chapter 1.
-
-LaTeX Warning: Citation 'EclipseLeda2023' on page 5 undefined on input line 11.
-
-
-
-LaTeX Warning: Citation 'Schulman2017' on page 5 undefined on input line 19.
-
-
-LaTeX Warning: Citation 'Kiran2021' on page 5 undefined on input line 37.
-
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 56.
@@ -1134,176 +1124,53 @@ Underfull \hbox (badness 1019) in paragraph at lines 79--81
 nvergence, inference lap
  []
 
-
-LaTeX Warning: Reference `ch:experiments' on page 1 undefined on input line 94.
-
-
-
-LaTeX Warning: Reference `ch:conclusions' on page 1 undefined on input line 95.
-
-
-LaTeX Font Info:    Trying to load font information for T1+NimbusMono on input 
-line 100.
-(/usr/share/texlive/texmf-dist/tex/latex/nimbus15/T1NimbusMono.fd
-File: T1NimbusMono.fd 2015/09/19 Font definitions for T1/NimbusMono (msharpe).
-)
-LaTeX Font Info:    Font shape `T1/NimbusMono/m/n' will be
-(Font)              scaled to size 12.0pt on input line 100.
-Package microtype Info: Loading generic protrusion settings for font family
-(microtype)             `NimbusMono' (encoding: T1).
-(microtype)             For optimal results, create family-specific settings.
-(microtype)             See the microtype manual for details.
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 108.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [6{/usr/share/texlive/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15mono-ec.enc}
-]
-LaTeX Font Info:    Trying to load font information for TS1+NimbusSans on input
- line 108.
-
-(/usr/share/texlive/texmf-dist/tex/latex/nimbus15/TS1NimbusSans.fd
-File: TS1NimbusSans.fd 2015/09/19 Font definitions for TS1/NimbusSans (msharpe)
-.
-)
-LaTeX Font Info:    Font shape `TS1/NimbusSans/m/n' will be
-(Font)              scaled to size 12.0pt on input line 108.
-Package microtype Info: Loading generic protrusion settings for font family
-(microtype)             `NimbusSans' (encoding: TS1).
-(microtype)             For optimal results, create family-specific settings.
-(microtype)             See the microtype manual for details.
-
-
-LaTeX Warning: Reference `section:introduction' on page 1 undefined on input li
-ne 114.
-
-
-LaTeX Warning: Reference `fig:myfig' on page 1 undefined on input line 114.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 116--118
-
- []
-
-
-LaTeX Warning: Reference `example:citation' on page 1 undefined on input line 1
-19.
-
-
-LaTeX Warning: Reference `fig:myfig' on page 1 undefined on input line 120.
-
-
-LaTeX Warning: Reference `table:table1' on page 1 undefined on input line 120.
-
-
-LaTeX Warning: Reference `code:polym' on page 1 undefined on input line 120.
-
-
-LaTeX Warning: Reference `example:table_url' on page 1 undefined on input line 
-120.
-
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 142.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[7{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontools/fontools_ts1.enc}]
-LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
-(Font)              scaled to size 6.0pt on input line 144.
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 49.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-
-[8]
+ [6]
 \openout2 = `chapters/5-Background.aux'.
 
  (./chapters/5-Background.tex
 Chapter 2.
-
-LaTeX Warning: Citation 'Sutton2018' on page 9 undefined on input line 8.
-
-
-LaTeX Warning: Citation 'Schulman2017' on page 9 undefined on input line 35.
-
-
-LaTeX Warning: Citation 'Raffin2021' on page 9 undefined on input line 60.
-
-
-LaTeX Warning: Citation 'Kiran2021' on page 9 undefined on input line 69.
-
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 74.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[9
+[7
 
 
 
 
 ]
-
-LaTeX Warning: Citation 'Dosovitskiy2017' on page 10 undefined on input line 74
-.
-
-
-LaTeX Warning: Citation 'Juliani2020' on page 10 undefined on input line 76.
-
-
-LaTeX Warning: Citation 'COVESA2023' on page 10 undefined on input line 87.
-
-
-LaTeX Warning: Citation 'EclipseKuksa2024' on page 10 undefined on input line 9
-3.
-
-
-LaTeX Warning: Citation 'EclipseVelocitas2024' on page 10 undefined on input li
-ne 96.
-
-
-LaTeX Warning: Citation 'OASIS2014' on page 10 undefined on input line 103.
-
-
-LaTeX Warning: Citation 'Kiran2021' on page 10 undefined on input line 118.
-
-
-LaTeX Warning: Citation 'Brockman2016' on page 10 undefined on input line 119.
-
-
-LaTeX Warning: Citation 'Dosovitskiy2017' on page 10 undefined on input line 12
-1.
-
-
-LaTeX Warning: Citation 'Juliani2020' on page 10 undefined on input line 123.
-
+LaTeX Font Info:    Trying to load font information for T1+NimbusMono on input 
+line 89.
+ (/usr/share/texlive/texmf-dist/tex/latex/nimbus15/T1NimbusMono.fd
+File: T1NimbusMono.fd 2015/09/19 Font definitions for T1/NimbusMono (msharpe).
+)
+LaTeX Font Info:    Font shape `T1/NimbusMono/m/n' will be
+(Font)              scaled to size 12.0pt on input line 89.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `NimbusMono' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [10]
+
+[8{/usr/share/texlive/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15mono-ec.enc}]
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [11]
+[9]
 \openout2 = `chapters/6-SystemArchitecture.aux'.
 
  (./chapters/6-SystemArchitecture.tex
 Chapter 3.
-
-LaTeX Warning: Citation 'Towers2024' on page 12 undefined on input line 22.
-
-
-LaTeX Warning: Citation 'Raffin2021' on page 12 undefined on input line 23.
-
-
-LaTeX Warning: Citation 'EclipseLeda2023' on page 12 undefined on input line 29
-.
-
-
-LaTeX Warning: Citation 'OASIS2014' on page 12 undefined on input line 38.
-
 
 Overfull \hbox (9.10979pt too wide) in paragraph at lines 49--49
 []\T1/NimbusMono/m/n/12 env0/leda/control/steer| 
@@ -1353,7 +1220,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 71.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[12
+[10
 
 
 
@@ -1364,6 +1231,18 @@ Underfull \hbox (badness 4132) in paragraph at lines 88--90
 nated, truncated, info) \T1/NimbusSans/m/n/12 (+20) to Stable-
  []
 
+LaTeX Font Info:    Trying to load font information for TS1+NimbusSans on input
+ line 100.
+(/usr/share/texlive/texmf-dist/tex/latex/nimbus15/TS1NimbusSans.fd
+File: TS1NimbusSans.fd 2015/09/19 Font definitions for TS1/NimbusSans (msharpe)
+.
+)
+LaTeX Font Info:    Font shape `TS1/NimbusSans/m/n' will be
+(Font)              scaled to size 12.0pt on input line 100.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `NimbusSans' (encoding: TS1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `T1/NimbusMono/b/n' will be
 (Font)              scaled to size 12.0pt on input line 100.
 
@@ -1376,20 +1255,17 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 112.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[13])
+[11{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontools/fontools_ts1.enc}])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 51.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [14]
+
+[12]
 \openout2 = `chapters/7-UnitySim.aux'.
 
  (./chapters/7-UnitySim.tex
 Chapter 4.
-
-LaTeX Warning: Citation 'UnityManual2022' on page 15 undefined on input line 30
-.
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 57--63
 []\T1/NimbusMono/m/n/12 VehicleController.cs \T1/NimbusSans/m/n/12 (+20) transl
@@ -1400,16 +1276,12 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 74.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[15
+[13
 
 
 
 
 ]
-
-LaTeX Warning: Citation 'OASIS2014' on page 16 undefined on input line 115.
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 120--126
 []\T1/NimbusMono/m/n/12 LedaBroker.cs \T1/NimbusSans/m/n/12 (+20) provides the 
 application-facing API, configured
@@ -1419,25 +1291,18 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 135.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[16])
+[14])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 52.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [17]
+ [15]
 \openout2 = `chapters/8-PythonRL.aux'.
 
  (./chapters/8-PythonRL.tex
 Chapter 5.
-
-LaTeX Warning: Citation 'Towers2024' on page 18 undefined on input line 8.
-
-
-LaTeX Warning: Citation 'Raffin2021' on page 18 undefined on input line 37.
-
-
-LaTeX Warning: Citation 'Paszke2019' on page 18 undefined on input line 38.
-
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
+(Font)              scaled to size 6.0pt on input line 17.
 
 Overfull \hbox (4.98892pt too wide) in paragraph at lines 55--56
 []\T1/NimbusMono/m/n/12 --total-timesteps| 
@@ -1447,7 +1312,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 81.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[18
+[16
 
 
 
@@ -1477,19 +1342,11 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 53.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [19]
+ [17]
 \openout2 = `chapters/9-SDVIntegration.aux'.
 
  (./chapters/9-SDVIntegration.tex
 Chapter 6.
-
-LaTeX Warning: Citation 'EclipseLeda2023' on page 20 undefined on input line 7.
-
-
-
-LaTeX Warning: Citation 'EclipseKuksa2024' on page 20 undefined on input line 2
-7.
-
 
 Overfull \hbox (95.6706pt too wide) in paragraph at lines 40--41
 []\T1/NimbusMono/m/n/12 Vehicle.Powertrain.CombustionEngine.Speed| 
@@ -1511,10 +1368,6 @@ Overfull \hbox (2.07063pt too wide) in paragraph at lines 46--47
  []
 
 
-LaTeX Warning: Citation 'EclipseVelocitas2024' on page 20 undefined on input li
-ne 58.
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 63--66
 []\T1/NimbusSans/b/n/12 (+20) Overspeed\T1/NimbusSans/m/n/12 (+20) : if \T1/Nim
 busMono/m/n/12 Vehicle.Speed
@@ -1524,7 +1377,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 72.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[20
+[18
 
 
 
@@ -1541,33 +1394,21 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 54.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [21]
+ [19]
 \openout2 = `chapters/10-Experiments.aux'.
 
  (./chapters/10-Experiments.tex
 Chapter 7.
-
-LaTeX Warning: Reference `table:setup' on page 1 undefined on input line 9.
-
-
-LaTeX Warning: Reference `table:convergence' on page 1 undefined on input line 
-62.
-
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 82.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[22
+[20
 
 
 
 
 ]
-
-LaTeX Warning: Reference `table:inference' on page 1 undefined on input line 10
-4.
-
-
 Underfull \hbox (badness 1253) in paragraph at lines 102--105
 []\T1/NimbusSans/m/n/12 (+20) The \T1/NimbusMono/m/n/12 best_model.zip \T1/Nimb
 usSans/m/n/12 (+20) checkpoint was evaluated over 50 episodes using
@@ -1577,12 +1418,12 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 146.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[23])
+[21])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 55.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [24]
+ [22]
 \openout2 = `chapters/11-Conclusions.aux'.
 
  (./chapters/11-Conclusions.tex
@@ -1591,7 +1432,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 71.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[25
+[23
 
 
 
@@ -1601,9 +1442,18 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 56.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [26]
+ [24]
 Chapter 9.
-<example_declaration.pdf, id=431, 597.51233pt x 845.0471pt>
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 58.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[25
+
+
+
+]
+<example_declaration.pdf, id=514, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
@@ -1612,7 +1462,7 @@ File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
 Package pdftex.def Info: example_declaration.pdf  used on input line 60.
 (pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-<example_declaration.pdf, id=434, page=1, 597.51233pt x 845.0471pt>
+<example_declaration.pdf, id=517, page=1, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
@@ -1627,11 +1477,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 60.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[27
-
-
-
-]
+ [26]
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
@@ -1647,11 +1493,10 @@ File: example_declaration.pdf Graphic file (type pdf)
 Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
 
 (pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
- [28
+ [27
 
  <./example_declaration.pdf>] (./main.aux (./chapters/1-Title.aux)
 Package cleveref Info: loaded `english' language definitions on input line 12.
-
 (./chapters/3-AbstractEN.aux) (./chapters/4-Introduction.aux)
 (./chapters/5-Background.aux) (./chapters/6-SystemArchitecture.aux)
 (./chapters/7-UnitySim.aux) (./chapters/8-PythonRL.aux)
@@ -1665,17 +1510,8 @@ L3 programming layer <2024-01-22>
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `main.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: F0410FAA04D76E83ECAB9263FB1E632B;7559
-(rerunfilecheck)             After:  E0397721029F17D0804FCECB751A7E24;9287.
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: 2446113B43BAB7DF89A5C5448F583A89;8526.
 
 Package biblatex Warning: Please (re)run BibTeX on the file(s):
 (biblatex)                main
@@ -1686,13 +1522,13 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 28964 strings out of 474222
- 516900 string characters out of 5748733
+ 29034 strings out of 474222
+ 519606 string characters out of 5748733
  1944975 words of memory out of 5000000
- 50467 multiletter control sequences out of 15000+600000
- 608530 words of font info for 160 fonts, out of 8000000 for 9000
+ 50523 multiletter control sequences out of 15000+600000
+ 610084 words of font info for 166 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 79i,17n,117p,1850b,2620s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 79i,17n,117p,1850b,2593s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texl
@@ -1708,10 +1544,10 @@ cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols
 ></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/s
 hare/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/tex
 live/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (29 pages, 344430 bytes).
+Output written on main.pdf (28 pages, 345633 bytes).
 PDF statistics:
- 570 PDF objects out of 1000 (max. 8388607)
- 486 compressed objects within 5 object streams
- 133 named destinations out of 1000 (max. 500000)
- 35186 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 653 PDF objects out of 1000 (max. 8388607)
+ 569 compressed objects within 6 object streams
+ 135 named destinations out of 1000 (max. 500000)
+ 35234 words of extra memory for PDF output out of 35830 (max. 10000000)
 
