@@ -42,7 +42,7 @@ topic set is listed in \cref{table:mqtt-topics}.
 \begin{table}[H]
 \caption{MQTT topic map for the SHILATE training loop.}
 \label{table:mqtt-topics}
-\begin{tabular}{|p{5.5cm}|p{3cm}|p{4cm}|}
+\begin{tabular}{|p{8.5cm}|p{3cm}|p{2.5cm}|}
   \hline
   \textbf{Topic} & \textbf{Direction} & \textbf{Payload} \\
   \hline
@@ -74,71 +74,6 @@ arrive at 10~Hz and each new observation makes the previous one
 irrelevant, occasional message loss is harmless and the absence of
 acknowledgement handshakes reduces loop latency significantly compared to
 QoS~1 or 2.
-
-
-The QoS 0 design works precisely because the \texttt{MqttClient.cs}
-implementation --- written from scratch without external libraries --- is
-lean enough that the round-trip overhead is negligible. The \texttt{Publish}
-method manually builds an MQTT 3.1.1 packet in about twenty lines of C\#:
-
-\begin{lstlisting}[language={[Sharp]C},
-  caption={PUBLISH packet builder from MqttClient.cs --- no external MQTT library required.},
-  label={code:mqtt-publish}]
-public void Publish(string topic, string payload)
-{
-    if (State != ConnectionState.Connected) return;
-
-    byte[] topicBytes   = Encoding.UTF8.GetBytes(topic);
-    byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
-    int remainingLength = 2 + topicBytes.Length + payloadBytes.Length;
-
-    using (var ms = new MemoryStream())
-    {
-        ms.WriteByte(0x30);                        // PUBLISH, QoS 0, no retain
-        WriteRemainingLength(ms, remainingLength);
-        WriteUtf8String(ms, topicBytes);
-        ms.Write(payloadBytes, 0, payloadBytes.Length);
-        Send(ms.ToArray());
-    }
-}
-\end{lstlisting}
-
-Incoming packets are dispatched on a dedicated background thread.
-The \texttt{ReadLoop} method reads the fixed-format type byte followed by
-a variable-length encoded remaining-length field, then routes to the
-appropriate handler:
-
-\begin{lstlisting}[language={[Sharp]C},
-  caption={Packet dispatch loop from MqttClient.cs.},
-  label={code:mqtt-readloop}]
-void HandlePacket(int packetType, byte[] data)
-{
-    int type = packetType & 0xF0;
-    switch (type)
-    {
-        case 0x20: // CONNACK -- connection acknowledged
-            if (data.Length >= 2 && data[1] == 0x00)
-            {
-                State = ConnectionState.Connected;
-                _mainThreadQueue.Enqueue(() => OnConnected?.Invoke());
-            }
-            break;
-
-        case 0x30: // PUBLISH -- incoming message from broker
-            ParsePublish(packetType, data);
-            break;
-
-        case 0xD0: // PINGRESP
-            break;
-    }
-}
-\end{lstlisting}
-
-Because Unity's scripting runtime is not thread-safe, all callbacks are
-enqueued into a \texttt{ConcurrentQueue<Action>} and drained on the
-main thread by \texttt{LedaBroker.Update()} each frame. This pattern
-keeps the MQTT receive thread free to process the next packet immediately
-without waiting for Unity's main-thread code to complete.
 
 \section{Training Data-Flow}
 \label{sec:dataflow}
