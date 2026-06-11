@@ -19,6 +19,15 @@ repository. The \texttt{leda/run-leda.sh} script launches the image with
 a bridged network interface so that the host machine and the QEMU guest
 share a Mosquitto broker at \texttt{127.0.0.1:1883}.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/eclipse_leda.png}
+  \caption{Eclipse Leda booting inside QEMU. The terminal output shows the
+  systemd service startup sequence, including the Mosquitto MQTT broker,
+  Kuksa databroker, and Kanto container manager coming online.}
+  \label{fig:eclipse-leda}
+\end{figure}
+
 \section{MQTT-to-Kuksa Bridge}
 \label{sec:feeder}
 
@@ -52,40 +61,6 @@ After the feeder writes a signal, any subscriber --- including the
 Velocitas vehicle application --- is notified with the new value within
 the same event loop tick.
 
-
-The core of the bridge is the \texttt{\_on\_message} callback. Each time
-a Unity MQTT publish arrives, the callback parses the JSON payload,
-resolves the VSS path from the pre-built lookup table, and writes the
-value to Kuksa via gRPC in one call:
-
-\begin{lstlisting}[language=Python,
-  caption={MQTT-to-Kuksa bridge callback from feeder.py.},
-  label={code:feeder-msg}]
-def _on_message(self, client, userdata, msg: mqtt.MQTTMessage):
-    vss_path = self._topic_to_vss.get(msg.topic)
-    if vss_path is None:
-        return  # unknown sub-topic, ignore
-
-    try:
-        payload = json.loads(msg.payload)
-        value   = float(payload["value"])
-    except (json.JSONDecodeError, KeyError, ValueError) as exc:
-        log.debug("Bad payload on %s: %s (%s)", msg.topic, msg.payload, exc)
-        return
-
-    try:
-        self._kuksa.set_value(vss_path, value)
-    except Exception as exc:
-        log.warning("KUKSA write failed for %s: %s", vss_path, exc)
-        self._kuksa.disconnect()
-        self._kuksa.connect()   # attempt to reconnect on next call
-\end{lstlisting}
-
-The reconnect-on-failure logic inside \texttt{set\_value} means the
-feeder survives a brief Kuksa databroker restart without manual
-intervention --- important when the container orchestrator restarts
-services after a firmware update.
-
 \section{Velocitas Vehicle Application}
 \label{sec:velocitas}
 
@@ -103,45 +78,6 @@ every 5 seconds, and enforces two hard limits:
 Alerts are currently informational; the architecture is designed so that
 the safety monitor can be upgraded to a command-injection path without
 modifying any other component.
-
-
-The subscription setup and the safety check callbacks for overspeed are
-shown below. The pattern is identical for the RPM redline check:
-
-\begin{lstlisting}[language=Python,
-  caption={Velocitas subscription setup and overspeed handler from app.py.},
-  label={code:velocitas-sub}]
-async def on_start(self):
-    await vehicle.Speed.subscribe(self._on_speed)
-    await vehicle.Powertrain.CombustionEngine.Speed.subscribe(self._on_rpm)
-    await vehicle.Chassis.SteeringWheel.Angle.subscribe(self._on_steering)
-    await vehicle.Chassis.Brake.PedalPosition.subscribe(self._on_brake)
-    await vehicle.OBD.ThrottlePosition.subscribe(self._on_throttle)
-    asyncio.ensure_future(self._telemetry_summary_loop())
-
-async def _check_overspeed(self, speed: float):
-    if speed > SPEED_LIMIT and not self._overspeed_active:
-        self._overspeed_active = True
-        alert = {
-            "type":    "overspeed",
-            "speed":   round(speed, 2),
-            "limit":   SPEED_LIMIT,
-            "message": f"Speed {speed:.1f} km/h exceeds limit {SPEED_LIMIT:.0f} km/h",
-        }
-        log.warning("ALERT: %s", alert["message"])
-        await self.publish_event(ALERT_TOPIC, json.dumps(alert))
-    elif speed <= SPEED_LIMIT and self._overspeed_active:
-        self._overspeed_active = False
-        log.info("Speed returned to normal: %.1f km/h", speed)
-\end{lstlisting}
-
-Two details are worth noting. First, the flag \texttt{\_overspeed\_active}
-prevents a flood of repeated alert messages when the vehicle is
-continuously above the threshold --- only the first crossing and the
-recovery generate a message. Second, the alert payload is sent to
-\texttt{leda/command/alert}, a topic that Unity already subscribes to via
-the \texttt{leda/command/\#} wildcard in \texttt{LedaBroker.cs}, so the
-Editor health window will surface it without any additional wiring.
 
 \section{Container Deployment}
 \label{sec:containers}
@@ -166,123 +102,3 @@ multiplexing relay: any client that connects and sends telemetry data has
 that data forwarded to all other connected clients. This enables tools
 such as \texttt{netcat} or custom dashboards to observe the live
 telemetry stream without subscribing to individual MQTT topics.
-
-\section{Raspberry Pi 4 Hardware Actuator}
-\label{sec:rpi-actuator}
-
-Closing the loop between the SDV software layer and a real physical
-device requires hardware that can translate a VSS signal into a
-mechanical action. The design described in this section is theoretical
---- the physical build has not been assembled --- but it is grounded in
-components that are readily available and well understood.
-
-The target application is a 12~V DC water pump driven by a
-pulse-width-modulated (PWM) signal, where the duty cycle is set by the
-RL agent's throttle output via the VSS path
-\texttt{Vehicle.OBD.ThrottlePosition}.
-
-\subsection{Circuit Design}
-\label{subsec:circuit}
-
-A Raspberry Pi 4B \cite{RaspberryPi4} runs Eclipse Leda on its ARM
-processor and therefore participates in the same SDV software stack as
-the QEMU simulation. Its 3.3~V GPIO pins cannot drive a 12~V motor load
-directly, so a MOSFET module is interposed. A suitable choice is the
-IRF520N N-channel MOSFET: its gate threshold voltage is well within the
-3.3~V logic range, its $R_{\mathrm{DS(on)}}$ is low enough
-(approx.\ 0.27~$\Omega$) to avoid significant dissipation at pump
-currents, and its $V_{\mathrm{DS}}$ rating of 100~V comfortably exceeds
-the 12~V supply.
-
-The gate is driven through a 1~k$\Omega$ series resistor to limit
-inrush current and damp potential ringing on the gate trace. A small
-pull-down resistor (10~k$\Omega$) from gate to ground ensures the
-MOSFET is fully off when the GPIO pin is tri-stated at boot, preventing
-unintended motor activation during start-up.
-
-The pump motor is an inductive load. When the MOSFET switches off
-abruptly, the energy stored in the motor's inductance $L$ has nowhere
-to go and appears as a voltage spike across the switching node:
-\begin{equation}
-  V_{\mathrm{spike}} = -L \frac{dI}{dt}.
-  \label{eq:inductive-kick}
-\end{equation}
-Without protection, this spike can exceed the MOSFET's $V_{\mathrm{DS}}$
-rating and destroy the transistor. A \emph{flyback suppressor} --- also
-called a freewheeling or snubber diode --- provides a low-impedance
-current path that clamps the spike. A 1N4007 general-purpose rectifier
-connected in reverse across the pump terminals (cathode to the 12~V rail,
-anode to the drain) is sufficient for modest pump currents. For faster
-PWM frequencies or higher currents, a Zener diode or a dedicated TVS
-(Transient Voltage Suppressor) device placed in the same position offers
-a tighter voltage clamp.
-
-The complete circuit, described schematically, is:
-
-\begin{quote}
-  \textbf{RPi GPIO23} $\xrightarrow{\text{1 k}\Omega}$ \textbf{MOSFET Gate}
-  --- \textbf{MOSFET Drain} $\to$ \textbf{Pump (-)};
-  \textbf{Pump (+)} $\to$ \textbf{12 V};
-  \textbf{1N4007/TVS} from Drain to 12 V (reverse-biased);
-  \textbf{MOSFET Source} $\to$ \textbf{GND};
-  \textbf{10 k}\boldmath$\Omega$ \textbf{pull-down} from Gate to GND.
-\end{quote}
-
-\subsection{Software: VSS Subscription to PWM Output}
-\label{subsec:rpi-software}
-
-The Raspberry Pi runs a small Python daemon alongside the Leda
-containers. It subscribes to the Kuksa databroker using the
-\texttt{kuksa-client} library and, on each value change,
-converts the normalised throttle reading to a PWM duty cycle for
-GPIO~23:
-
-\begin{lstlisting}[language=Python,
-  caption={Theoretical Raspberry Pi 4 pump controller subscribed to VSS via Kuksa.},
-  label={code:rpi}]
-import asyncio
-import RPi.GPIO as GPIO
-from kuksa_client.grpc.aio import VSSClient
-
-PUMP_GPIO  = 23
-PWM_FREQ   = 1000   # Hz -- 1 kHz carrier well above audible range
-VSS_PATH   = "Vehicle.OBD.ThrottlePosition"
-KUKSA_ADDR = ("127.0.0.1", 55555)
-
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(PUMP_GPIO, GPIO.OUT)
-pwm = GPIO.PWM(PUMP_GPIO, PWM_FREQ)
-pwm.start(0)
-
-async def main() -> None:
-    async with VSSClient(*KUKSA_ADDR) as client:
-        async for updates in client.subscribe_current_values([VSS_PATH]):
-            for path, value in updates.items():
-                # ThrottlePosition is 0.0-100.0 (percent); map to duty cycle
-                duty = max(0.0, min(100.0, float(value.value)))
-                pwm.ChangeDutyCycle(duty)
-
-asyncio.run(main())
-\end{lstlisting}
-
-The Kuksa gRPC subscription fires immediately on value change, so the
-pump duty cycle tracks the agent's throttle output with sub-millisecond
-software latency. The PWM carrier frequency of 1~kHz is above the
-audible range of most motors, reducing acoustic noise without requiring
-an especially low MOSFET gate capacitance.
-
-\subsection{Connection to SHILATE}
-\label{subsec:rpi-connection}
-
-Within the SHILATE data flow, the RL agent running on the host machine
-publishes a throttle action to the MQTT topic
-\texttt{env0/vehicle/control/throttle}. The \texttt{mqtt-kuksa-feeder}
-container forwards this to the Kuksa databroker as
-\texttt{Vehicle.OBD.ThrottlePosition}. The RPi daemon described above
-subscribes to that path and drives the pump accordingly.
-
-This is precisely the Software-Defined Vehicle pattern: the physical
-actuator has no knowledge of the RL algorithm, the simulation, or the
-MQTT broker. It speaks only VSS signals. Replacing the pump with any
-other VSS-aware actuator --- a servo, a heater, a relay --- requires no
-changes to the Python training code.
