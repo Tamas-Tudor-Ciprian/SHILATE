@@ -192,6 +192,45 @@ policy always picks the action with the highest predicted return. In
 plain terms --- the agent stops experimenting and drives with what it has
 learned.
 
+The inference loop itself is intentionally simple. It mirrors the same
+\texttt{obs\_event.wait()} pattern used in training, but without the
+Gymnasium wrapper overhead, and it handles episode resets automatically:
+
+\begin{lstlisting}[language=Python,
+  caption={Inference loop from ai\_driver.py.},
+  label={code:aidriver}]
+while _running:
+    obs = build_observation(ctrl, ray_count)
+
+    action, _ = model.predict(obs, deterministic=True)
+    steer, throttle, brake = float(action[0]), float(action[1]), float(action[2])
+    ctrl.send_action(steer, throttle, brake)
+    step += 1
+
+    ctrl.obs_event.clear()
+    if not ctrl.obs_event.wait(timeout=2.0):
+        log.warning("Observation timeout at step %d", step)
+        continue
+
+    if step % 50 == 0:
+        log.info("Step %d | SPD: %.1f km/h | STR: %+.2f | THR: %.2f | BRK: %.2f",
+                 step, ctrl.get_speed(), steer, throttle, brake)
+
+    if ctrl.training_done:
+        episode += 1
+        log.info("Episode %d complete (step %d)", episode, step)
+        step = 0
+        time.sleep(0.5)
+        ctrl.send_reset()
+        ctrl.obs_event.clear()
+        ctrl.obs_event.wait(timeout=5.0)
+\end{lstlisting}
+
+Running the inference loop on the deployed Leda image requires no changes
+to the code --- only the \texttt{--model} path argument changes. This is
+the same container image used during development, rebuilt and pushed to
+the device registry by \texttt{provision-device.sh}.
+
 \section{Cross-Platform Process Management}
 \label{sec:process-mgr}
 

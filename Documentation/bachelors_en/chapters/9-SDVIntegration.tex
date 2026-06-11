@@ -52,6 +52,40 @@ After the feeder writes a signal, any subscriber --- including the
 Velocitas vehicle application --- is notified with the new value within
 the same event loop tick.
 
+
+The core of the bridge is the \texttt{\_on\_message} callback. Each time
+a Unity MQTT publish arrives, the callback parses the JSON payload,
+resolves the VSS path from the pre-built lookup table, and writes the
+value to Kuksa via gRPC in one call:
+
+\begin{lstlisting}[language=Python,
+  caption={MQTT-to-Kuksa bridge callback from feeder.py.},
+  label={code:feeder-msg}]
+def _on_message(self, client, userdata, msg: mqtt.MQTTMessage):
+    vss_path = self._topic_to_vss.get(msg.topic)
+    if vss_path is None:
+        return  # unknown sub-topic, ignore
+
+    try:
+        payload = json.loads(msg.payload)
+        value   = float(payload["value"])
+    except (json.JSONDecodeError, KeyError, ValueError) as exc:
+        log.debug("Bad payload on %s: %s (%s)", msg.topic, msg.payload, exc)
+        return
+
+    try:
+        self._kuksa.set_value(vss_path, value)
+    except Exception as exc:
+        log.warning("KUKSA write failed for %s: %s", vss_path, exc)
+        self._kuksa.disconnect()
+        self._kuksa.connect()   # attempt to reconnect on next call
+\end{lstlisting}
+
+The reconnect-on-failure logic inside \texttt{set\_value} means the
+feeder survives a brief Kuksa databroker restart without manual
+intervention --- important when the container orchestrator restarts
+services after a firmware update.
+
 \section{Velocitas Vehicle Application}
 \label{sec:velocitas}
 
@@ -69,6 +103,45 @@ every 5 seconds, and enforces two hard limits:
 Alerts are currently informational; the architecture is designed so that
 the safety monitor can be upgraded to a command-injection path without
 modifying any other component.
+
+
+The subscription setup and the safety check callbacks for overspeed are
+shown below. The pattern is identical for the RPM redline check:
+
+\begin{lstlisting}[language=Python,
+  caption={Velocitas subscription setup and overspeed handler from app.py.},
+  label={code:velocitas-sub}]
+async def on_start(self):
+    await vehicle.Speed.subscribe(self._on_speed)
+    await vehicle.Powertrain.CombustionEngine.Speed.subscribe(self._on_rpm)
+    await vehicle.Chassis.SteeringWheel.Angle.subscribe(self._on_steering)
+    await vehicle.Chassis.Brake.PedalPosition.subscribe(self._on_brake)
+    await vehicle.OBD.ThrottlePosition.subscribe(self._on_throttle)
+    asyncio.ensure_future(self._telemetry_summary_loop())
+
+async def _check_overspeed(self, speed: float):
+    if speed > SPEED_LIMIT and not self._overspeed_active:
+        self._overspeed_active = True
+        alert = {
+            "type":    "overspeed",
+            "speed":   round(speed, 2),
+            "limit":   SPEED_LIMIT,
+            "message": f"Speed {speed:.1f} km/h exceeds limit {SPEED_LIMIT:.0f} km/h",
+        }
+        log.warning("ALERT: %s", alert["message"])
+        await self.publish_event(ALERT_TOPIC, json.dumps(alert))
+    elif speed <= SPEED_LIMIT and self._overspeed_active:
+        self._overspeed_active = False
+        log.info("Speed returned to normal: %.1f km/h", speed)
+\end{lstlisting}
+
+Two details are worth noting. First, the flag \texttt{\_overspeed\_active}
+prevents a flood of repeated alert messages when the vehicle is
+continuously above the threshold --- only the first crossing and the
+recovery generate a message. Second, the alert payload is sent to
+\texttt{leda/command/alert}, a topic that Unity already subscribes to via
+the \texttt{leda/command/\#} wildcard in \texttt{LedaBroker.cs}, so the
+Editor health window will surface it without any additional wiring.
 
 \section{Container Deployment}
 \label{sec:containers}
