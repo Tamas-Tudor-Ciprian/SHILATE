@@ -1,49 +1,125 @@
 \chapter{Python RL Training Pipeline}\label{ch:python}
 \thispagestyle{pagestyle}
 
+Getting a reinforcement learning agent to drive a virtual car is, in
+principle, straightforward. The tricky part is wiring everything together
+so the agent can actually talk to the simulation, watch what is happening
+in real time, and resume a training run without losing work. This chapter
+walks through how SHILATE does all three.
+
 \section{Gymnasium Environment Wrapper}
 \label{sec:gym-wrapper}
 
-The Python training pipeline is built on the Gymnasium API
-\cite{Towers2024}, which defines a standard interface
-(\texttt{reset()}, \texttt{step()}, \texttt{observation\_space},
-\texttt{action\_space}) that any Stable-Baselines3 algorithm can consume
-without modification. The wrapper class \texttt{ShilateEnv(gym.Env)} in
-\texttt{environment.py} translates between this interface and the MQTT
-broker.
+The Python side of SHILATE speaks Gymnasium \cite{Towers2024} --- the
+standard interface that practically every modern RL library expects. The
+wrapper class \texttt{ShilateEnv} lives in \texttt{environment.py} and
+translates between the clean Gym API and the somewhat messier world of
+MQTT messages flying back and forth with Unity.
 
-The observation space mirrors \cref{eq:obs}:
-\begin{equation*}
-  \mathcal{O} = \mathrm{Box}(0,\;1,\;\mathrm{shape}{=}(N{+}2,),\;\mathrm{dtype}{=}\texttt{float32}).
-\end{equation*}
-The action space is:
-\begin{equation*}
-  \mathcal{A} = \mathrm{Box}([-1,0,0],\;[1,1,1],\;\mathrm{shape}{=}(3,),\;\mathrm{dtype}{=}\texttt{float32}),
-\end{equation*}
-corresponding to steer $\in [-1,1]$, throttle $\in [0,1]$, and brake
-$\in [0,1]$.
+The observation and action spaces are declared once in
+\texttt{\_\_init\_\_} and never change at runtime:
 
-\texttt{reset()} sends a reset command to Unity, then blocks until
-either an \texttt{obs} message arrives or the 5-second
-\texttt{OBS\_TIMEOUT} elapses. \texttt{step(action)} publishes the three
-action components to their control topics, then blocks on a threading
-event until a new \texttt{obs} arrives alongside co-published
-\texttt{reward} and \texttt{done} values. The threading-event approach
-avoids busy polling and keeps CPU usage low while waiting.
+\begin{lstlisting}[language=Python,
+  caption={Observation and action space declarations from environment.py.},
+  label={code:spaces}]
+obs_size = ray_count + 2          # rays + normalised speed + normalised steer
+self.observation_space = spaces.Box(
+    low=0.0, high=1.0, shape=(obs_size,), dtype=np.float32
+)
+self.action_space = spaces.Box(
+    low=np.array([-1.0, 0.0, 0.0], dtype=np.float32),
+    high=np.array([ 1.0, 1.0, 1.0], dtype=np.float32),
+    dtype=np.float32,             # [steer, throttle, brake]
+)
+\end{lstlisting}
+
+Keeping everything in $[0,1]$ means the first layer of the network always
+receives well-scaled inputs -- no normalisation wrapper needed.
+
+The \texttt{step()} method is where the action-observation loop actually
+happens. It sends the action to Unity over MQTT, then simply waits:
+
+\begin{lstlisting}[language=Python,
+  caption={The core step loop from environment.py.},
+  label={code:step}]
+def step(self, action):
+    steer, throttle, brake = float(action[0]), float(action[1]), float(action[2])
+    self._ctrl.send_action(steer, throttle, brake)
+
+    self._ctrl.obs_event.clear()
+    if not self._ctrl.obs_event.wait(timeout=OBS_TIMEOUT):
+        # Unity stopped responding -- truncate rather than crash
+        _emit("SHILATE-HEALTH",
+              f"obs_timeout phase=step step={self._step_count}")
+        return self._build_observation(), -1.0, False, True, {"reason": "obs_timeout"}
+
+    obs    = self._build_observation()
+    reward = self._ctrl.training_reward
+    done   = self._ctrl.training_done
+    self._step_count += 1
+    return obs, reward, done, False, {}
+\end{lstlisting}
+
+\texttt{threading.Event.wait()} releases the Python GIL while blocking,
+so the MQTT callback thread can still receive messages. If Unity goes
+silent for more than five seconds --- say because the Editor was paused
+or crashed --- the episode is marked \texttt{truncated=True} and
+Stable-Baselines3 bootstraps the value from the last state instead of
+applying a terminal penalty.
+
+The MQTT connection lives in \texttt{controller.py}. The
+\texttt{VehicleController} class maintains a \texttt{paho-mqtt} client
+and exposes helpers like \texttt{send\_action()} and \texttt{set\_gear()}.
+All topics are rooted at the prefix \texttt{env0/} --- a deliberate
+single-environment design that keeps the code simple while the system is
+still being developed.
 
 \section{PPO Agent Configuration}
 \label{sec:ppo-config}
 
-The PPO agent is instantiated from Stable-Baselines3 \cite{Raffin2021},
-which uses PyTorch \cite{Paszke2019} as its deep-learning backend. The
-environment is wrapped in a one-slot \texttt{DummyVecEnv} as required by
-the SB3 API. The neural network uses separate actor and critic branches:
-\begin{equation*}
-  \pi:\ \mathbb{R}^{N+2} \xrightarrow{256} \mathbb{R}^{128} \to \mathbb{R}^{|\mathcal{A}|},
-  \qquad
-  V:\ \mathbb{R}^{N+2} \xrightarrow{256} \mathbb{R}^{128} \to \mathbb{R}.
-\end{equation*}
-Default PPO hyperparameters are listed in \cref{table:ppo-params}.
+The PPO agent is assembled in \texttt{train.py}. The actor and critic
+networks are defined in \texttt{model.py} --- keeping them apart lets the
+value function and the policy learn different representations of the same
+input, which often helps in practice:
+
+\begin{lstlisting}[language=Python,
+  caption={Policy network architecture from model.py.},
+  label={code:netarch}]
+def get_policy_kwargs(ray_count: int = DEFAULT_RAY_COUNT) -> dict:
+    return dict(
+        net_arch=dict(
+            pi=[256, 128],   # actor:  obs -> 256 -> 128 -> 3 actions
+            vf=[256, 128],   # critic: obs -> 256 -> 128 -> scalar value
+        )
+    )
+\end{lstlisting}
+
+Back in \texttt{train.py}, the model is assembled and a checkpoint
+callback saves progress every 10\% of the training budget. A resume path
+can be supplied to pick up where a previous run left off:
+
+\begin{lstlisting}[language=Python,
+  caption={PPO model creation and checkpoint setup from train.py.},
+  label={code:pposetup}]
+if args.resume_model:
+    model = PPO.load(args.resume_model, env=vec_env,
+                     learning_rate=args.learning_rate,
+                     n_steps=args.n_steps, batch_size=args.batch_size)
+    model.tensorboard_log = args.log_dir
+else:
+    model = PPO("MlpPolicy", vec_env,
+                learning_rate=args.learning_rate,
+                n_steps=args.n_steps, batch_size=args.batch_size,
+                policy_kwargs=get_policy_kwargs(ray_count),
+                verbose=1, tensorboard_log=args.log_dir)
+
+checkpoint_cb = CheckpointCallback(
+    save_freq=max(total_timesteps // 10, 1000),
+    save_path=args.save_path, name_prefix="shilate_ppo",
+)
+\end{lstlisting}
+
+Default hyperparameters are listed in \cref{table:ppo-params}.
 
 \begin{table}[H]
 \caption{Default PPO hyperparameters.}
@@ -52,19 +128,19 @@ Default PPO hyperparameters are listed in \cref{table:ppo-params}.
   \hline
   \textbf{Parameter} & \textbf{Default} & \textbf{CLI flag} \\
   \hline
-  Total timesteps      & 100{,}000        & \texttt{--total-timesteps} \\
+  Total timesteps      & 100{,}000          & \texttt{--total-timesteps} \\
   \hline
   Learning rate        & $3 \times 10^{-4}$ & \texttt{--learning-rate} \\
   \hline
-  Rollout steps $n$    & 2048             & \texttt{--n-steps} \\
+  Rollout steps $n$    & 2048               & \texttt{--n-steps} \\
   \hline
-  Batch size           & 64               & \texttt{--batch-size} \\
+  Batch size           & 64                 & \texttt{--batch-size} \\
   \hline
-  Clip $\varepsilon$   & 0.2              & SB3 default \\
+  Clip $\varepsilon$   & 0.2                & SB3 default \\
   \hline
-  Discount $\gamma$    & 0.99             & SB3 default \\
+  Discount $\gamma$    & 0.99               & SB3 default \\
   \hline
-  GAE $\lambda$        & 0.95             & SB3 default \\
+  GAE $\lambda$        & 0.95               & SB3 default \\
   \hline
 \end{tabular}
 \end{table}
@@ -72,48 +148,58 @@ Default PPO hyperparameters are listed in \cref{table:ppo-params}.
 \section{Training Loop and Health Telemetry}
 \label{sec:training-loop}
 
-The training loop is driven by \texttt{PPO.learn(total\_timesteps)}.
-A custom \texttt{HealthCallback(BaseCallback)} is attached and invoked
-at the end of each rollout. It inspects policy gradient loss, value loss,
-and KL divergence for NaN or infinite values and emits a
-\texttt{SHILATE-HEALTH nan\_in\_losses} marker to stdout if detected,
-causing the Editor banner to transition to \textit{Critical}.
+One of the more unusual aspects of SHILATE is the structured telemetry
+that the Python process streams back to the Unity Editor. Instead of just
+printing progress to a terminal, every meaningful event emits a tagged
+line that the Editor's parser picks up and displays in the Training
+Controller window in real time.
 
-All metrics are transmitted to the Unity Editor through two channels:
-\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
-  \item \textbf{SB3 tabular output.} Stable-Baselines3 prints a formatted
-    table to stdout every $n$ steps.
-    \texttt{TrainingMetricsParser.cs} parses the rows
-    \texttt{rollout/ep\_rew\_mean},
-    \texttt{train/policy\_gradient\_loss},
-    \texttt{train/value\_loss}, and \texttt{train/approx\_kl}.
-  \item \textbf{Structured markers.} The \texttt{emit()} helper writes
-    lines of the form \texttt{SHILATE-METRIC key=value} and
-    \texttt{SHILATE-HEALTH signal} to stdout, enabling the Editor parser
-    to extract specific values without fragile regex matching.
-\end{enumerate}
-Model checkpoints are saved every approximately 10{,}000 timesteps;
-\texttt{best\_model.zip} is maintained by an \texttt{EvalCallback}.
+The \texttt{HealthCallback} class runs at the end of each rollout. It
+re-emits Stable-Baselines3 internal metrics as \texttt{SHILATE-METRIC}
+lines, and checks loss values for NaN or infinity --- a surprisingly
+useful guard during early experimentation with learning rates:
+
+\begin{lstlisting}[language=Python,
+  caption={Health callback emitting metrics and checking for non-finite losses.},
+  label={code:healthcb}]
+def _dump_metrics(self) -> None:
+    stats = getattr(self.model.logger, "name_to_value", {}) or {}
+    for key in self._WATCH:
+        if key in stats:
+            val   = stats[key]
+            short = key.split("/", 1)[-1]
+            emit("SHILATE-METRIC", f"{short}={val}")
+            if "loss" in key or "kl" in key:
+                if math.isnan(float(val)) or math.isinf(float(val)):
+                    emit("SHILATE-HEALTH", f"nan_loss key={key} value={val}")
+\end{lstlisting}
+
+The \texttt{SHILATE-HEALTH} lines feed into
+\texttt{TrainingHealthEvaluator.cs} in the Editor, which updates the
+health banner colour accordingly. Alongside periodic checkpoints, the
+final model is saved on clean exit --- or on \texttt{KeyboardInterrupt},
+because most training runs are stopped manually rather than running to
+the full timestep limit.
 
 \section{Inference Mode}
 \label{sec:inference}
 
-\texttt{ai\_driver.py} loads a saved \texttt{.zip} checkpoint and runs
-the policy in a closed-loop inference loop. Observations are constructed
-from the same MQTT source as the training environment. The policy is
-evaluated with \texttt{deterministic=True}, disabling Gaussian
-exploration noise. Episode telemetry (speed, steer, throttle, brake) is
-logged every 50 steps. The script runs a fixed episode count
-(\texttt{--episodes}) or loops indefinitely (\texttt{--episodes 0}).
+Running a trained policy is handled by \texttt{ai\_driver.py}, which
+loads a \texttt{.zip} checkpoint and feeds live observations into it.
+The key difference from training is \texttt{deterministic=True}: this
+disables the Gaussian exploration noise added during training, so the
+policy always picks the action with the highest predicted return. In
+plain terms --- the agent stops experimenting and drives with what it has
+learned.
 
 \section{Cross-Platform Process Management}
 \label{sec:process-mgr}
 
-\texttt{PythonProcessManager.cs} spawns and terminates the Python
-process from within the Unity Editor. On Windows it invokes
-\texttt{cmd.exe /c} with the \texttt{Scripts\textbackslash{}activate}
-venv path; on Linux/macOS it uses \texttt{bash -c} with
-\texttt{bin/activate}. Graceful shutdown sends SIGTERM (or the Windows
-equivalent Ctrl+C event) to the process group, allowing the Python
-process to flush TensorBoard logs and save the final checkpoint before
-Play mode exits.
+Because Unity typically runs on Windows while the Python process runs
+inside WSL2, \texttt{PythonProcessManager.cs} handles virtual-environment
+activation differently per platform. On Windows it calls
+\texttt{Scripts\textbackslash{}activate}; on Linux/macOS it uses
+\texttt{bin/activate}. Graceful shutdown sends SIGTERM to the process
+group so TensorBoard logs are flushed and the final checkpoint is written
+before Play mode exits. A hard kill is used as a fallback if the process
+does not respond in time.

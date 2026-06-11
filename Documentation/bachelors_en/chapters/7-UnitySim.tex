@@ -1,6 +1,13 @@
 \chapter{Unity Simulation Design}\label{ch:unity}
 \thispagestyle{pagestyle}
 
+The simulation is not just a backdrop -- it is the only reality the
+agent ever experiences during training. Every aspect of the environment,
+from how the car steers around a corner to what penalty it receives for
+scraping a wall, directly shapes the policy that eventually runs on the
+real vehicle. This chapter explains the design choices made for the Unity
+simulation and why they were made that way.
+
 \section{Scene Construction}
 \label{sec:scene}
 
@@ -67,10 +74,35 @@ mirroring a real automatic-transmission vehicle.
 The vehicle's sole sensor is a LiDAR-inspired raycast fan implemented in
 \texttt{RaycastSensor.cs}. Twenty-one rays are cast in the vehicle's
 horizontal plane, spanning a $120^\circ$ arc centred on the forward axis,
-with a range of 50~m. Each ray returns a normalised distance
-$d_i \in [0, 1]$ where 0 indicates contact at the origin and 1 indicates
-no contact within range. The sensor publishes the full ray array to
-\texttt{env0/vehicle/training/obs} at 10~Hz.
+with a range of 50~m. The raycast loop itself is compact:
+
+\begin{lstlisting}[language={[Sharp]C},
+  caption={Ray fan loop from RaycastSensor.cs.},
+  label={code:raycast}]
+void CastRays()
+{
+    Vector3 origin = transform.TransformPoint(rayOriginOffset);
+    float halfSpread = raySpreadAngle * 0.5f;
+    float step = rayCount > 1 ? raySpreadAngle / (rayCount - 1) : 0f;
+
+    for (int i = 0; i < rayCount; i++)
+    {
+        float angle = -halfSpread + step * i;
+        Vector3 direction = Quaternion.Euler(0f, angle, 0f) * transform.forward;
+
+        if (Physics.Raycast(origin, direction, out RaycastHit hit, rayLength, hitLayers))
+            _distances[i] = hit.distance / rayLength; // 0 = close, 1 = max range
+        else
+            _distances[i] = 1f;                       // no obstacle detected
+    }
+}
+\end{lstlisting}
+
+Dividing by \texttt{rayLength} normalises each reading into $[0, 1]$:
+a value of 1 means the ray reached full range without hitting anything
+while values near 0 indicate an obstacle very close to the bumper.
+Each ray returns a normalised distance $d_i \in [0, 1]$, and the sensor
+publishes the full array to \texttt{env0/vehicle/training/obs} at 10~Hz.
 
 The complete observation vector received by Python is:
 \begin{equation}
@@ -95,15 +127,53 @@ The per-step reward is:
 where:
 \begin{itemize}[topsep=1.15pt,itemsep=1.15pt]
   \item $r_{\mathrm{progress}} = 2 \cdot \Delta p_t$ --- signed change in
-    track checkpoints since the last step.
+    track angle progress (degrees) since the last step.
   \item $r_{\mathrm{collision}} = -5$ on any step where the vehicle
     reports a collision contact (applied once per event).
   \item $r_{\mathrm{milestone}} = +50$ on full lap completion;
     $+25$ on first half-turn of the course (at most once per episode
     each).
 \end{itemize}
-An episode terminates on lap completion, prolonged standstill, or after
-the 60-second wall-clock timeout. Timeout terminations are reported as
+
+The reward shaping is implemented in the \texttt{FixedUpdate()} loop of
+\texttt{TrainingBridge.cs}. Collision detection uses \texttt{OnCollisionEnter}
+rather than the raycast array, preventing any edge-case where a collision
+could be missed if the sensor update and physics update happened to
+occur in the wrong order:
+
+\begin{lstlisting}[language={[Sharp]C},
+  caption={Reward computation excerpt from TrainingBridge.cs.},
+  label={code:reward}]
+float angleDelta = Mathf.DeltaAngle(_lastAngle, currentAngle);
+_lastAngle = currentAngle;
+_totalAngleProgress += angleDelta;
+
+float stepReward = angleDelta * progressReward;   // progressReward = 2
+
+bool collided = _collidedThisStep;
+_collidedThisStep = false;
+if (collided)
+    stepReward += collisionPenalty;               // collisionPenalty = -5
+
+if (!_halfTurnAwarded)
+{
+    float heading = vehicle.transform.eulerAngles.y;
+    if (heading >= 170f && heading <= 190f)
+    {
+        stepReward += halfTurnBonus;              // halfTurnBonus = 25
+        _halfTurnAwarded = true;
+    }
+}
+
+if (obstacleCourse != null && _totalAngleProgress >= 360f)
+{
+    stepReward += finishBonus;                    // finishBonus = 50
+    finished = true;
+}
+\end{lstlisting}
+
+An episode terminates on lap completion, collision, or after the
+60-second wall-clock timeout. Timeout terminations are reported as
 \texttt{truncated=True} so that Stable-Baselines3 bootstraps the value
 estimate rather than treating the transition as a terminal failure.
 
@@ -122,7 +192,9 @@ via \texttt{LedaBroker.Configure(host, port, "env0")} at startup. It
 publishes vehicle telemetry at 10~Hz and receives control commands. A
 Python heartbeat timeout (5-second threshold) detects when the trainer
 has stopped sending commands and holds the vehicle stationary until
-reconnection.
+reconnection. This is a small but important detail --- without it, a
+crashed Python process would leave the simulated car coasting forward
+indefinitely into a wall.
 
 \section{Training Controller Editor Window}
 \label{sec:editor-window}
