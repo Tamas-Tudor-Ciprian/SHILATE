@@ -176,7 +176,20 @@ def _dump_metrics(self) -> None:
 
 The \texttt{SHILATE-HEALTH} lines feed into
 \texttt{TrainingHealthEvaluator.cs} in the Editor, which updates the
-health banner colour accordingly. Alongside periodic checkpoints, the
+health banner colour accordingly. \cref{fig:training-graphs} shows the
+Training Controller during an active session.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{images/training_graphs.png}
+  \caption{SHILATE Training Controller panel showing the HEALTHY banner, MQTT
+  connection indicator, episode count, last and rolling reward, and live
+  scrolling plots of Episode Reward, Policy Loss, Value Loss, and KL
+  Divergence after 6 episodes of training.}
+  \label{fig:training-graphs}
+\end{figure}
+
+Alongside periodic checkpoints, the
 final model is saved on clean exit --- or on \texttt{KeyboardInterrupt},
 because most training runs are stopped manually rather than running to
 the full timestep limit.
