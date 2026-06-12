@@ -21,30 +21,30 @@
 \contentsline {section}{\numberline {4.1}Scene Construction}{13}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Vehicle Physics Model}{13}{section.4.2}%
 \contentsline {section}{\numberline {4.3}Perception Layer}{14}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Reward Function}{14}{section.4.4}%
-\contentsline {section}{\numberline {4.5}MQTT Bridge in Unity}{14}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Training Controller Editor Window}{14}{section.4.6}%
-\contentsline {chapter}{\numberline {5}Python RL Training Pipeline}{16}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Gymnasium Environment Wrapper}{16}{section.5.1}%
-\contentsline {section}{\numberline {5.2}PPO Agent Configuration}{16}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Training Loop and Health Telemetry}{17}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Inference Mode}{17}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Cross-Platform Process Management}{17}{section.5.5}%
-\contentsline {chapter}{\numberline {6}SDV Integration with Eclipse Leda}{18}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Eclipse Leda Overview}{18}{section.6.1}%
-\contentsline {section}{\numberline {6.2}MQTT-to-Kuksa Bridge}{18}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Velocitas Vehicle Application}{18}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Container Deployment}{19}{section.6.4}%
-\contentsline {section}{\numberline {6.5}Leda Telemetry Broker}{19}{section.6.5}%
-\contentsline {chapter}{\numberline {7}Experiments and Results}{20}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Experimental Setup}{20}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Training Convergence}{20}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Reward Shaping Ablation}{21}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Inference Evaluation}{21}{section.7.4}%
-\contentsline {section}{\numberline {7.5}Health Monitoring Validation}{21}{section.7.5}%
-\contentsline {section}{\numberline {7.6}End-to-End SDV Integration Test}{22}{section.7.6}%
-\contentsline {chapter}{\numberline {8}Conclusions}{23}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Summary of Contributions}{23}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Limitations}{23}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Future Work}{24}{section.8.3}%
-\contentsline {chapter}{\numberline {9}Bibliography}{25}{chapter.9}%
+\contentsline {section}{\numberline {4.4}Reward Function}{15}{section.4.4}%
+\contentsline {section}{\numberline {4.5}MQTT Bridge in Unity}{15}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Training Controller Editor Window}{16}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Python RL Training Pipeline}{18}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Gymnasium Environment Wrapper}{18}{section.5.1}%
+\contentsline {section}{\numberline {5.2}PPO Agent Configuration}{19}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Training Loop and Health Telemetry}{20}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Inference Mode}{21}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Cross-Platform Process Management}{22}{section.5.5}%
+\contentsline {chapter}{\numberline {6}SDV Integration with Eclipse Leda}{23}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Eclipse Leda Overview}{23}{section.6.1}%
+\contentsline {section}{\numberline {6.2}MQTT-to-Kuksa Bridge}{24}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Velocitas Vehicle Application}{24}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Container Deployment}{24}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Leda Telemetry Broker}{24}{section.6.5}%
+\contentsline {chapter}{\numberline {7}Experiments and Results}{26}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Experimental Setup}{26}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Training Convergence}{26}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Reward Shaping Ablation}{27}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Inference Evaluation}{27}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Health Monitoring Validation}{27}{section.7.5}%
+\contentsline {section}{\numberline {7.6}End-to-End SDV Integration Test}{28}{section.7.6}%
+\contentsline {chapter}{\numberline {8}Conclusions}{29}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Summary of Contributions}{29}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Limitations}{29}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Future Work}{30}{section.8.3}%
+\contentsline {chapter}{\numberline {9}Bibliography}{31}{chapter.9}%

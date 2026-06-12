@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  11 JUN 2026 13:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  11 JUN 2026 16:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -398,6 +398,13 @@ Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
 Package caption Info: listings package is loaded.
 )
+(/usr/share/texlive/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
+Package caption Info: New subtype `subfigure' on input line 238.
+\c@subfigure=\count301
+Package caption Info: New subtype `subtable' on input line 238.
+\c@subtable=\count302
+)
 (/usr/share/texlive/texmf-dist/tex/latex/pdfpages/pdfpages.sty
 Package: pdfpages 2024/01/21 v0.5y Insert pages of external PDF documents (AM)
 
@@ -406,15 +413,15 @@ Package: ifthen 2022/04/13 v1.1d Standard LaTeX ifthen package (DPC)
 )
 (/usr/share/texlive/texmf-dist/tex/latex/tools/calc.sty
 Package: calc 2023/07/08 v4.3 Infix arithmetic (KKT,FJ)
-\calc@Acount=\count301
-\calc@Bcount=\count302
+\calc@Acount=\count303
+\calc@Bcount=\count304
 \calc@Adimen=\dimen176
 \calc@Bdimen=\dimen177
 \calc@Askip=\skip71
 \calc@Bskip=\skip72
 LaTeX Info: Redefining \setlength on input line 80.
 LaTeX Info: Redefining \addtolength on input line 81.
-\calc@Ccount=\count303
+\calc@Ccount=\count305
 \calc@Cskip=\skip73
 )
 (/usr/share/texlive/texmf-dist/tex/latex/eso-pic/eso-pic.sty
@@ -429,13 +436,13 @@ Package: eso-pic 2023/05/03 v3.0c eso-pic (RN)
 (/usr/share/texlive/texmf-dist/tex/latex/pdfpages/pppdftex.def
 File: pppdftex.def 2024/01/21 v0.5y Pdfpages driver for pdfTeX (AM)
 )
-\pdfpages@includegraphics@status=\count304
+\pdfpages@includegraphics@status=\count306
 \AM@pagebox=\box58
 \AM@global@opts=\toks27
-\AM@pagecnt=\count305
+\AM@pagecnt=\count307
 \AM@toc@title=\toks28
 \AM@lof@heading=\toks29
-\c@AM@survey=\count306
+\c@AM@survey=\count308
 \AM@templatesizebox=\box59
 )
 (/usr/share/texlive/texmf-dist/tex/latex/nimbus15/nimbusmono.sty
@@ -456,7 +463,7 @@ Package: xkeyval 2022/06/16 v2.9 package option processing (HA)
 \XKV@toks=\toks30
 \XKV@tempa@toks=\toks31
 )
-\XKV@depth=\count307
+\XKV@depth=\count309
 File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 )))
 (/usr/share/texlive/texmf-dist/tex/latex/nimbus15/nimbussans.sty
@@ -489,14 +496,14 @@ Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
-\inf@bad=\count308
+\inf@bad=\count310
 LaTeX Info: Redefining \frac on input line 234.
-\uproot@=\count309
-\leftroot@=\count310
+\uproot@=\count311
+\leftroot@=\count312
 LaTeX Info: Redefining \overline on input line 399.
 LaTeX Info: Redefining \colon on input line 410.
-\classnum@=\count311
-\DOTSCASE@=\count312
+\classnum@=\count313
+\DOTSCASE@=\count314
 LaTeX Info: Redefining \ldots on input line 496.
 LaTeX Info: Redefining \dots on input line 499.
 LaTeX Info: Redefining \cdots on input line 620.
@@ -509,20 +516,20 @@ LaTeX Info: Redefining \Bigg on input line 725.
 \big@size=\dimen185
 LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
-\macc@depth=\count313
+\macc@depth=\count315
 LaTeX Info: Redefining \bmod on input line 905.
 LaTeX Info: Redefining \pmod on input line 910.
 LaTeX Info: Redefining \smash on input line 940.
 LaTeX Info: Redefining \relbar on input line 970.
 LaTeX Info: Redefining \Relbar on input line 971.
-\c@MaxMatrixCols=\count314
+\c@MaxMatrixCols=\count316
 \dotsspace@=\muskip17
-\c@parentequation=\count315
-\dspbrk@lvl=\count316
+\c@parentequation=\count317
+\dspbrk@lvl=\count318
 \tag@help=\toks33
-\row@=\count317
-\column@=\count318
-\maxfields@=\count319
+\row@=\count319
+\column@=\count320
+\maxfields@=\count321
 \andhelp@=\toks34
 \eqnshift@=\dimen186
 \alignsep@=\dimen187
@@ -567,15 +574,15 @@ Package: expl3 2024-01-22 L3 programming layer (loader)
 
 (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count320
+\l__color_backend_stack_int=\count322
 \l__pdf_internal_box=\box62
 ))
 Package: l3keys2e 2023-10-10 LaTeX2e option processing using LaTeX3 keys
 )
 Package: lipsum 2021-09-20 v2.7 150 paragraphs of Lorem Ipsum dummy text
-\g__lipsum_par_int=\count321
-\l__lipsum_a_int=\count322
-\l__lipsum_b_int=\count323
+\g__lipsum_par_int=\count323
+\l__lipsum_a_int=\count324
+\l__lipsum_b_int=\count325
 
 (/usr/share/texlive/texmf-dist/tex/latex/lipsum/lipsum.ltd.tex))
 (/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.sty
@@ -583,54 +590,54 @@ Package: biblatex 2023/03/05 v3.19 programmable bibliographies (PK/MW)
 
 (/usr/share/texlive/texmf-dist/tex/latex/logreq/logreq.sty
 Package: logreq 2010/08/04 v1.0 xml request logger
-\lrq@indent=\count324
+\lrq@indent=\count326
 
 (/usr/share/texlive/texmf-dist/tex/latex/logreq/logreq.def
 File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
 ))
-\c@tabx@nest=\count325
-\c@listtotal=\count326
-\c@listcount=\count327
-\c@liststart=\count328
-\c@liststop=\count329
-\c@citecount=\count330
-\c@citetotal=\count331
-\c@multicitecount=\count332
-\c@multicitetotal=\count333
-\c@instcount=\count334
-\c@maxnames=\count335
-\c@minnames=\count336
-\c@maxitems=\count337
-\c@minitems=\count338
-\c@citecounter=\count339
-\c@maxcitecounter=\count340
-\c@savedcitecounter=\count341
-\c@uniquelist=\count342
-\c@uniquename=\count343
-\c@refsection=\count344
-\c@refsegment=\count345
-\c@maxextratitle=\count346
-\c@maxextratitleyear=\count347
-\c@maxextraname=\count348
-\c@maxextradate=\count349
-\c@maxextraalpha=\count350
-\c@abbrvpenalty=\count351
-\c@highnamepenalty=\count352
-\c@lownamepenalty=\count353
-\c@maxparens=\count354
-\c@parenlevel=\count355
-\blx@tempcnta=\count356
-\blx@tempcntb=\count357
-\blx@tempcntc=\count358
-\c@blx@maxsection=\count359
-\blx@maxsegment@0=\count360
-\blx@notetype=\count361
-\blx@parenlevel@text=\count362
-\blx@parenlevel@foot=\count363
-\blx@sectionciteorder@0=\count364
-\blx@sectionciteorderinternal@0=\count365
-\blx@entrysetcounter=\count366
-\blx@biblioinstance=\count367
+\c@tabx@nest=\count327
+\c@listtotal=\count328
+\c@listcount=\count329
+\c@liststart=\count330
+\c@liststop=\count331
+\c@citecount=\count332
+\c@citetotal=\count333
+\c@multicitecount=\count334
+\c@multicitetotal=\count335
+\c@instcount=\count336
+\c@maxnames=\count337
+\c@minnames=\count338
+\c@maxitems=\count339
+\c@minitems=\count340
+\c@citecounter=\count341
+\c@maxcitecounter=\count342
+\c@savedcitecounter=\count343
+\c@uniquelist=\count344
+\c@uniquename=\count345
+\c@refsection=\count346
+\c@refsegment=\count347
+\c@maxextratitle=\count348
+\c@maxextratitleyear=\count349
+\c@maxextraname=\count350
+\c@maxextradate=\count351
+\c@maxextraalpha=\count352
+\c@abbrvpenalty=\count353
+\c@highnamepenalty=\count354
+\c@lownamepenalty=\count355
+\c@maxparens=\count356
+\c@parenlevel=\count357
+\blx@tempcnta=\count358
+\blx@tempcntb=\count359
+\blx@tempcntc=\count360
+\c@blx@maxsection=\count361
+\blx@maxsegment@0=\count362
+\blx@notetype=\count363
+\blx@parenlevel@text=\count364
+\blx@parenlevel@foot=\count365
+\blx@sectionciteorder@0=\count366
+\blx@sectionciteorderinternal@0=\count367
+\blx@entrysetcounter=\count368
+\blx@biblioinstance=\count369
 \labelnumberwidth=\skip77
 \labelalphawidth=\skip78
 \biblabelsep=\skip79
@@ -642,9 +649,9 @@ File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
 \blx@bcfin=\read3
 \blx@bcfout=\write3
 \blx@langwohyphens=\language90
-\c@mincomprange=\count368
-\c@maxcomprange=\count369
-\c@mincompwidth=\count370
+\c@mincomprange=\count370
+\c@maxcomprange=\count371
+\c@mincompwidth=\count372
 Package biblatex Info: Trying to load biblatex default data model...
 Package biblatex Info: ... file 'blx-dm.def' found.
 
@@ -655,74 +662,74 @@ Package biblatex Info: Trying to load biblatex style data model...
 Package biblatex Info: ... file 'ieee.dbx' not found.
 Package biblatex Info: Trying to load biblatex custom data model...
 Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
-\c@afterword=\count371
-\c@savedafterword=\count372
-\c@annotator=\count373
-\c@savedannotator=\count374
-\c@author=\count375
-\c@savedauthor=\count376
-\c@bookauthor=\count377
-\c@savedbookauthor=\count378
-\c@commentator=\count379
-\c@savedcommentator=\count380
-\c@editor=\count381
-\c@savededitor=\count382
-\c@editora=\count383
-\c@savededitora=\count384
-\c@editorb=\count385
-\c@savededitorb=\count386
-\c@editorc=\count387
-\c@savededitorc=\count388
-\c@foreword=\count389
-\c@savedforeword=\count390
-\c@holder=\count391
-\c@savedholder=\count392
-\c@introduction=\count393
-\c@savedintroduction=\count394
-\c@namea=\count395
-\c@savednamea=\count396
-\c@nameb=\count397
-\c@savednameb=\count398
-\c@namec=\count399
-\c@savednamec=\count400
-\c@translator=\count401
-\c@savedtranslator=\count402
-\c@shortauthor=\count403
-\c@savedshortauthor=\count404
-\c@shorteditor=\count405
-\c@savedshorteditor=\count406
-\c@labelname=\count407
-\c@savedlabelname=\count408
-\c@institution=\count409
-\c@savedinstitution=\count410
-\c@lista=\count411
-\c@savedlista=\count412
-\c@listb=\count413
-\c@savedlistb=\count414
-\c@listc=\count415
-\c@savedlistc=\count416
-\c@listd=\count417
-\c@savedlistd=\count418
-\c@liste=\count419
-\c@savedliste=\count420
-\c@listf=\count421
-\c@savedlistf=\count422
-\c@location=\count423
-\c@savedlocation=\count424
-\c@organization=\count425
-\c@savedorganization=\count426
-\c@origlocation=\count427
-\c@savedoriglocation=\count428
-\c@origpublisher=\count429
-\c@savedorigpublisher=\count430
-\c@publisher=\count431
-\c@savedpublisher=\count432
-\c@language=\count433
-\c@savedlanguage=\count434
-\c@origlanguage=\count435
-\c@savedoriglanguage=\count436
-\c@pageref=\count437
-\c@savedpageref=\count438
+\c@afterword=\count373
+\c@savedafterword=\count374
+\c@annotator=\count375
+\c@savedannotator=\count376
+\c@author=\count377
+\c@savedauthor=\count378
+\c@bookauthor=\count379
+\c@savedbookauthor=\count380
+\c@commentator=\count381
+\c@savedcommentator=\count382
+\c@editor=\count383
+\c@savededitor=\count384
+\c@editora=\count385
+\c@savededitora=\count386
+\c@editorb=\count387
+\c@savededitorb=\count388
+\c@editorc=\count389
+\c@savededitorc=\count390
+\c@foreword=\count391
+\c@savedforeword=\count392
+\c@holder=\count393
+\c@savedholder=\count394
+\c@introduction=\count395
+\c@savedintroduction=\count396
+\c@namea=\count397
+\c@savednamea=\count398
+\c@nameb=\count399
+\c@savednameb=\count400
+\c@namec=\count401
+\c@savednamec=\count402
+\c@translator=\count403
+\c@savedtranslator=\count404
+\c@shortauthor=\count405
+\c@savedshortauthor=\count406
+\c@shorteditor=\count407
+\c@savedshorteditor=\count408
+\c@labelname=\count409
+\c@savedlabelname=\count410
+\c@institution=\count411
+\c@savedinstitution=\count412
+\c@lista=\count413
+\c@savedlista=\count414
+\c@listb=\count415
+\c@savedlistb=\count416
+\c@listc=\count417
+\c@savedlistc=\count418
+\c@listd=\count419
+\c@savedlistd=\count420
+\c@liste=\count421
+\c@savedliste=\count422
+\c@listf=\count423
+\c@savedlistf=\count424
+\c@location=\count425
+\c@savedlocation=\count426
+\c@organization=\count427
+\c@savedorganization=\count428
+\c@origlocation=\count429
+\c@savedoriglocation=\count430
+\c@origpublisher=\count431
+\c@savedorigpublisher=\count432
+\c@publisher=\count433
+\c@savedpublisher=\count434
+\c@language=\count435
+\c@savedlanguage=\count436
+\c@origlanguage=\count437
+\c@savedoriglanguage=\count438
+\c@pageref=\count439
+\c@savedpageref=\count440
 \shorthandwidth=\skip85
 \shortjournalwidth=\skip86
 \shortserieswidth=\skip87
@@ -758,19 +765,19 @@ Package biblatex Info: Trying to load generic definitions...
 Package biblatex Info: ... file 'biblatex.def' found.
  (/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.def
 File: biblatex.def 2023/03/05 v3.19 biblatex compatibility (PK/MW)
-\c@textcitecount=\count439
-\c@textcitetotal=\count440
-\c@textcitemaxnames=\count441
-\c@biburlbigbreakpenalty=\count442
-\c@biburlbreakpenalty=\count443
-\c@biburlnumpenalty=\count444
-\c@biburlucpenalty=\count445
-\c@biburllcpenalty=\count446
+\c@textcitecount=\count441
+\c@textcitetotal=\count442
+\c@textcitemaxnames=\count443
+\c@biburlbigbreakpenalty=\count444
+\c@biburlbreakpenalty=\count445
+\c@biburlnumpenalty=\count446
+\c@biburlucpenalty=\count447
+\c@biburllcpenalty=\count448
 \biburlbigskip=\muskip18
 \biburlnumskip=\muskip19
 \biburlucskip=\muskip20
 \biburllcskip=\muskip21
-\c@smartand=\count447
+\c@smartand=\count449
 )
 Package biblatex Info: Trying to load bibliography style 'ieee'...
 Package biblatex Info: ... file 'ieee.bbx' found.
@@ -792,8 +799,8 @@ Package biblatex Info: ... file 'standard.bbx' found.
 
 (/usr/share/texlive/texmf-dist/tex/latex/biblatex/bbx/standard.bbx
 File: standard.bbx 2023/03/05 v3.19 biblatex bibliography style (PK/MW)
-\c@bbx:relatedcount=\count448
-\c@bbx:relatedtotal=\count449
+\c@bbx:relatedcount=\count450
+\c@bbx:relatedtotal=\count451
 ))))
 Package biblatex Info: Trying to load citation style 'ieee'...
 Package biblatex Info: ... file 'ieee.cbx' found.
@@ -805,10 +812,10 @@ Package biblatex Info: ... file 'numeric-comp.cbx' found.
 
 (/usr/share/texlive/texmf-dist/tex/latex/biblatex/cbx/numeric-comp.cbx
 File: numeric-comp.cbx 2023/03/05 v3.19 biblatex citation style (PK/MW)
-\c@cbx@tempcnta=\count450
-\c@cbx@tempcntb=\count451
-\c@cbx@tempcntc=\count452
-\c@cbx@tempcntd=\count453
+\c@cbx@tempcnta=\count452
+\c@cbx@tempcntb=\count453
+\c@cbx@tempcntc=\count454
+\c@cbx@tempcntd=\count455
 Package biblatex Info: Redefining '\cite'.
 Package biblatex Info: Redefining '\parencite'.
 Package biblatex Info: Redefining '\footcite'.
@@ -846,20 +853,20 @@ Package: blx-case-expl3 2023/03/05 v3.19 expl3 case changing code for biblatex
 ))
 (./customs.tex) (./components/Format.tex
 \@float@every@code=\toks37
-\c@code=\count454
+\c@code=\count456
 ) (./components/Styles.tex)
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'babel' package.
 Package csquotes Info: Adjusting default style.
 Package csquotes Info: Redefining alias 'default' -> 'english'.
 LaTeX Font Info:    Trying to load font information for T1+NimbusSans on input 
-line 38.
+line 39.
 
 (/usr/share/texlive/texmf-dist/tex/latex/nimbus15/T1NimbusSans.fd
 File: T1NimbusSans.fd 2015/09/19 Font definitions for T1/NimbusSans (msharpe).
 )
 LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
-(Font)              scaled to size 12.0pt on input line 38.
+(Font)              scaled to size 12.0pt on input line 39.
  (./main.aux
 (./chapters/1-Title.aux) (./chapters/3-AbstractEN.aux)
 (./chapters/4-Introduction.aux) (./chapters/5-Background.aux)
@@ -868,37 +875,37 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (./chapters/10-Experiments.aux) (./chapters/11-Conclusions.aux))
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 38.
-LaTeX Font Info:    ... okay on input line 38.
-LaTeX Info: Redefining \microtypecontext on input line 38.
-Package microtype Info: Applying patch `item' on input line 38.
-Package microtype Info: Applying patch `toc' on input line 38.
-Package microtype Info: Applying patch `eqnum' on input line 38.
-Package microtype Info: Applying patch `footnote' on input line 38.
-Package microtype Info: Applying patch `verbatim' on input line 38.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Info: Redefining \microtypecontext on input line 39.
+Package microtype Info: Applying patch `item' on input line 39.
+Package microtype Info: Applying patch `toc' on input line 39.
+Package microtype Info: Applying patch `eqnum' on input line 39.
+Package microtype Info: Applying patch `footnote' on input line 39.
+Package microtype Info: Applying patch `verbatim' on input line 39.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `alltext-nott'.
-LaTeX Info: Redefining \showhyphens on input line 38.
+LaTeX Info: Redefining \showhyphens on input line 39.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -909,16 +916,16 @@ Package microtype Info: Loading generic protrusion settings for font family
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count455
+\scratchcounter=\count457
 \scratchdimen=\dimen192
 \scratchbox=\box63
-\nofMPsegments=\count456
-\nofMParguments=\count457
+\nofMPsegments=\count458
+\nofMParguments=\count459
 \everyMPshowfont=\toks38
-\MPscratchCnt=\count458
+\MPscratchCnt=\count460
 \MPscratchDim=\dimen193
-\MPnumerator=\count459
-\makeMPintoPDFobject=\count460
+\MPnumerator=\count461
+\makeMPintoPDFobject=\count462
 \everyMPtoPDFconversion=\toks39
 ) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -963,8 +970,8 @@ e
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-\c@lstlisting=\count461
-Package hyperref Info: Link coloring OFF on input line 38.
+\c@lstlisting=\count463
+Package hyperref Info: Link coloring OFF on input line 39.
 (./main.out) (./main.out)
 \@outlinefile=\write4
 \openout4 = `main.out'.
@@ -1001,8 +1008,8 @@ Package biblatex Info: Data encoding 'utf8' specified.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (./main.bbl)
-Package biblatex Info: Reference section=0 on input line 38.
-Package biblatex Info: Reference segment=0 on input line 38.
+Package biblatex Info: Reference section=0 on input line 39.
+Package biblatex Info: Reference segment=0 on input line 39.
 \openout2 = `chapters/1-Title.aux'.
 
 (./chapters/1-Title.tex
@@ -1011,17 +1018,43 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 20.0pt on input line 5.
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
-(Font)              scaled to size 14.0pt on input line 11.
-LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
-(Font)              scaled to size 14.0pt on input line 19.
-LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
-(Font)              scaled to size 8.0pt on input line 23.
+(Font)              scaled to size 14.0pt on input line 12.
+LaTeX Font Info:    Calculating math sizes for size <14> on input line 12.
+
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
+File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
+(RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 12.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
+File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 12.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg
+File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
+)
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
-(Font)              scaled to size 8.0pt on input line 23.
+(Font)              scaled to size 7.0pt on input line 12.
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
+(Font)              scaled to size 14.0pt on input line 20.
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
+(Font)              scaled to size 8.0pt on input line 24.
+LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
+(Font)              scaled to size 8.0pt on input line 24.
 <images/logo.png, id=200, 149.358pt x 48.18pt>
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 23.
+Package pdftex.def Info: images/logo.png  used on input line 24.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
  [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf
 -dist/fonts/enc/dvips/nimbus15/nimbus15-ec.enc}
@@ -1030,47 +1063,29 @@ Package pdftex.def Info: images/logo.png  used on input line 23.
  <./images/logo.png>])
 \openout2 = `chapters/3-AbstractEN.aux'.
 
- (./chapters/3-AbstractEN.tex
+
+(./chapters/3-AbstractEN.tex
 LaTeX Font Info:    Font shape `T1/NimbusSans/m/it' will be
 (Font)              scaled to size 12.0pt on input line 24.
 )
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
+(Font)              scaled to size 5.0pt on input line 42.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 41.
+Package pdftex.def Info: images/logo.png  used on input line 42.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.41 \include{chapters/3-AbstractEN}
+l.42 \include{chapters/3-AbstractEN}
                                      [1
 
 
 
 ] (./main.toc
 Package cleveref Info: loaded `english' language definitions on input line 1.
-
-(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
-File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
-(RS)
-)
-LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
-
-(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
-File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 3.
-
-(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg
-File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
-)
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 38.
@@ -1085,16 +1100,16 @@ Package pdftex.def Info: images/logo.png  used on input line 38.
 
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 43.
+Package pdftex.def Info: images/logo.png  used on input line 44.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [3]
-(./main.lof
+ [3] (./main.lof
 Package cleveref Info: loaded `english' language definitions on input line 1.
 )
 \tf@lof=\write6
 \openout6 = `main.lof'.
 
- (./main.lot
+
+(./main.lot
 Package cleveref Info: loaded `english' language definitions on input line 1.
 )
 \tf@lot=\write7
@@ -1102,7 +1117,7 @@ Package cleveref Info: loaded `english' language definitions on input line 1.
 
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 49.
+Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
  [4
 
@@ -1127,7 +1142,7 @@ nvergence, inference lap
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 49.
+Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
  [6]
 \openout2 = `chapters/5-Background.aux'.
@@ -1158,64 +1173,19 @@ Package microtype Info: Loading generic protrusion settings for font family
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 50.
+Package pdftex.def Info: images/logo.png  used on input line 51.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 
 [8{/usr/share/texlive/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15mono-ec.enc}]
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 50.
+Package pdftex.def Info: images/logo.png  used on input line 51.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 [9]
 \openout2 = `chapters/6-SystemArchitecture.aux'.
 
  (./chapters/6-SystemArchitecture.tex
 Chapter 3.
-
-Overfull \hbox (9.10979pt too wide) in paragraph at lines 49--49
-[]\T1/NimbusMono/m/n/12 env0/leda/control/steer| 
- []
-
-
-Overfull \hbox (30.70978pt too wide) in paragraph at lines 51--51
-[]\T1/NimbusMono/m/n/12 env0/leda/control/throttle| 
- []
-
-
-Overfull \hbox (9.10979pt too wide) in paragraph at lines 53--53
-[]\T1/NimbusMono/m/n/12 env0/leda/control/brake| 
- []
-
-
-Overfull \hbox (9.10979pt too wide) in paragraph at lines 55--55
-[]\T1/NimbusMono/m/n/12 env0/leda/control/reset| 
- []
-
-
-Overfull \hbox (23.50978pt too wide) in paragraph at lines 59--59
-[]\T1/NimbusMono/m/n/12 env0/vehicle/training/obs| 
- []
-
-
-Overfull \hbox (45.10977pt too wide) in paragraph at lines 61--61
-[]\T1/NimbusMono/m/n/12 env0/vehicle/training/reward| 
- []
-
-
-Overfull \hbox (30.70978pt too wide) in paragraph at lines 63--63
-[]\T1/NimbusMono/m/n/12 env0/vehicle/training/done| 
- []
-
-
-Overfull \hbox (81.10976pt too wide) in paragraph at lines 65--65
-[]\T1/NimbusMono/m/n/12 env0/vehicle/training/episode_end| 
- []
-
-
-Overfull \hbox (66.70976pt too wide) in paragraph at lines 67--67
-[]\T1/NimbusMono/m/n/12 env0/vehicle/training/heartbeat| 
- []
-
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 71.
@@ -1258,7 +1228,7 @@ Package pdftex.def Info: images/logo.png  used on input line 112.
 [11{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontools/fontools_ts1.enc}])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 51.
+Package pdftex.def Info: images/logo.png  used on input line 52.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 
 [12]
@@ -1272,9 +1242,14 @@ Underfull \hbox (badness 10000) in paragraph at lines 57--63
 ates the three-component action
  []
 
+<images/car_model.png, id=423, 652.23676pt x 476.982pt>
+File: images/car_model.png Graphic file (type png)
+<use images/car_model.png>
+Package pdftex.def Info: images/car_model.png  used on input line 66.
+(pdftex.def)             Requested size: 362.77264pt x 265.29582pt.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 74.
+Package pdftex.def Info: images/logo.png  used on input line 70.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 [13
 
@@ -1282,108 +1257,155 @@ Package pdftex.def Info: images/logo.png  used on input line 74.
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 120--126
+<images/car_model_transparent.png, id=429, 573.94424pt x 466.74374pt>
+File: images/car_model_transparent.png Graphic file (type png)
+<use images/car_model_transparent.png>
+Package pdftex.def Info: images/car_model_transparent.png  used on input line 9
+6.
+(pdftex.def)             Requested size: 338.58632pt x 275.34793pt.
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 100.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [14 <./images/car_model.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 134--140
 []\T1/NimbusMono/m/n/12 LedaBroker.cs \T1/NimbusSans/m/n/12 (+20) provides the 
 application-facing API, configured
  []
 
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 135.
+Package pdftex.def Info: images/logo.png  used on input line 140.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[14])
+[15 <./images/car_model_transparent.png>]
+<images/enviroment_overview.png, id=445, 1154.51324pt x 687.7695pt>
+File: images/enviroment_overview.png Graphic file (type png)
+<use images/enviroment_overview.png>
+Package pdftex.def Info: images/enviroment_overview.png  used on input line 167
+.
+(pdftex.def)             Requested size: 483.69687pt x 288.1476pt.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 52.
+Package pdftex.def Info: images/logo.png  used on input line 171.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [15]
-\openout2 = `chapters/8-PythonRL.aux'.
-
- (./chapters/8-PythonRL.tex
-Chapter 5.
-LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
-(Font)              scaled to size 6.0pt on input line 17.
-
-Overfull \hbox (4.98892pt too wide) in paragraph at lines 55--56
-[]\T1/NimbusMono/m/n/12 --total-timesteps| 
- []
-
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 81.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[16
-
-
-
-
-]
-Underfull \hbox (badness 10000) in paragraph at lines 84--90
-[]\T1/NimbusSans/b/n/12 (+20) SB3 tabular output. \T1/NimbusSans/m/n/12 (+20) S
-table-Baselines3
- []
-
-
-Underfull \hbox (badness 2384) in paragraph at lines 90--94
-[]\T1/NimbusSans/b/n/12 (+20) Structured markers. \T1/NimbusSans/m/n/12 (+20) T
-he \T1/NimbusMono/m/n/12 emit() \T1/NimbusSans/m/n/12 (+20) helper writes lines
- of the form
- []
-
-
-Underfull \hbox (badness 1596) in paragraph at lines 90--94
-\T1/NimbusMono/m/n/12 SHILATE-METRIC key=value \T1/NimbusSans/m/n/12 (+20) and 
-\T1/NimbusMono/m/n/12 SHILATE-HEALTH signal \T1/NimbusSans/m/n/12 (+20) to stdo
-ut,
- []
-
-)
+ [16])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 53.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [17]
-\openout2 = `chapters/9-SDVIntegration.aux'.
+ [17 <./images/enviroment_overview.png>]
+\openout2 = `chapters/8-PythonRL.aux'.
 
- (./chapters/9-SDVIntegration.tex
-Chapter 6.
-
-Overfull \hbox (95.6706pt too wide) in paragraph at lines 40--41
-[]\T1/NimbusMono/m/n/12 Vehicle.Powertrain.CombustionEngine.Speed| 
- []
-
-
-Overfull \hbox (52.47061pt too wide) in paragraph at lines 42--43
-[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.SteeringWheel.Angle| 
- []
-
-
-Overfull \hbox (52.47061pt too wide) in paragraph at lines 44--45
-[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.Brake.PedalPosition| 
- []
-
-
-Overfull \hbox (2.07063pt too wide) in paragraph at lines 46--47
-[]\T1/NimbusMono/m/n/12 Vehicle.OBD.ThrottlePosition| 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 63--66
-[]\T1/NimbusSans/b/n/12 (+20) Overspeed\T1/NimbusSans/m/n/12 (+20) : if \T1/Nim
-busMono/m/n/12 Vehicle.Speed
- []
-
+ (./chapters/8-PythonRL.tex
+Chapter 5.
+(/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2023/02/27 1.9 listings language file
+)
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 24.
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
+(Font)              scaled to size 10.0pt on input line 24.
+LaTeX Font Info:    Font shape `T1/NimbusMono/m/n' will be
+(Font)              scaled to size 10.0pt on input line 24.
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
+(Font)              scaled to size 6.0pt on input line 25.
+LaTeX Font Info:    Font shape `T1/NimbusMono/m/it' in size <10> not available
+(Font)              Font shape `T1/NimbusMono/m/sl' tried instead on input line
+ 25.
+LaTeX Font Info:    Font shape `T1/NimbusMono/m/sl' will be
+(Font)              scaled to size 10.0pt on input line 25.
+LaTeX Font Info:    Font shape `T1/NimbusMono/b/n' will be
+(Font)              scaled to size 10.0pt on input line 45.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 72.
+Package pdftex.def Info: images/logo.png  used on input line 56.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[18
+ [18
 
 
 
 
 ]
-Underfull \hbox (badness 5403) in paragraph at lines 76--86
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 113.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [19]
+Overfull \hbox (4.98892pt too wide) in paragraph at lines 131--132
+[]\T1/NimbusMono/m/n/12 --total-timesteps| 
+ []
+
+<images/training_graphs.png, id=519, 395.076pt x 289.08pt>
+File: images/training_graphs.png Graphic file (type png)
+<use images/training_graphs.png>
+Package pdftex.def Info: images/training_graphs.png  used on input line 184.
+(pdftex.def)             Requested size: 396.63496pt x 290.22614pt.
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 190.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[20]
+Underfull \hbox (badness 2435) in paragraph at lines 208--211
+[]\T1/NimbusSans/m/n/12 (+20) The inference loop itself is intentionally simple
+. It mirrors the same
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 218.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[21 <./images/training_graphs.png>])
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 54.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [22]
+\openout2 = `chapters/9-SDVIntegration.aux'.
+
+ (./chapters/9-SDVIntegration.tex
+Chapter 6.
+<images/eclipse_leda.png, id=580, 492.03825pt x 347.49825pt>
+File: images/eclipse_leda.png Graphic file (type png)
+<use images/eclipse_leda.png>
+Package pdftex.def Info: images/eclipse_leda.png  used on input line 24.
+(pdftex.def)             Requested size: 483.69687pt x 341.60641pt.
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 39.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[23
+
+
+
+
+ <./images/eclipse_leda.png>]
+Overfull \hbox (95.6706pt too wide) in paragraph at lines 49--50
+[]\T1/NimbusMono/m/n/12 Vehicle.Powertrain.CombustionEngine.Speed| 
+ []
+
+
+Overfull \hbox (52.47061pt too wide) in paragraph at lines 51--52
+[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.SteeringWheel.Angle| 
+ []
+
+
+Overfull \hbox (52.47061pt too wide) in paragraph at lines 53--54
+[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.Brake.PedalPosition| 
+ []
+
+
+Overfull \hbox (2.07063pt too wide) in paragraph at lines 55--56
+[]\T1/NimbusMono/m/n/12 Vehicle.OBD.ThrottlePosition| 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 72--75
+[]\T1/NimbusSans/b/n/12 (+20) Overspeed\T1/NimbusSans/m/n/12 (+20) : if \T1/Nim
+busMono/m/n/12 Vehicle.Speed
+ []
+
+
+Underfull \hbox (badness 5403) in paragraph at lines 85--95
 []\T1/NimbusSans/m/n/12 (+20) All three service containers (\T1/NimbusMono/m/n/
 12 leda-controller\T1/NimbusSans/m/n/12 (+20) , \T1/NimbusMono/m/n/12 mqtt-kuks
 a-feeder\T1/NimbusSans/m/n/12 (+20) ,
@@ -1392,9 +1414,14 @@ a-feeder\T1/NimbusSans/m/n/12 (+20) ,
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 54.
+Package pdftex.def Info: images/logo.png  used on input line 55.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [19]
+ [24]
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 55.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [25]
 \openout2 = `chapters/10-Experiments.aux'.
 
  (./chapters/10-Experiments.tex
@@ -1403,7 +1430,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 82.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[20
+[26
 
 
 
@@ -1418,12 +1445,12 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 146.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[21])
+[27])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 55.
+Package pdftex.def Info: images/logo.png  used on input line 56.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [22]
+ [28]
 \openout2 = `chapters/11-Conclusions.aux'.
 
  (./chapters/11-Conclusions.tex
@@ -1432,7 +1459,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 71.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[23
+[29
 
 
 
@@ -1440,68 +1467,30 @@ Package pdftex.def Info: images/logo.png  used on input line 71.
 ])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 56.
+Package pdftex.def Info: images/logo.png  used on input line 57.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [24]
+ [30]
 Chapter 9.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 58.
+Package pdftex.def Info: images/logo.png  used on input line 59.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[25
+[31
 
 
 
 ]
-<example_declaration.pdf, id=514, 597.51233pt x 845.0471pt>
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf>
-Package pdftex.def Info: example_declaration.pdf  used on input line 60.
-(pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf>
-Package pdftex.def Info: example_declaration.pdf  used on input line 60.
-(pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-<example_declaration.pdf, id=517, page=1, 597.51233pt x 845.0471pt>
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
-
-(pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
-
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 60.
+Package pdftex.def Info: images/logo.png  used on input line 63.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [26]
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
-
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
-
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
-
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
- [27
-
- <./example_declaration.pdf>] (./main.aux (./chapters/1-Title.aux)
+ [32] (./main.aux (./chapters/1-Title.aux)
 Package cleveref Info: loaded `english' language definitions on input line 12.
-(./chapters/3-AbstractEN.aux) (./chapters/4-Introduction.aux)
-(./chapters/5-Background.aux) (./chapters/6-SystemArchitecture.aux)
-(./chapters/7-UnitySim.aux) (./chapters/8-PythonRL.aux)
-(./chapters/9-SDVIntegration.aux) (./chapters/10-Experiments.aux)
-(./chapters/11-Conclusions.aux))
+ (./chapters/3-AbstractEN.aux)
+(./chapters/4-Introduction.aux) (./chapters/5-Background.aux)
+(./chapters/6-SystemArchitecture.aux) (./chapters/7-UnitySim.aux)
+(./chapters/8-PythonRL.aux) (./chapters/9-SDVIntegration.aux)
+(./chapters/10-Experiments.aux) (./chapters/11-Conclusions.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
@@ -1522,13 +1511,13 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 29034 strings out of 474222
- 519606 string characters out of 5748733
- 1944975 words of memory out of 5000000
- 50523 multiletter control sequences out of 15000+600000
- 610084 words of font info for 166 fonts, out of 8000000 for 9000
+ 29898 strings out of 474222
+ 530814 string characters out of 5748733
+ 2088975 words of memory out of 5000000
+ 51249 multiletter control sequences out of 15000+600000
+ 625165 words of font info for 202 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 79i,17n,117p,1850b,2593s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 79i,19n,117p,1850b,2593s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texl
@@ -1540,14 +1529,15 @@ blic/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
 fonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols
 /msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Bold
-.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb
-></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (28 pages, 345633 bytes).
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Oblique.pfb
+></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/share
+/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
+Output written on main.pdf (33 pages, 2306482 bytes).
 PDF statistics:
- 653 PDF objects out of 1000 (max. 8388607)
- 569 compressed objects within 6 object streams
- 135 named destinations out of 1000 (max. 500000)
- 35234 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 787 PDF objects out of 1000 (max. 8388607)
+ 698 compressed objects within 7 object streams
+ 232 named destinations out of 1000 (max. 500000)
+ 52135 words of extra memory for PDF output out of 61914 (max. 10000000)
 

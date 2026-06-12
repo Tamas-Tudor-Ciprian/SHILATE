@@ -6,12 +6,12 @@
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {4.1}{\ignorespaces Key vehicle physics parameters.}}{13}{table.caption.5}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {5.1}{\ignorespaces Default PPO hyperparameters.}}{16}{table.caption.6}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces Default PPO hyperparameters.}}{20}{table.caption.9}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.1}{\ignorespaces MQTT topic to VSS path mapping.}}{18}{table.caption.7}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces MQTT topic to VSS path mapping.}}{24}{table.caption.12}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {7.1}{\ignorespaces Experimental environment.}}{20}{table.caption.8}%
-\contentsline {table}{\numberline {7.2}{\ignorespaces Training convergence milestones (mean over three seeds).}}{21}{table.caption.9}%
-\contentsline {table}{\numberline {7.3}{\ignorespaces Inference evaluation over 50 episodes.}}{21}{table.caption.10}%
+\contentsline {table}{\numberline {7.1}{\ignorespaces Experimental environment.}}{26}{table.caption.13}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Training convergence milestones (mean over three seeds).}}{27}{table.caption.14}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Inference evaluation over 50 episodes.}}{27}{table.caption.15}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
