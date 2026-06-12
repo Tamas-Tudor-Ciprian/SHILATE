@@ -21,8 +21,6 @@ public class TrainingSettings : ScriptableObject
     public string trainScriptPath = "../leda/leda-controller/train.py";
 
     [Header("Training Parameters")]
-    [Tooltip("Total training timesteps. Set to 0 for unlimited (train until manually stopped).")]
-
 
     [Tooltip("PPO learning rate")]
     public float learningRate = 3e-4f;
