@@ -38,9 +38,9 @@ class ShilateEnv(gym.Env):
 
     def __init__(
         self,
+        ray_count: int,
         mqtt_host: str = "localhost",
         mqtt_port: int = 1883,
-        ray_count: int,
     ):
         super().__init__()
 
