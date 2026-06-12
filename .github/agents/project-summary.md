@@ -73,7 +73,7 @@ All Editor scripts live in `SIM/Assets/scripts/Editor/Training/`.
 | `PythonProcessManager.cs` | Spawns/kills the Python trainer or inference script. Streams stdout/stderr line-by-line; raises `OnOutputLine`, `OnErrorLine`, `OnExited(int)`. No `debugMode`/`--num-envs`/`--timescale`/`--ray-count` plumbing. |
 | `EditorMqttListener.cs` | Editor-side MQTT subscriber (separate client-id from the runtime broker). Subscribes to `env0/vehicle/training/episode_end` and `env0/vehicle/training/heartbeat`, parses JSON, fires `OnEpisodeEnd(episode, reward, steps, reason)` / `OnHeartbeat(episode, steps, reward)` / `OnConnectionChanged(bool)`. Pumped from `EditorApplication.update`. |
 | `SleepPreventer.cs` | Cross-platform OS sleep inhibitor held while training/inference is active. |
-| `TrainingSettings.cs` (ScriptableObject in `Assets/scripts/ScriptableObjects/`) | Persisted knobs: `venvPath`, `trainScriptPath`, `totalTimesteps`, `learningRate`, `nSteps`, `batchSize`, `mqttHost`, `mqttPort`, `savePath`, `logDir`, `resumeModelPath`. `BuildCommandLineArgs()` takes no parameters. |
+| `TrainingSettings.cs` (ScriptableObject in `Assets/scripts/ScriptableObjects/`) | Persisted knobs: `venvPath`, `trainScriptPath`, `learningRate`, `nSteps`, `batchSize`, `mqttHost`, `mqttPort`, `savePath`, `logDir`, `resumeModelPath`. `BuildCommandLineArgs()` takes no parameters. |
 
 ## How to Run
 
