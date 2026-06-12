@@ -27,13 +27,12 @@ COPY . .
 ENV MODE=train
 ENV MQTT_HOST=127.0.0.1
 ENV MQTT_PORT=1883
-ENV TOTAL_TIMESTEPS=100000
+ENV RAY_COUNT=21
 ENV MODEL_PATH=/tmp/shilate_model/best_model.zip
 
 CMD ["sh", "-c", "\
     if [ \"$MODE\" = 'train' ]; then \
-        python3 train.py --mqtt-host $MQTT_HOST --mqtt-port $MQTT_PORT \
-            --total-timesteps $TOTAL_TIMESTEPS; \
+        python3 train.py --mqtt-host $MQTT_HOST --mqtt-port $MQTT_PORT; \
     elif [ \"$MODE\" = 'inference' ]; then \
         python3 ai_driver.py --mqtt-host $MQTT_HOST --mqtt-port $MQTT_PORT \
             --model $MODEL_PATH; \

@@ -22,7 +22,7 @@ public class TrainingSettings : ScriptableObject
 
     [Header("Training Parameters")]
     [Tooltip("Total training timesteps. Set to 0 for unlimited (train until manually stopped).")]
-    public int totalTimesteps = 0;
+
 
     [Tooltip("PPO learning rate")]
     public float learningRate = 3e-4f;
