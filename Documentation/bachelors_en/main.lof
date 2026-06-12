@@ -3,8 +3,13 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Rendered vehicle model used in the SHILATE simulation.}}{14}{figure.caption.6}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Vehicle mesh with transparent body, in the future internal components will be highlighted when physical subsystems send debug messages.}}{15}{figure.caption.7}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Unity Editor during a live training session. The Scene view shows the obstacle course with the 21-ray LiDAR fan, the circular track walls, and the vehicle. The Training Controller panel displays the HEALTHY banner, episode metrics, and live loss graphs.}}{17}{figure.caption.8}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces SHILATE Training Controller panel showing the HEALTHY banner, MQTT connection indicator, episode count, last and rolling reward, and live scrolling plots of Episode Reward, Policy Loss, Value Loss, and KL Divergence after 6 episodes of training.}}{21}{figure.caption.10}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Eclipse Leda booting inside QEMU. The terminal output shows the systemd service startup sequence, including the Mosquitto MQTT broker, Kuksa databroker, and Kanto container manager coming online.}}{23}{figure.caption.11}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
