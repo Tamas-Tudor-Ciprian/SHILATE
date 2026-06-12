@@ -432,7 +432,6 @@ public class TrainingEditorWindow : EditorWindow
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("venvPath"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("trainScriptPath"));
         EditorGUILayout.Space(3);
-        EditorGUILayout.PropertyField(_serializedSettings.FindProperty("totalTimesteps"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("learningRate"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("nSteps"));
         EditorGUILayout.PropertyField(_serializedSettings.FindProperty("batchSize"));
