@@ -5,7 +5,7 @@ Customize policy_kwargs here if you want to change the neural net architecture.
 """
 
 
-def get_policy_kwargs(ray_count: int = 9):
+def get_policy_kwargs(ray_count: int):
     """
     Returns policy_kwargs for Stable-Baselines3 PPO.
 

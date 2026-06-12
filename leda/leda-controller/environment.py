@@ -18,7 +18,6 @@ from controller import VehicleController
 
 log = logging.getLogger(__name__)
 
-DEFAULT_RAY_COUNT = 9
 OBS_TIMEOUT = 5.0  # seconds to wait for an observation before declaring it stale
 
 
@@ -41,7 +40,7 @@ class ShilateEnv(gym.Env):
         self,
         mqtt_host: str = "localhost",
         mqtt_port: int = 1883,
-        ray_count: int = DEFAULT_RAY_COUNT,
+        ray_count: int,
     ):
         super().__init__()
 
