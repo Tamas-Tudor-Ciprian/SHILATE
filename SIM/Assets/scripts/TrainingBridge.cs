@@ -17,7 +17,7 @@ public class TrainingBridge : MonoBehaviour
     [SerializeField] float progressReward = 2f;
 
     [Tooltip("Penalty on collision")]
-    [SerializeField] float collisionPenalty = -5f;
+    [SerializeField] float collisionPenalty = -30f;
 
     [Tooltip("Bonus for completing a full lap")]
     [SerializeField] float finishBonus = 50f;
@@ -102,7 +102,7 @@ public class TrainingBridge : MonoBehaviour
         _collidedThisStep = false;
         if (collided)
         {
-            stepReward += collisionPenalty;
+            stepReward = collisionPenalty;
         }
 
 
