@@ -16,7 +16,6 @@ MonoBehaviour:
   trainScriptPath: ../leda/leda-controller/train.py
   numEnvs: 10
   timescale: 1
-  totalTimesteps: 100000
   learningRate: 0.0003
   nSteps: 2048
   batchSize: 64

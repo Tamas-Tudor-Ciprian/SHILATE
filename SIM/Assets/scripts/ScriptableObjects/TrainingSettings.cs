@@ -112,8 +112,6 @@ public class TrainingSettings : ScriptableObject
     {
         var args = new System.Text.StringBuilder();
 
-        if (totalTimesteps > 0)
-            args.Append($"--total-timesteps {totalTimesteps} ");
         args.Append($"--learning-rate {learningRate.ToString(System.Globalization.CultureInfo.InvariantCulture)} ");
         args.Append($"--n-steps {nSteps} ");
         args.Append($"--batch-size {batchSize} ");
