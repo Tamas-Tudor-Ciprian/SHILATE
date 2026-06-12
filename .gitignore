@@ -8,6 +8,7 @@
 # ---------- Top-level files ----------
 !.gitignore
 !.gitattributes
+!config.json
 
 # ---------- Docs ----------
 !SIM/docs/
