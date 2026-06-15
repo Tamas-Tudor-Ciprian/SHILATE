@@ -103,7 +103,7 @@ public class TrainingBridge : MonoBehaviour
         if (collided)
         {
             stepReward = collisionPenalty;
-
+        }
 
         // Lap completion check
 
@@ -219,3 +219,4 @@ public class TrainingBridge : MonoBehaviour
     public float EpisodeTimeout => episodeTimeout;
     public float CumulativeReward => _cumulativeReward;
 }
+
