@@ -14,10 +14,10 @@ public class TrainingBridge : MonoBehaviour
 
     [Header("Reward Settings")]
     [Tooltip("Reward per degree of forward progress around the track")]
-    [SerializeField] float progressReward = 0.1f;
+    [SerializeField] float progressReward = 0.2f;
 
     [Tooltip("Penalty on collision")]
-    [SerializeField] float collisionPenalty = -3000f;
+    [SerializeField] float collisionPenalty = -30f;
 
     [Tooltip("Bonus for completing a full lap")]
     [SerializeField] float finishBonus = 60f;
@@ -179,6 +179,7 @@ public class TrainingBridge : MonoBehaviour
         float[] rays = raycastSensor.GetDistances();
         float normSpeed = Mathf.Clamp01(vehicle.CurrentSpeed / maxSpeed);
         float normSteer = (vehicle.SteerInput + 1f) * 0.5f; // map -1..1 to 0..1
+        float normProgress = Mathf.Clamp01(_totalAngleProgress / 360f);
 
         var sb = new System.Text.StringBuilder(256);
         sb.Append("{\"rays\":[");
@@ -191,6 +192,8 @@ public class TrainingBridge : MonoBehaviour
         sb.Append(normSpeed.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
         sb.Append(",\"steer\":");
         sb.Append(normSteer.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
+        sb.Append(",\"progress\":");
+        sb.Append(normProgress.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
         sb.Append('}');
 
         broker.PublishRaw("vehicle/training/obs", sb.ToString());
