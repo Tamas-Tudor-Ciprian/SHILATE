@@ -14,13 +14,13 @@ public class TrainingBridge : MonoBehaviour
 
     [Header("Reward Settings")]
     [Tooltip("Reward per degree of forward progress around the track")]
-    [SerializeField] float progressReward = 2f;
+    [SerializeField] float progressReward = 1f;
 
     [Tooltip("Penalty on collision")]
-    [SerializeField] float collisionPenalty = -30f;
+    [SerializeField] float collisionPenalty = -200f;
 
     [Tooltip("Bonus for completing a full lap")]
-    [SerializeField] float finishBonus = 50f;
+    [SerializeField] float finishBonus = 60f;
 
     [Header("Episode Settings")]
     [Tooltip("Max episode duration in sim-time seconds")]
@@ -103,7 +103,6 @@ public class TrainingBridge : MonoBehaviour
         if (collided)
         {
             stepReward = collisionPenalty;
-        }
 
 
         // Lap completion check

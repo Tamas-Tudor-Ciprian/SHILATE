@@ -63,6 +63,7 @@ def parse_args():
     p.add_argument("--log-dir", default=os.path.join(_PROJECT_ROOT, "logs", "tensorboard"))
     p.add_argument("--resume-model", default=None,
                    help="Path to a .zip model file to resume training from")
+    p.add_argument("--ent-coef",type=float, default=0.01, help="This encourages the agent to explore more")
     return p.parse_args()
 
 
@@ -125,6 +126,7 @@ def main():
             learning_rate=args.learning_rate,
             n_steps=args.n_steps,
             batch_size=args.batch_size,
+            ent_coef=args.ent_coef,
         )
         model.tensorboard_log = args.log_dir
         log.info("Model loaded, resuming training")
@@ -135,6 +137,7 @@ def main():
             learning_rate=args.learning_rate,
             n_steps=args.n_steps,
             batch_size=args.batch_size,
+            ent_coef=args.ent_coef,
             policy_kwargs=policy_kwargs,
             verbose=1,
             tensorboard_log=args.log_dir,
