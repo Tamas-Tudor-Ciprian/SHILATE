@@ -110,12 +110,11 @@ public class TrainingBridge : MonoBehaviour
         // 180-degree intermediary reward (one-time per episode)
         if (!_halfTurnAwarded)
         {
-            float heading = vehicle.transform.eulerAngles.y;
-            if (heading >= 170f && heading <= 190f)
+            if (_totalAngleProgress >= 180f)
             {
                 stepReward += halfTurnBonus;
                 _halfTurnAwarded = true;
-                Debug.Log($"[TrainingBridge] 180° bonus awarded (heading={heading:F1}°)");
+                Debug.Log($"[TrainingBridge] 180° bonus awarded (totalAngleProgress={_totalAngleProgress:F1}°)");
             }
         }
 
