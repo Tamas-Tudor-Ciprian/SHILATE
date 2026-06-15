@@ -14,10 +14,10 @@ public class TrainingBridge : MonoBehaviour
 
     [Header("Reward Settings")]
     [Tooltip("Reward per degree of forward progress around the track")]
-    [SerializeField] float progressReward = 0.2f;
+    [SerializeField] float progressReward = 0.1f;
 
     [Tooltip("Penalty on collision")]
-    [SerializeField] float collisionPenalty = -300f;
+    [SerializeField] float collisionPenalty = -3000f;
 
     [Tooltip("Bonus for completing a full lap")]
     [SerializeField] float finishBonus = 60f;
