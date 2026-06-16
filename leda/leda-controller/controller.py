@@ -87,7 +87,7 @@ class VehicleController:
 
         # MQTT client
         self._client = mqtt.Client(
-            client_id=f"shilate-controller-{ENV_PREFIX}",
+            client_id=f"shilate-controller-{env_prefix}",
             protocol=mqtt.MQTTv311,
         )
         self._client.on_connect = self._on_connect

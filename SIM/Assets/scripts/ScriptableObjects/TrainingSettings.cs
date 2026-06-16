@@ -52,6 +52,9 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("Number of parallel headless environments to launch")]
     public int numHeadlessEnvs = 2;
 
+    [Tooltip("Path to a .zip model to resume all headless envs from (leave empty to train from scratch)")]
+    public string headlessResumeModelPath = "";
+
     [Header("Resume Training")]
     [Tooltip("Path to a .zip model file to resume from (leave empty to train from scratch)")]
     public string resumeModelPath = "";

@@ -204,6 +204,36 @@ public class HeadlessOrchestratorWindow : EditorWindow
         EditorGUILayout.PropertyField(so.FindProperty("savePath"));
         EditorGUILayout.PropertyField(so.FindProperty("logDir"));
 
+        EditorGUILayout.Space(4);
+        EditorGUILayout.LabelField("Resume Training (all envs)", EditorStyles.boldLabel);
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.PropertyField(so.FindProperty("headlessResumeModelPath"),
+            new GUIContent("Model File (.zip)"));
+        if (GUILayout.Button("Browse…", GUILayout.Width(70)))
+        {
+            string picked = EditorUtility.OpenFilePanel("Select Model .zip", "", "zip");
+            if (!string.IsNullOrEmpty(picked))
+            {
+                _settings.headlessResumeModelPath = picked;
+                EditorUtility.SetDirty(_settings);
+            }
+        }
+        if (GUILayout.Button("Clear", GUILayout.Width(44)))
+        {
+            _settings.headlessResumeModelPath = "";
+            EditorUtility.SetDirty(_settings);
+        }
+        EditorGUILayout.EndHorizontal();
+        if (!string.IsNullOrEmpty(_settings.headlessResumeModelPath))
+        {
+            if (!File.Exists(_settings.headlessResumeModelPath))
+                EditorGUILayout.HelpBox("Model file not found.", MessageType.Error);
+            else
+                EditorGUILayout.HelpBox(
+                    $"Resuming from: {Path.GetFileName(_settings.headlessResumeModelPath)}",
+                    MessageType.Info);
+        }
+
         so.ApplyModifiedProperties();
         EditorGUI.indentLevel--;
     }
@@ -546,7 +576,10 @@ public class HeadlessOrchestratorWindow : EditorWindow
                $"--mqtt-host {_settings.mqttHost} " +
                $"--mqtt-port {_settings.mqttPort} " +
                $"--save-path \"{absSave}\" " +
-               $"--log-dir \"{absLog}\"";
+               $"--log-dir \"{absLog}\"" +
+               (string.IsNullOrEmpty(_settings.headlessResumeModelPath)
+                   ? ""
+                   : $" --resume-model \"{_settings.headlessResumeModelPath}\"");
     }
 
     string GetEnvLogPath(string prefix, string filename)
