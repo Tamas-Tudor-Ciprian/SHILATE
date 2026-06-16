@@ -52,6 +52,10 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("Number of parallel headless environments to launch")]
     public int numHeadlessEnvs = 2;
 
+    [Tooltip("Launch Unity instances with graphics (windowed) instead of -nographics. " +
+             "Useful for debugging — visual output lets you see what the agent is doing.")]
+    public bool unityWithGraphics = false;
+
     [Tooltip("When true: one Python process trains one shared model using SubprocVecEnv across all N Unity instances. " +
              "When false: each Unity instance gets its own independent Python process and model.")]
     public bool headlessSingleModelMode = true;

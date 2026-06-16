@@ -190,6 +190,16 @@ public class HeadlessOrchestratorWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.PropertyField(so.FindProperty("numHeadlessEnvs"),
             new GUIContent("Num Environments"));
+        EditorGUILayout.PropertyField(so.FindProperty("unityWithGraphics"),
+            new GUIContent("Launch With Graphics",
+                "Runs Unity instances windowed instead of -nographics. " +
+                "Use for debugging — allows seeing the simulation visually. " +
+                "Significantly slower than headless."));
+        if (_settings.unityWithGraphics)
+            EditorGUILayout.HelpBox(
+                "Graphics mode: Unity instances will open windows. " +
+                "Performance will be much lower than -nographics.",
+                MessageType.Warning);
 
         EditorGUILayout.Space(4);
         EditorGUILayout.LabelField("Python", EditorStyles.boldLabel);
@@ -562,16 +572,21 @@ public class HeadlessOrchestratorWindow : EditorWindow
         string logPath = GetEnvLogPath(slot.Prefix, "unity.log");
         Directory.CreateDirectory(Path.GetDirectoryName(logPath));
 
+        bool withGraphics = _settings.unityWithGraphics;
+        string modeArgs   = withGraphics ? "" : "-batchmode -nographics ";
+
         try
         {
             slot.UnityProcess = Process.Start(new ProcessStartInfo
             {
                 FileName        = _settings.unityBuildPath,
-                Arguments       = $"-batchmode -nographics -logFile \"{logPath}\" -envPrefix {slot.Prefix}",
-                UseShellExecute = false,
-                CreateNoWindow  = true,
+                Arguments       = $"{modeArgs}-logFile \"{logPath}\" -envPrefix {slot.Prefix}",
+                UseShellExecute = withGraphics,  // must be true to show a window on Windows
+                CreateNoWindow  = !withGraphics,
             });
-            AddLog(slot, $"Unity started (PID {slot.UnityProcess.Id}) → {logPath}", LogType.Log);
+            AddLog(slot,
+                $"Unity started (PID {slot.UnityProcess.Id}, {(withGraphics ? "windowed" : "headless")}) → {logPath}",
+                LogType.Log);
         }
         catch (Exception ex)
         {
