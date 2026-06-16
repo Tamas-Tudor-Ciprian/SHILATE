@@ -261,8 +261,9 @@ public class ObstacleCourse : MonoBehaviour
         float margin = 1.5f;
         float sectorDeg = 360f / TargetObstacleCount; // degrees per sector
         float carStartAngleDeg = 0f;            // car always starts at angle 0 (positive X)
-        // Exclude sectors whose midpoint falls within 1.5 sectors of the start
-        float excludeHalfArc = sectorDeg * 1.5f;
+        // Exclude sectors whose midpoint falls within 1.5 sectors of the start,
+        // but cap at 90° so small counts (1-2) don't lose every sector.
+        float excludeHalfArc = Mathf.Min(sectorDeg * 1.5f, 90f);
 
         var positions = new List<Vector3>();
 

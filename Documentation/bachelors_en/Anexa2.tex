@@ -165,32 +165,6 @@ on a Raspberry Pi~4.
         and experimental results tables.
 \end{enumerate}
 
-\vspace{4pt}
-\noindent\rule{\textwidth}{0.4pt}
-\vspace{4pt}
-
-% ── Rezumat ──────────────────────────────────────────────────────────────────
-\noindent\textbf{Rezumat}\par\smallskip
-\noindent
-Lucrarea propune \textit{SHILATE} (Software Hardware In Loop Automotive Testing
-Environment), un mediu de antrenare prin învățare prin întărire pentru vehicule
-autonome, care integrează o simulare Unity cu un strat de deployment bazat pe
-Eclipse Leda (platforma de referință Software-Defined Vehicle a Eclipse SDV).
-
-Agentul PPO (Proximal Policy Optimisation) este antrenat într-un circuit
-circular cu obstacole, utilizând un senzor de tip LiDAR simulat cu 21 de raze
-și o funcție de recompensă cu modelare explicită a progresului, coliziunilor și
-etapelor intermediare. Comunicarea între simulare și procesul Python de
-antrenare se realizează exclusiv prin protocolul MQTT~3.1.1, implementat nativ
-în C\# fără dependențe externe.
-
-Politica antrenată este deployată pe Leda printr-un set de containere gestionate
-de Kanto: \texttt{leda-controller} (inferență), \texttt{mqtt-kuksa-feeder}
-(mapare MQTT~$\to$~VSS via gRPC) și \texttt{velocitas-app} (monitorizare
-siguranță). Semnalele vehiculului sunt expuse prin intermediul Kuksa Databroker
-conform specificației VSS (Vehicle Signal Specification), asigurând
-interoperabilitate cu orice actuator compatibil SDV.
-
 \vspace{6pt}
 \noindent\rule{\textwidth}{0.8pt}
 \vspace{10pt}
