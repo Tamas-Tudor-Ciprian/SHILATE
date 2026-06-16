@@ -64,6 +64,9 @@ def parse_args():
     p.add_argument("--resume-model", default=None,
                    help="Path to a .zip model file to resume training from")
     p.add_argument("--ent-coef",type=float, default=0.01, help="This encourages the agent to explore more")
+    p.add_argument("--env-prefix", default="env0",
+                   help="MQTT topic prefix matching the Unity instance (e.g. env0, env1). "
+                        "Must match the -envPrefix arg passed to the Unity build.")
     return p.parse_args()
 
 
@@ -95,6 +98,7 @@ def main():
     log.info("  Batch size:       %d", args.batch_size)
     log.info("  Ray count:        %d (from config.json)", ray_count)
     log.info("  MQTT:             %s:%d", args.mqtt_host, args.mqtt_port)
+    log.info("  Env prefix:       %s", args.env_prefix)
     log.info("  Save path:        %s", args.save_path)
     log.info("  Log dir:          %s", args.log_dir)
     if args.resume_model:
@@ -109,6 +113,7 @@ def main():
             mqtt_host=args.mqtt_host,
             mqtt_port=args.mqtt_port,
             ray_count=ray_count,
+            env_prefix=args.env_prefix,
         )
         return Monitor(env)
 

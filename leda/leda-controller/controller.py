@@ -15,10 +15,6 @@ import paho.mqtt.client as mqtt
 
 log = logging.getLogger(__name__)
 
-# All Unity-side topics live under this prefix. Single-env design — do not
-# parametrize this. To run multiple envs, redesign the trainer instead.
-ENV_PREFIX = "env0"
-
 
 class VehicleController:
     """MQTT-based vehicle controller that sends commands and receives telemetry."""
@@ -57,8 +53,9 @@ class VehicleController:
         mqtt_port: int = 1883,
         subscribe_sensors: bool = False,
         subscribe_training: bool = False,
+        env_prefix: str = "env0",
     ):
-        self.prefix = ENV_PREFIX
+        self.prefix = env_prefix
         self.mqtt_host = mqtt_host
         self.mqtt_port = mqtt_port
         self._subscribe_sensors = subscribe_sensors

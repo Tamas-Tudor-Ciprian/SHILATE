@@ -45,6 +45,13 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("Directory for TensorBoard logs")]
     public string logDir = "../logs/tensorboard";
 
+    [Header("Headless Training")]
+    [Tooltip("Path to the headless Unity build executable (used by the Headless Orchestrator)")]
+    public string unityBuildPath = "";
+
+    [Tooltip("Number of parallel headless environments to launch")]
+    public int numHeadlessEnvs = 2;
+
     [Header("Resume Training")]
     [Tooltip("Path to a .zip model file to resume from (leave empty to train from scratch)")]
     public string resumeModelPath = "";

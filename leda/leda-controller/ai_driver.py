@@ -43,6 +43,8 @@ def parse_args():
     p.add_argument("--mqtt-host", default="localhost")
     p.add_argument("--mqtt-port", type=int, default=1883)
     p.add_argument("--episodes", type=int, default=0, help="0 = run forever")
+    p.add_argument("--env-prefix", default="env0",
+                   help="MQTT topic prefix matching the Unity instance (e.g. env0, env1)")
     return p.parse_args()
 
 
@@ -66,6 +68,7 @@ def main():
         mqtt_port=args.mqtt_port,
         subscribe_sensors=True,
         subscribe_training=True,
+        env_prefix=args.env_prefix,
     )
 
     if not ctrl.connect():

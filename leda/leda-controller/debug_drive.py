@@ -162,6 +162,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="SHILATE Debug Drive")
     parser.add_argument("--mqtt-host", default="localhost")
     parser.add_argument("--mqtt-port", type=int, default=1883)
+    parser.add_argument("--env-prefix", default="env0",
+                        help="MQTT topic prefix matching the Unity instance (e.g. env0, env1)")
     return parser.parse_args()
 
 
@@ -171,6 +173,7 @@ if __name__ == "__main__":
     ctrl = VehicleController(
         mqtt_host=args.mqtt_host,
         mqtt_port=args.mqtt_port,
+        env_prefix=args.env_prefix,
     )
 
     if not ctrl.connect():

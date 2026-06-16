@@ -41,6 +41,7 @@ class ShilateEnv(gym.Env):
         ray_count: int,
         mqtt_host: str = "localhost",
         mqtt_port: int = 1883,
+        env_prefix: str = "env0",
     ):
         super().__init__()
 
@@ -65,6 +66,7 @@ class ShilateEnv(gym.Env):
             mqtt_port=mqtt_port,
             subscribe_sensors=True,
             subscribe_training=True,
+            env_prefix=env_prefix,
         )
 
         self._connected = False
