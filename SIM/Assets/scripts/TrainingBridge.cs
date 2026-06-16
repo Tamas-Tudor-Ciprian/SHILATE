@@ -34,6 +34,12 @@ public class TrainingBridge : MonoBehaviour
     [Tooltip("Max speed for observation normalization (km/h)")]
     [SerializeField] float maxSpeed = 150f;
 
+    [Tooltip("Penalty applied every FixedUpdate step while speed is below idleSpeedThreshold")]
+    [SerializeField] float idlePenalty = -0.02f;
+
+    [Tooltip("Speed threshold below which the idle penalty is applied (km/h)")]
+    [SerializeField] float idleSpeedThreshold = 2f;
+
     float _episodeTimer;
     float _lastAngle;
     float _totalAngleProgress;
@@ -98,6 +104,12 @@ public class TrainingBridge : MonoBehaviour
         _totalAngleProgress += angleDelta;
 
         float stepReward = angleDelta * progressReward;
+
+        // Idle penalty — discourages the agent from standing still
+        if (vehicle.CurrentSpeed < idleSpeedThreshold)
+        {
+            stepReward += idlePenalty;
+        }
 
         // Collision check — use flag set by OnCollisionEnter (not RaycastSensor's cleared flag)
         bool collided = _collidedThisStep;
