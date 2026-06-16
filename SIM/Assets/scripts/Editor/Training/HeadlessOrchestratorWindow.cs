@@ -38,6 +38,7 @@ public class HeadlessOrchestratorWindow : EditorWindow
 
         // UI
         public bool Expanded = true;
+        public bool MetricsFoldout = true;
         public bool LogFoldout;
         public Vector2 IssueScroll;
         public Vector2 LogScroll;
@@ -304,8 +305,21 @@ public class HeadlessOrchestratorWindow : EditorWindow
 
         EditorGUILayout.Space(2);
 
-        // ── Reward graph ──
-        DrawMiniGraph("Episode Reward", env.Metrics.RewardHistory, env.Metrics.LatestReward);
+        // ── Metric graphs (collapsible) ──
+        EditorGUILayout.BeginHorizontal();
+        env.MetricsFoldout = EditorGUILayout.Foldout(env.MetricsFoldout, "Metrics", true);
+        EditorGUILayout.EndHorizontal();
+        if (env.MetricsFoldout)
+        {
+            EditorGUILayout.BeginHorizontal();
+            DrawMiniGraph("Episode Reward",  env.Metrics.RewardHistory,     env.Metrics.LatestReward);
+            DrawMiniGraph("Policy Loss",     env.Metrics.LossHistory,       env.Metrics.LatestLoss);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            DrawMiniGraph("Value Loss",      env.Metrics.ValueLossHistory,  env.Metrics.LatestValueLoss);
+            DrawMiniGraph("KL Divergence",   env.Metrics.KLHistory,         env.Metrics.LatestKL);
+            EditorGUILayout.EndHorizontal();
+        }
 
         EditorGUILayout.Space(2);
 
