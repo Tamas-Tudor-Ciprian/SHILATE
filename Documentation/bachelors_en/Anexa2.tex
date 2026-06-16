@@ -1,0 +1,184 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{nimbussans}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=false, pdfborder={0 0 0}}
+
+\geometry{
+  a4paper,
+  top=25mm, bottom=25mm,
+  left=25mm, right=25mm
+}
+
+\input{customs}
+
+% ── Header / Footer ──────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{%
+  \small\textbf{\university}\\
+  \small Faculty of Automation and Computers\\
+  \small Department of Computers and Information Technology
+}
+\fancyhead[R]{\includegraphics[height=14mm, keepaspectratio]{images/logo.png}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{30pt}
+
+% ── Helper: labelled row ──────────────────────────────────────────────────────
+\newcommand{\row}[2]{%
+  \noindent\begin{tabular}{@{}p{5.5cm} p{10cm}@{}}
+    \textbf{#1} & #2
+  \end{tabular}\par\medskip
+}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+\thispagestyle{fancy}
+
+\begin{center}
+  {\LARGE\bfseries ANNEX 2}\\[6pt]
+  {\large\bfseries Bachelor's Thesis --- Assignment Sheet}\\[2pt]
+  {\large Academic Year \academicYear}
+\end{center}
+
+\vspace{6pt}
+\noindent\rule{\textwidth}{0.8pt}
+\vspace{4pt}
+
+% ── Parties ──────────────────────────────────────────────────────────────────
+\row{Student:}{\candidateName}
+\row{Study programme:}{\studyProgram}
+\row{Scientific coordinator:}{\coordinator}
+
+\vspace{4pt}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{4pt}
+
+% ── Title ─────────────────────────────────────────────────────────────────────
+\row{Thesis title:}{\textbf{\thesisTitle}}
+
+\vspace{4pt}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{4pt}
+
+% ── Keywords ─────────────────────────────────────────────────────────────────
+\row{Keywords:}{%
+  reinforcement learning,
+  software-defined vehicle (SDV),
+  simulation-to-real,
+  Eclipse Leda,
+  MQTT,
+  Kuksa databroker,
+  vehicle signal specification (VSS),
+  Proximal Policy Optimisation (PPO),
+  Unity simulation,
+  Gymnasium
+}
+
+\vspace{4pt}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{4pt}
+
+% ── Scope ─────────────────────────────────────────────────────────────────────
+\noindent\textbf{Scope of Work}\par\smallskip
+\noindent
+SHILATE (\textit{Software Hardware In Loop Automotive Testing Environment})
+investigates the feasibility of training a reinforcement learning agent to
+navigate a virtual obstacle course and deploying the resulting policy on an
+Eclipse Leda software-defined vehicle stack without modifying the training
+code.
+
+The work encompasses:
+(i)~a Unity~2022 simulation providing a vehicle physics model, a
+LiDAR-inspired 21-ray perception layer, and a shaped reward function
+communicated over MQTT;
+(ii)~a Python training pipeline based on Stable-Baselines3 PPO with
+real-time health telemetry streamed back to the Unity Editor;
+(iii)~an SDV integration layer consisting of an MQTT-to-Kuksa feeder, a
+Velocitas vehicle safety monitor, and Kanto-managed container deployment
+on Eclipse Leda;
+(iv)~a theoretical hardware actuator design coupling the agent's throttle
+output to a 12\,V DC pump via a MOSFET driver and Zener flyback suppressor
+on a Raspberry Pi~4.
+
+\vspace{4pt}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{4pt}
+
+% ── Stages ───────────────────────────────────────────────────────────────────
+\noindent\textbf{Implementation Stages}\par\smallskip
+
+\begin{enumerate}[leftmargin=1.4cm, itemsep=3pt]
+  \item \textbf{Unity Simulation Environment}\\
+        Scene construction (\texttt{RuntimeSceneBuilder}, circular obstacle
+        course); vehicle physics with four \texttt{WheelCollider} components;
+        21-ray LiDAR-inspired perception layer (\texttt{RaycastSensor.cs});
+        shaped reward function in \texttt{TrainingBridge.cs}.
+
+  \item \textbf{Custom MQTT Client for Unity}\\
+        Native C\# implementation of MQTT~3.1.1 (\texttt{MqttClient.cs})
+        supporting CONNECT, PUBLISH (QoS~0), SUBSCRIBE, PINGREQ/PINGRESP,
+        and DISCONNECT without external dependencies.
+
+  \item \textbf{Python RL Training Pipeline}\\
+        Gymnasium-compliant \texttt{ShilateEnv} wrapper with threading-event
+        synchronisation; Stable-Baselines3 PPO agent with separate actor/critic
+        networks; \texttt{HealthCallback} with NaN/Inf loss detection;
+        TensorBoard logging; checkpoint save and resume support.
+
+  \item \textbf{Unity Training Controller Editor Window}\\
+        \texttt{TrainingEditorWindow.cs}: one-click training launch, live
+        metric graphs (episode reward, policy loss, value loss, KL divergence),
+        colour-coded health banner, issue log, and cross-platform Python process
+        management.
+
+  \item \textbf{SDV Integration --- Eclipse Leda Stack}\\
+        \texttt{mqtt-kuksa-feeder} container bridging MQTT telemetry to VSS
+        paths via Kuksa gRPC; Velocitas vehicle application monitoring overspeed
+        and RPM redline; Kanto container manifests; \texttt{provision-device.sh}
+        deployment automation.
+
+  \item \textbf{AI Inference Deployment}\\
+        \texttt{ai\_driver.py} running trained PPO checkpoint in closed-loop
+        inference inside the Leda \texttt{leda-controller} container;
+        deterministic policy evaluation with episode auto-reset.
+
+  \item \textbf{Theoretical Hardware Actuator (Raspberry Pi~4)}\\
+        Circuit design for MOSFET-driven 12\,V pump (IRF520N, 1\,k$\Omega$
+        gate resistor, Zener/TVS flyback suppressor); Python daemon subscribing
+        to \texttt{Vehicle.OBD.ThrottlePosition} via Kuksa and driving GPIO PWM
+        at 1\,kHz.
+
+  \item \textbf{Documentation}\\
+        Bachelor's thesis written in \LaTeX{} following the UPT template;
+        bibliography of 15 references in IEEE format; figures, code listings,
+        and experimental results tables.
+\end{enumerate}
+
+\vspace{6pt}
+\noindent\rule{\textwidth}{0.8pt}
+\vspace{10pt}
+
+% ── Signatures ───────────────────────────────────────────────────────────────
+\noindent
+\begin{tabular}{@{}p{7cm} p{7cm}@{}}
+  \textbf{Scientific Coordinator} & \textbf{Student} \\[18pt]
+  \coordinator                    & \candidateName   \\[18pt]
+  \makebox[6cm]{\dotfill}         & \makebox[6cm]{\dotfill} \\
+  \small (signature)              & \small (signature)
+\end{tabular}
+
+\vspace{12pt}
+\noindent\textit{Date of issue: \monthOfPresentation{} \academicYear}
+
+\end{document}
