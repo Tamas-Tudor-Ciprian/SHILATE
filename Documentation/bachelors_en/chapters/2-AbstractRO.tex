@@ -9,42 +9,39 @@
 \vspace{24pt}
 
 Proliferarea platformelor de tip vehicul definit prin software (SDV) a creat
-oportunitatea de a combina tehnicile moderne de \^inv\u0103\u021bare prin
-\^int\u0103rire (\textit{reinforcement learning}, RL) cu stive software
-auto\-mo\-tive reale. Aceast\u0103 lucrar\u0103 de licen\u021b\u0103 prezint\u0103
-\textbf{SHILATE} --- un pipeline complet, cu surs\u0103 deschis\u0103, care
-antreneaz\u0103 un agent Proximal Policy Optimization (PPO) \^in cadrul unei
-simul\u0103ri fizice Unity \c{s}i implementeaz\u0103 politica rezultat\u0103 pe o
-stiv\u0103 SDV Eclipse Leda, reducând decalajul dintre cercetarea RL \^in
-laborator \c{s}i implementarea realist\u0103 a software-ului auto.
+oportunitatea de a combina tehnicile moderne de invatare prin intarire
+(\textit{reinforcement learning}, RL) cu stive software automotive reale.
+Aceasta lucrare de licenta prezinta \textbf{SHILATE} --- un pipeline complet,
+cu sursa deschisa, care antreneaza un agent Proximal Policy Optimization (PPO)
+in cadrul unei simulari fizice Unity si implementeaza politica rezultata pe o
+stiva SDV Eclipse Leda, reducand decalajul dintre cercetarea RL in laborator
+si implementarea realista a software-ului auto.
 
-Componenta de simulare este construit\u0103 \^in Unity 2022 LTS. Un vehicul cu
-trac\u021biune spate navig\u0103 pe un circuit circular cu obstacole, echipat cu
-un senzor LiDAR stilizat cu 21 de raze. Modulul de antrenament calculeaz\u0103
-un semnal de recompens\u0103 bazat pe progres, coliziuni \c{s}i etape de
-parcurs, comunic\u00e2nd cu procesul Python exclusiv prin MQTT, men\u021bin\u00e2nd
-cele dou\u0103 subsisteme complet decuplate. O fereastr\u0103 dedicat\u0103 \^in
-Unity Editor (\textit{SHILATE Training Controller}) ofer\u0103 monitorizare
-\^in timp real a s\u0103n\u0103t\u0103\u021bii sistemului, grafice de metrici
-\c{s}i control al antren\u0103rii cu un singur click.
+Componenta de simulare este construita in Unity 2022 LTS. Un vehicul cu
+tractiune spate navigheaza pe un circuit circular cu obstacole, echipat cu un
+senzor LiDAR stilizat cu 21 de raze. Modulul de antrenament calculeaza un
+semnal de recompensa bazat pe progres, coliziuni si etape de parcurs,
+comunicand cu procesul Python exclusiv prin MQTT, mentinand cele doua
+subsisteme complet decuplate. O fereastra dedicata in Unity Editor
+(\textit{SHILATE Training Controller}) ofera monitorizare in timp real a
+sanatatii sistemului, grafice de metrici si control al antrenarii cu un
+singur click.
 
-Stiva Python \^in\u015foapt\u0103 simularea \^intr-un mediu compatibil Gymnasium,
-configureaz\u0103 agentul PPO din Stable-Baselines3 cu o re\u021bea actor-critic
-pe dou\u0103 straturi \c{s}i transmite telemetrie structurat\u0103 c\u0103tre
-Editor. Modelele salvate sunt ulterior implementate pe imaginea SDV Eclipse Leda
-printr-un bridge MQTT-Kuksa containerizat \c{s}i o aplica\u021bie Velocitas care
-impune limite opera\u021bionale (vitez\u0103 maxim\u0103, tura\u021bie limit\u0103)
-agentului activ.
+Stiva Python inconjoara simularea intr-un mediu compatibil Gymnasium,
+configureaza agentul PPO din Stable-Baselines3 cu o retea actor-critic pe
+doua straturi si transmite telemetrie structurata catre Editor. Modelele
+salvate sunt ulterior implementate pe imaginea SDV Eclipse Leda printr-un
+bridge MQTT-Kuksa containerizat si o aplicatie Velocitas care impune limite
+operationale (viteza maxima, turatie limita) agentului activ.
 
-Rezultatele experimentale demonstreaz\u0103 c\u0103 agentul PPO converge
-fiabil pe circuitul de obstacole \^in 100\,000 de pa\c{s}i de interac\u021biune
-\c{s}i c\u0103 lan\u021bul de implementare transmite corect telemetria vehiculului
-din simul\u0103 prin stratul de date VSS p\u00e2n\u0103 la monitorul de
-siguran\u021b\u0103 Velocitas. Proiectul demonstreaz\u0103 c\u0103 un pipeline
-integrat sim-to-SDV este realizabil cu instrumente open-source accesibile.
+Rezultatele experimentale demonstreaza ca agentul PPO converge fiabil pe
+circuitul de obstacole in 100\,000 de pasi de interactiune si ca lantul de
+implementare transmite corect telemetria vehiculului din simulare prin stratul
+de date VSS pana la monitorul de siguranta Velocitas. Proiectul demonstreaza
+ca un pipeline integrat sim-to-SDV este realizabil cu instrumente open-source
+accesibile.
 
-\textbf{Cuvinte cheie:} \^inv\u0103\u021bare prin \^int\u0103rire, vehicul definit
-prin software, simulare Unity, PPO, MQTT, Eclipse Leda, Kuksa,
-Stable-Baselines3, Gymnasium.
+\textbf{Cuvinte cheie:} invatare prin intarire, vehicul definit prin software,
+simulare Unity, PPO, MQTT, Eclipse Leda, Kuksa, Stable-Baselines3, Gymnasium.
 
 \vfill
