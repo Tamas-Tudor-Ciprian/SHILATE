@@ -67,6 +67,10 @@ def parse_args():
     p.add_argument("--env-prefix", default="env0",
                    help="MQTT topic prefix matching the Unity instance (e.g. env0, env1). "
                         "Must match the -envPrefix arg passed to the Unity build.")
+    p.add_argument("--num-envs", type=int, default=1,
+                   help="Number of parallel Unity environments (SubprocVecEnv). "
+                        "Each needs its own headless Unity instance with -envPrefix env0, env1, ... "
+                        "All share one Python process and one PPO model.")
     return p.parse_args()
 
 
@@ -90,12 +94,14 @@ def main():
     total_timesteps = _UNLIMITED if unlimited else args.total_timesteps
 
     log.info("═══════════════════════════════════════════════════")
-    log.info("  SHILATE RL Training — single env, real time")
+    log.info("  SHILATE RL Training — %s",
+             f"{args.num_envs} parallel envs (SubprocVecEnv)" if args.num_envs > 1 else "single env, real time")
     log.info("═══════════════════════════════════════════════════")
     log.info("  Total timesteps:  %s", "unlimited" if unlimited else total_timesteps)
     log.info("  Learning rate:    %s", args.learning_rate)
     log.info("  n_steps:          %d", args.n_steps)
     log.info("  Batch size:       %d", args.batch_size)
+    log.info("  Num envs:         %d", args.num_envs)
     log.info("  Ray count:        %d (from config.json)", ray_count)
     log.info("  MQTT:             %s:%d", args.mqtt_host, args.mqtt_port)
     log.info("  Env prefix:       %s", args.env_prefix)
@@ -117,8 +123,22 @@ def main():
         )
         return Monitor(env)
 
-    # DummyVecEnv runs in-process — no subprocess, no IPC overhead, easy to debug.
-    vec_env = DummyVecEnv([_make_env])
+    if args.num_envs > 1:
+        from stable_baselines3.common.vec_env import SubprocVecEnv
+        def _make_env_i(prefix):
+            def _inner():
+                return Monitor(ShilateEnv(
+                    mqtt_host=args.mqtt_host,
+                    mqtt_port=args.mqtt_port,
+                    ray_count=ray_count,
+                    env_prefix=prefix,
+                ))
+            return _inner
+        vec_env = SubprocVecEnv([_make_env_i(f"env{i}") for i in range(args.num_envs)])
+        log.info("SubprocVecEnv ready: %d envs (env0..env%d)", args.num_envs, args.num_envs - 1)
+    else:
+        vec_env = DummyVecEnv([_make_env])
+        log.info("DummyVecEnv ready (single env)")
 
     # Create PPO model
     policy_kwargs = get_policy_kwargs(ray_count=ray_count)
@@ -149,38 +169,47 @@ def main():
         )
         log.info("PPO model created")
 
-    # Checkpoint callback — save every 50k steps when running unlimited,
-    # otherwise every 10% of the total budget (min 1000 steps).
+    # Checkpoint callback
     _checkpoint_freq = 50_000 if unlimited else max(total_timesteps // 10, 1000)
     os.makedirs(args.save_path, exist_ok=True)
 
-    # Grab a reference to the MQTT controller so callbacks can read training_obstacle_count.
-    ctrl = vec_env.envs[0].env._ctrl
+    if args.num_envs == 1:
+        # Single-env: access controller directly for curriculum-aware checkpoint naming.
+        ctrl = vec_env.envs[0].env._ctrl
 
-    class CurriculumCheckpointCallback(CheckpointCallback):
-        """Renames checkpoint files to include the current obstacle count."""
-        def _on_step(self) -> bool:
-            result = super()._on_step()
-            if self.n_calls % self.save_freq == 0:
-                obs_count = ctrl.training_obstacle_count
-                old_path = os.path.join(
-                    self.save_path,
-                    f"{self.name_prefix}_{self.num_timesteps}_steps.zip",
-                )
-                new_path = os.path.join(
-                    self.save_path,
-                    f"{self.name_prefix}_{obs_count}obs_{self.num_timesteps}_steps.zip",
-                )
-                if os.path.exists(old_path):
-                    os.rename(old_path, new_path)
-                    log.info("Checkpoint saved: %s", new_path)
-            return result
+        class CurriculumCheckpointCallback(CheckpointCallback):
+            """Renames checkpoint files to include the current obstacle count."""
+            def _on_step(self) -> bool:
+                result = super()._on_step()
+                if self.n_calls % self.save_freq == 0:
+                    obs_count = ctrl.training_obstacle_count
+                    old_path = os.path.join(
+                        self.save_path,
+                        f"{self.name_prefix}_{self.num_timesteps}_steps.zip",
+                    )
+                    new_path = os.path.join(
+                        self.save_path,
+                        f"{self.name_prefix}_{obs_count}obs_{self.num_timesteps}_steps.zip",
+                    )
+                    if os.path.exists(old_path):
+                        os.rename(old_path, new_path)
+                        log.info("Checkpoint saved: %s", new_path)
+                return result
 
-    checkpoint_cb = CurriculumCheckpointCallback(
-        save_freq=_checkpoint_freq,
-        save_path=args.save_path,
-        name_prefix="shilate_ppo",
-    )
+        checkpoint_cb = CurriculumCheckpointCallback(
+            save_freq=_checkpoint_freq,
+            save_path=args.save_path,
+            name_prefix="shilate_ppo",
+        )
+    else:
+        # Multi-env (SubprocVecEnv): envs run in subprocesses — can't access ctrl directly.
+        # Use plain CheckpointCallback; obs count not available at checkpoint time.
+        ctrl = None
+        checkpoint_cb = CheckpointCallback(
+            save_freq=_checkpoint_freq,
+            save_path=args.save_path,
+            name_prefix="shilate_ppo",
+        )
 
     # Health/metric callback — re-emits SB3's rollout stats as SHILATE-METRIC lines
     # and raises SHILATE-HEALTH alerts when loss/KL become non-finite.
@@ -248,8 +277,11 @@ def main():
         raise
 
     # Save final model
-    final_obs_count = ctrl.training_obstacle_count
-    final_path = os.path.join(args.save_path, f"best_model_{final_obs_count}obs")
+    if ctrl is not None:
+        final_obs_count = ctrl.training_obstacle_count
+        final_path = os.path.join(args.save_path, f"best_model_{final_obs_count}obs")
+    else:
+        final_path = os.path.join(args.save_path, "best_model")
     model.save(final_path)
     log.info("Final model saved to %s.zip", final_path)
     emit("SHILATE-METRIC", f"final_model={final_path}.zip")

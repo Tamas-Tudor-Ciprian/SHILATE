@@ -40,6 +40,7 @@ public class HeadlessOrchestratorWindow : EditorWindow
         public bool Expanded = true;
         public bool MetricsFoldout = true;
         public bool LogFoldout;
+        public bool IsSingleModelCoordinator;  // true for env0 when in single-model mode
         public Vector2 IssueScroll;
         public Vector2 LogScroll;
 
@@ -235,6 +236,18 @@ public class HeadlessOrchestratorWindow : EditorWindow
                     MessageType.Info);
         }
 
+        EditorGUILayout.Space(4);
+        EditorGUILayout.LabelField("Training Mode", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(so.FindProperty("headlessSingleModelMode"),
+            new GUIContent("Single Model (SubprocVecEnv)",
+                "ON: one Python process + one shared model across all N Unity instances (faster learning).\n" +
+                "OFF: each Unity instance gets its own independent Python process and model."));
+        EditorGUILayout.HelpBox(
+            _settings.headlessSingleModelMode
+                ? "One model trained across all envs. Python runs once on env0 with --num-envs N.\nMetrics graphs appear in the env0 panel only."
+                : "Independent runs. Each env trains its own separate model.",
+            _settings.headlessSingleModelMode ? MessageType.Info : MessageType.None);
+
         so.ApplyModifiedProperties();
         EditorGUI.indentLevel--;
     }
@@ -249,7 +262,8 @@ public class HeadlessOrchestratorWindow : EditorWindow
         Color healthColor = HealthColor(env.Health.CurrentState);
         string pyDot    = env.PythonAlive ? "●" : "○";
         string unityDot = env.UnityAlive  ? "●" : "○";
-        string headerText = $"{env.Prefix}   Python {pyDot}   Unity {unityDot}";
+        string coordTag = env.IsSingleModelCoordinator ? "  [COORDINATOR]" : "";
+        string headerText = $"{env.Prefix}{coordTag}   Python {pyDot}   Unity {unityDot}";
 
         env.Expanded = EditorGUILayout.Foldout(env.Expanded, headerText, true,
             new GUIStyle(EditorStyles.foldout) { fontStyle = FontStyle.Bold });
@@ -512,10 +526,26 @@ public class HeadlessOrchestratorWindow : EditorWindow
             if (hasUnityBuild)
                 LaunchUnity(slot);
 
-            // Python trainer — stagger by 2 s per env so Unity has time to bind
-            string args = BuildTrainArgs(prefix, projRoot);
-            int delay   = hasUnityBuild ? 2000 * (i + 1) : 500 * i;
-            SchedulePython(slot, absVenv, absScript, workDir, args, delay);
+            // Python trainer
+            int delay = hasUnityBuild ? 2000 * (i + 1) : 500 * i;
+            if (_settings.headlessSingleModelMode)
+            {
+                // Single-model mode: only env0 runs Python with --num-envs N.
+                // All Unity instances connect to env0..envN-1 as usual.
+                if (i == 0)
+                {
+                    slot.IsSingleModelCoordinator = true;
+                    string args = BuildSingleModelTrainArgs(numEnvs, projRoot);
+                    SchedulePython(slot, absVenv, absScript, workDir, args, delay);
+                }
+                // slots 1..N-1: Unity + MQTT only, no Python
+            }
+            else
+            {
+                // Independent mode: one Python process per env
+                string args = BuildTrainArgs(prefix, projRoot);
+                SchedulePython(slot, absVenv, absScript, workDir, args, delay);
+            }
 
             // MQTT listener
             slot.Mqtt.Start(_settings.mqttHost, _settings.mqttPort, prefix);
@@ -574,6 +604,27 @@ public class HeadlessOrchestratorWindow : EditorWindow
             AddLog(slot, $"Python started — {slot.Prefix}", LogType.Log);
         }
         Repaint();
+    }
+
+    string BuildSingleModelTrainArgs(int numEnvs, string projectRoot)
+    {
+        // env0 is the coordinator; save/log paths use "env0" as the subdirectory.
+        string absSave = Path.GetFullPath(Path.Combine(
+            projectRoot, _settings.savePath.Replace('/', Path.DirectorySeparatorChar), "single_model"));
+        string absLog  = Path.GetFullPath(Path.Combine(
+            projectRoot, _settings.logDir.Replace('/', Path.DirectorySeparatorChar), "single_model"));
+
+        return $"--num-envs {numEnvs} " +
+               $"--learning-rate {_settings.learningRate.ToString(System.Globalization.CultureInfo.InvariantCulture)} " +
+               $"--n-steps {_settings.nSteps} " +
+               $"--batch-size {_settings.batchSize} " +
+               $"--mqtt-host {_settings.mqttHost} " +
+               $"--mqtt-port {_settings.mqttPort} " +
+               $"--save-path \"{absSave}\" " +
+               $"--log-dir \"{absLog}\"" +
+               (string.IsNullOrEmpty(_settings.headlessResumeModelPath)
+                   ? ""
+                   : $" --resume-model \"{_settings.headlessResumeModelPath}\"");
     }
 
     string BuildTrainArgs(string prefix, string projectRoot)

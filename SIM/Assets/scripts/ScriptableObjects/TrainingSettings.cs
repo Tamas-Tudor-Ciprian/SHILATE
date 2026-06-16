@@ -52,6 +52,10 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("Number of parallel headless environments to launch")]
     public int numHeadlessEnvs = 2;
 
+    [Tooltip("When true: one Python process trains one shared model using SubprocVecEnv across all N Unity instances. " +
+             "When false: each Unity instance gets its own independent Python process and model.")]
+    public bool headlessSingleModelMode = true;
+
     [Tooltip("Path to a .zip model to resume all headless envs from (leave empty to train from scratch)")]
     public string headlessResumeModelPath = "";
 
