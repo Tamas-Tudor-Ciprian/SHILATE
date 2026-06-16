@@ -34,12 +34,6 @@ public class TrainingBridge : MonoBehaviour
     [Tooltip("Max speed for observation normalization (km/h)")]
     [SerializeField] float maxSpeed = 150f;
 
-    [Tooltip("Penalty applied every FixedUpdate step while speed is below idleSpeedThreshold (km/h)")]
-    [SerializeField] float idlePenalty = -0.05f;
-
-    [Tooltip("Speed threshold below which the idle penalty is applied (km/h)")]
-    [SerializeField] float idleSpeedThreshold = 2f;
-
     float _episodeTimer;
     float _lastAngle;
     float _totalAngleProgress;
@@ -51,6 +45,8 @@ public class TrainingBridge : MonoBehaviour
     float _lastRealTime;
     bool _collidedThisStep;   // owned here to avoid FixedUpdate ordering race with RaycastSensor
     bool _halfTurnAwarded;
+    int _completedLaps;
+    int _currentObstacleCount;
 
     const float HeartbeatInterval = 1f;
 
@@ -103,12 +99,6 @@ public class TrainingBridge : MonoBehaviour
 
         float stepReward = angleDelta * progressReward;
 
-        // Idle penalty — discourages the agent from standing still
-        if (vehicle.CurrentSpeed < idleSpeedThreshold)
-        {
-            stepReward += idlePenalty;
-        }
-
         // Collision check — use flag set by OnCollisionEnter (not RaycastSensor's cleared flag)
         bool collided = _collidedThisStep;
         _collidedThisStep = false;
@@ -137,6 +127,10 @@ public class TrainingBridge : MonoBehaviour
         {
             stepReward += finishBonus;
             finished = true;
+            _completedLaps++;
+            _currentObstacleCount = ComputeObstacleCount(_completedLaps);
+            obstacleCourse.TargetObstacleCount = _currentObstacleCount;
+            Debug.Log($"[TrainingBridge] Lap {_completedLaps} complete — next obstacle count: {_currentObstacleCount}");
         }
 
         _cumulativeReward += stepReward;
@@ -171,7 +165,8 @@ public class TrainingBridge : MonoBehaviour
                 ",\"reward\":" + _cumulativeReward.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) +
                 ",\"steps\":" + _episodeSteps.ToString(System.Globalization.CultureInfo.InvariantCulture) +
                 ",\"duration\":" + _episodeTimer.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
-                ",\"reason\":\"" + reason + "\"}");
+                ",\"reason\":\"" + reason + "\"" +
+                ",\"obstacle_count\":" + _currentObstacleCount.ToString(System.Globalization.CultureInfo.InvariantCulture) + "}");
 
             Debug.Log($"[TrainingBridge] Episode {_episodeIndex} done: {reason}, reward={_cumulativeReward:F2}, time={_episodeTimer:F1}s");
             _episodeIndex += 1;
@@ -191,7 +186,6 @@ public class TrainingBridge : MonoBehaviour
         float[] rays = raycastSensor.GetDistances();
         float normSpeed = Mathf.Clamp01(vehicle.CurrentSpeed / maxSpeed);
         float normSteer = (vehicle.SteerInput + 1f) * 0.5f; // map -1..1 to 0..1
-        float normProgress = Mathf.Clamp01(_totalAngleProgress / 360f);
 
         var sb = new System.Text.StringBuilder(256);
         sb.Append("{\"rays\":[");
@@ -204,8 +198,6 @@ public class TrainingBridge : MonoBehaviour
         sb.Append(normSpeed.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
         sb.Append(",\"steer\":");
         sb.Append(normSteer.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
-        sb.Append(",\"progress\":");
-        sb.Append(normProgress.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
         sb.Append('}');
 
         broker.PublishRaw("vehicle/training/obs", sb.ToString());
@@ -232,5 +224,15 @@ public class TrainingBridge : MonoBehaviour
     public float EpisodeTime => _episodeTimer;
     public float EpisodeTimeout => episodeTimeout;
     public float CumulativeReward => _cumulativeReward;
+
+    // ─── Curriculum helpers ───
+
+    /// <summary>Returns the target obstacle count for the given number of completed laps.
+    /// 0-9 laps: 0 obstacles. 10-59: 1. Then +1 per 50 laps, capped at 8.</summary>
+    static int ComputeObstacleCount(int completedLaps)
+    {
+        if (completedLaps < 10) return 0;
+        return Mathf.Min(1 + (completedLaps - 10) / 50, 8);
+    }
 }
 

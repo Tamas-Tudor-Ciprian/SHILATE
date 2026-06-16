@@ -77,6 +77,7 @@ class VehicleController:
         self.training_reward: float = 0.0
         self.training_done: bool = False
         self.training_obs: dict = {}
+        self.training_obstacle_count: int = 0
 
         # Events for synchronization
         self.obs_event = threading.Event()
@@ -201,6 +202,10 @@ class VehicleController:
             # Store the full payload dict, not payload["value"].
             self.training_obs = payload if isinstance(payload, dict) else {}
             self.obs_event.set()
+        elif local_topic == "vehicle/training/episode_end":
+            obs_count = payload.get("obstacle_count")
+            if obs_count is not None:
+                self.training_obstacle_count = int(obs_count)
 
     # ─── Control commands ────────────────────────────────────────────
 

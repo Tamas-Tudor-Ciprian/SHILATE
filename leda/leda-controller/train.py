@@ -148,7 +148,30 @@ def main():
     # otherwise every 10% of the total budget (min 1000 steps).
     _checkpoint_freq = 50_000 if unlimited else max(total_timesteps // 10, 1000)
     os.makedirs(args.save_path, exist_ok=True)
-    checkpoint_cb = CheckpointCallback(
+
+    # Grab a reference to the MQTT controller so callbacks can read training_obstacle_count.
+    ctrl = vec_env.envs[0].env._ctrl
+
+    class CurriculumCheckpointCallback(CheckpointCallback):
+        """Renames checkpoint files to include the current obstacle count."""
+        def _on_step(self) -> bool:
+            result = super()._on_step()
+            if self.n_calls % self.save_freq == 0:
+                obs_count = ctrl.training_obstacle_count
+                old_path = os.path.join(
+                    self.save_path,
+                    f"{self.name_prefix}_{self.num_timesteps}_steps.zip",
+                )
+                new_path = os.path.join(
+                    self.save_path,
+                    f"{self.name_prefix}_{obs_count}obs_{self.num_timesteps}_steps.zip",
+                )
+                if os.path.exists(old_path):
+                    os.rename(old_path, new_path)
+                    log.info("Checkpoint saved: %s", new_path)
+            return result
+
+    checkpoint_cb = CurriculumCheckpointCallback(
         save_freq=_checkpoint_freq,
         save_path=args.save_path,
         name_prefix="shilate_ppo",
@@ -220,7 +243,8 @@ def main():
         raise
 
     # Save final model
-    final_path = os.path.join(args.save_path, "best_model")
+    final_obs_count = ctrl.training_obstacle_count
+    final_path = os.path.join(args.save_path, f"best_model_{final_obs_count}obs")
     model.save(final_path)
     log.info("Final model saved to %s.zip", final_path)
     emit("SHILATE-METRIC", f"final_model={final_path}.zip")
