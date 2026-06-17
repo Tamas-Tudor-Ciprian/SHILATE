@@ -15,7 +15,7 @@ public class RaycastSensor : MonoBehaviour
     [SerializeField] float raySpreadAngle = 120f;
 
     [Tooltip("Maximum ray distance (meters)")]
-    [SerializeField] float rayLength = 50f;
+    [SerializeField] float rayLength = 15f;
 
     [Tooltip("Layer mask for raycast hits")]
     [SerializeField] LayerMask hitLayers = ~0;
@@ -126,9 +126,9 @@ public class RaycastSensor : MonoBehaviour
         {
             float angle = -halfSpread + step * i;
             Vector3 direction = Quaternion.Euler(0f, angle, 0f) * transform.forward;
-            float dist = _distances[i] * rayLength;
+            float dist = (1f - _distances[i]) * rayLength;
 
-            Gizmos.color = Color.Lerp(Color.red, Color.green, _distances[i]);
+            Gizmos.color = Color.Lerp(Color.green, Color.red, _distances[i]);
             Gizmos.DrawRay(origin, direction * dist);
         }
     }
