@@ -56,11 +56,11 @@ public class RaycastSensor : MonoBehaviour
 
             if (Physics.Raycast(origin, direction, out RaycastHit hit, rayLength, hitLayers))
             {
-                _distances[i] = hit.distance / rayLength; // 0 = close, 1 = max range
+                _distances[i] = 1 - (hit.distance / rayLength); // 0 = close, 1 = max range
             }
             else
             {
-                _distances[i] = 1f; // No hit = clear
+                _distances[i] = 0f; // No hit = clear
             }
         }
     }
