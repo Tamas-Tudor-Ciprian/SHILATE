@@ -53,6 +53,7 @@ public class TrainingBridge : MonoBehaviour
     bool _halfTurnAwarded;
     int _completedLaps;
     int _currentObstacleCount;
+    float _idleTime;
 
     const float HeartbeatInterval = 1f;
 
@@ -109,6 +110,11 @@ public class TrainingBridge : MonoBehaviour
         if (vehicle.CurrentSpeed < idleSpeedThreshold)
         {
             stepReward += idlePenalty;
+            _idleTime += Time.fixedDeltaTime;
+        }
+        else
+        {
+            _idleTime = 0f;
         }
 
         // Collision check — use flag set by OnCollisionEnter (not RaycastSensor's cleared flag)
@@ -148,7 +154,7 @@ public class TrainingBridge : MonoBehaviour
         _cumulativeReward += stepReward;
 
         // Episode done conditions
-        bool timeout = _episodeTimer >= episodeTimeout;
+        bool timeout = _episodeTimer >= episodeTimeout || _idleTime >= 3f;
         _episodeDone = collided || finished || timeout;
 
         // Tell ObstacleCourse whether to regenerate the layout on the next reset.
@@ -225,6 +231,7 @@ public class TrainingBridge : MonoBehaviour
         _episodeDone = false;
         _lastRealTime = Time.unscaledTime;
         _halfTurnAwarded = false;
+        _idleTime = 0f;
 
         if (vehicle != null && obstacleCourse != null)
             _lastAngle = obstacleCourse.GetAngle(vehicle.transform.position);
