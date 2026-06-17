@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  11 JUN 2026 13:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  16 JUN 2026 16:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -862,10 +862,11 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 12.0pt on input line 38.
  (./main.aux
 (./chapters/1-Title.aux) (./chapters/3-AbstractEN.aux)
-(./chapters/4-Introduction.aux) (./chapters/5-Background.aux)
-(./chapters/6-SystemArchitecture.aux) (./chapters/7-UnitySim.aux)
-(./chapters/8-PythonRL.aux) (./chapters/9-SDVIntegration.aux)
-(./chapters/10-Experiments.aux) (./chapters/11-Conclusions.aux))
+(./chapters/2-AbstractRO.aux) (./chapters/4-Introduction.aux)
+(./chapters/5-Background.aux) (./chapters/6-SystemArchitecture.aux)
+(./chapters/7-UnitySim.aux) (./chapters/8-PythonRL.aux)
+(./chapters/9-SDVIntegration.aux) (./chapters/10-Experiments.aux)
+(./chapters/11-Conclusions.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 38.
@@ -1012,6 +1013,32 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 20.0pt on input line 5.
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 14.0pt on input line 11.
+LaTeX Font Info:    Calculating math sizes for size <14> on input line 11.
+
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
+File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
+(RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 11.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
+File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 11.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg
+File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
+)
+LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
+(Font)              scaled to size 7.0pt on input line 11.
 LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 14.0pt on input line 19.
 LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
@@ -1030,10 +1057,13 @@ Package pdftex.def Info: images/logo.png  used on input line 23.
  <./images/logo.png>])
 \openout2 = `chapters/3-AbstractEN.aux'.
 
- (./chapters/3-AbstractEN.tex
+
+(./chapters/3-AbstractEN.tex
 LaTeX Font Info:    Font shape `T1/NimbusSans/m/it' will be
 (Font)              scaled to size 12.0pt on input line 24.
 )
+LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
+(Font)              scaled to size 5.0pt on input line 41.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 41.
@@ -1048,34 +1078,26 @@ l.41 \include{chapters/3-AbstractEN}
 
 
 
-] (./main.toc
+]
+\openout2 = `chapters/2-AbstractRO.aux'.
+
+ (./chapters/2-AbstractRO.tex)
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 42.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+ [2
+
+
+
+]
+(./main.toc
 Package cleveref Info: loaded `english' language definitions on input line 1.
-
-(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
-File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
-(RS)
-)
-LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
-
-(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
-File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 3.
-
-(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg
-File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
-)
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 38.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [2
+ [3
 
 
 
@@ -1085,10 +1107,9 @@ Package pdftex.def Info: images/logo.png  used on input line 38.
 
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 43.
+Package pdftex.def Info: images/logo.png  used on input line 44.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [3]
-(./main.lof
+ [4] (./main.lof
 Package cleveref Info: loaded `english' language definitions on input line 1.
 )
 \tf@lof=\write6
@@ -1102,20 +1123,21 @@ Package cleveref Info: loaded `english' language definitions on input line 1.
 
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 49.
+Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [4
+ [5
 
 ]
 \openout2 = `chapters/4-Introduction.aux'.
 
- (./chapters/4-Introduction.tex
+
+(./chapters/4-Introduction.tex
 Chapter 1.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 56.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[5
+[6
 
 
 ]
@@ -1127,9 +1149,9 @@ nvergence, inference lap
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 49.
+Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [6]
+ [7]
 \openout2 = `chapters/5-Background.aux'.
 
  (./chapters/5-Background.tex
@@ -1138,7 +1160,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 74.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[7
+[8
 
 
 
@@ -1158,15 +1180,15 @@ Package microtype Info: Loading generic protrusion settings for font family
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 50.
+Package pdftex.def Info: images/logo.png  used on input line 51.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 
-[8{/usr/share/texlive/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15mono-ec.enc}]
+[9{/usr/share/texlive/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15mono-ec.enc}]
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 50.
+Package pdftex.def Info: images/logo.png  used on input line 51.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[9]
+[10]
 \openout2 = `chapters/6-SystemArchitecture.aux'.
 
  (./chapters/6-SystemArchitecture.tex
@@ -1220,7 +1242,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 71.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[10
+[11
 
 
 
@@ -1255,13 +1277,13 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 112.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[11{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontools/fontools_ts1.enc}])
+[12{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontools/fontools_ts1.enc}])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 51.
+Package pdftex.def Info: images/logo.png  used on input line 52.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 
-[12]
+[13]
 \openout2 = `chapters/7-UnitySim.aux'.
 
  (./chapters/7-UnitySim.tex
@@ -1276,7 +1298,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 74.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[13
+[14
 
 
 
@@ -1291,47 +1313,42 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 135.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[14])
+[15])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 52.
+Package pdftex.def Info: images/logo.png  used on input line 53.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [15]
+ [16]
 \openout2 = `chapters/8-PythonRL.aux'.
 
  (./chapters/8-PythonRL.tex
 Chapter 5.
 LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 6.0pt on input line 17.
-
-Overfull \hbox (4.98892pt too wide) in paragraph at lines 55--56
-[]\T1/NimbusMono/m/n/12 --total-timesteps| 
- []
-
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 81.
+Package pdftex.def Info: images/logo.png  used on input line 79.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[16
+[17
 
 
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 84--90
+Underfull \hbox (badness 10000) in paragraph at lines 82--88
 []\T1/NimbusSans/b/n/12 (+20) SB3 tabular output. \T1/NimbusSans/m/n/12 (+20) S
 table-Baselines3
  []
 
 
-Underfull \hbox (badness 2384) in paragraph at lines 90--94
+Underfull \hbox (badness 2384) in paragraph at lines 88--92
 []\T1/NimbusSans/b/n/12 (+20) Structured markers. \T1/NimbusSans/m/n/12 (+20) T
 he \T1/NimbusMono/m/n/12 emit() \T1/NimbusSans/m/n/12 (+20) helper writes lines
  of the form
  []
 
 
-Underfull \hbox (badness 1596) in paragraph at lines 90--94
+Underfull \hbox (badness 1596) in paragraph at lines 88--92
 \T1/NimbusMono/m/n/12 SHILATE-METRIC key=value \T1/NimbusSans/m/n/12 (+20) and 
 \T1/NimbusMono/m/n/12 SHILATE-HEALTH signal \T1/NimbusSans/m/n/12 (+20) to stdo
 ut,
@@ -1340,50 +1357,70 @@ ut,
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 53.
+Package pdftex.def Info: images/logo.png  used on input line 54.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [17]
+ [18]
 \openout2 = `chapters/9-SDVIntegration.aux'.
 
  (./chapters/9-SDVIntegration.tex
 Chapter 6.
 
-Overfull \hbox (95.6706pt too wide) in paragraph at lines 40--41
-[]\T1/NimbusMono/m/n/12 Vehicle.Powertrain.CombustionEngine.Speed| 
- []
+LaTeX Warning: File `images/eclipse_leda.png' not found on input line 24.
 
 
-Overfull \hbox (52.47061pt too wide) in paragraph at lines 42--43
-[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.SteeringWheel.Angle| 
- []
+! Package pdftex.def Error: File `images/eclipse_leda.png' not found: using dra
+ft setting.
 
-
-Overfull \hbox (52.47061pt too wide) in paragraph at lines 44--45
-[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.Brake.PedalPosition| 
- []
-
-
-Overfull \hbox (2.07063pt too wide) in paragraph at lines 46--47
-[]\T1/NimbusMono/m/n/12 Vehicle.OBD.ThrottlePosition| 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 63--66
-[]\T1/NimbusSans/b/n/12 (+20) Overspeed\T1/NimbusSans/m/n/12 (+20) : if \T1/Nim
-busMono/m/n/12 Vehicle.Speed
- []
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.24 ...width=\textwidth]{images/eclipse_leda.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
 
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 72.
+Package pdftex.def Info: images/logo.png  used on input line 30.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[18
+[19
 
 
 
 
 ]
-Underfull \hbox (badness 5403) in paragraph at lines 76--86
+Overfull \hbox (95.6706pt too wide) in paragraph at lines 49--50
+[]\T1/NimbusMono/m/n/12 Vehicle.Powertrain.CombustionEngine.Speed| 
+ []
+
+
+Overfull \hbox (52.47061pt too wide) in paragraph at lines 51--52
+[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.SteeringWheel.Angle| 
+ []
+
+
+Overfull \hbox (52.47061pt too wide) in paragraph at lines 53--54
+[]\T1/NimbusMono/m/n/12 Vehicle.Chassis.Brake.PedalPosition| 
+ []
+
+
+Overfull \hbox (2.07063pt too wide) in paragraph at lines 55--56
+[]\T1/NimbusMono/m/n/12 Vehicle.OBD.ThrottlePosition| 
+ []
+
+File: images/logo.png Graphic file (type png)
+<use images/logo.png>
+Package pdftex.def Info: images/logo.png  used on input line 59.
+(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
+[20]
+Underfull \hbox (badness 10000) in paragraph at lines 72--75
+[]\T1/NimbusSans/b/n/12 (+20) Overspeed\T1/NimbusSans/m/n/12 (+20) : if \T1/Nim
+busMono/m/n/12 Vehicle.Speed
+ []
+
+
+Underfull \hbox (badness 5403) in paragraph at lines 85--95
 []\T1/NimbusSans/m/n/12 (+20) All three service containers (\T1/NimbusMono/m/n/
 12 leda-controller\T1/NimbusSans/m/n/12 (+20) , \T1/NimbusMono/m/n/12 mqtt-kuks
 a-feeder\T1/NimbusSans/m/n/12 (+20) ,
@@ -1392,9 +1429,9 @@ a-feeder\T1/NimbusSans/m/n/12 (+20) ,
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 54.
+Package pdftex.def Info: images/logo.png  used on input line 55.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [19]
+ [21]
 \openout2 = `chapters/10-Experiments.aux'.
 
  (./chapters/10-Experiments.tex
@@ -1403,7 +1440,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 82.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[20
+[22
 
 
 
@@ -1418,12 +1455,12 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 146.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[21])
+[23])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 55.
+Package pdftex.def Info: images/logo.png  used on input line 56.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [22]
+ [24]
 \openout2 = `chapters/11-Conclusions.aux'.
 
  (./chapters/11-Conclusions.tex
@@ -1432,7 +1469,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 71.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[23
+[25
 
 
 
@@ -1440,68 +1477,68 @@ Package pdftex.def Info: images/logo.png  used on input line 71.
 ])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 56.
+Package pdftex.def Info: images/logo.png  used on input line 57.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [24]
+ [26]
 Chapter 9.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 58.
+Package pdftex.def Info: images/logo.png  used on input line 59.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[25
+[27
 
 
 
 ]
-<example_declaration.pdf, id=514, 597.51233pt x 845.0471pt>
+<example_declaration.pdf, id=526, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
-Package pdftex.def Info: example_declaration.pdf  used on input line 60.
+Package pdftex.def Info: example_declaration.pdf  used on input line 61.
 (pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf>
-Package pdftex.def Info: example_declaration.pdf  used on input line 60.
+Package pdftex.def Info: example_declaration.pdf  used on input line 61.
 (pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-<example_declaration.pdf, id=517, page=1, 597.51233pt x 845.0471pt>
+<example_declaration.pdf, id=529, page=1, 597.51233pt x 845.0471pt>
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
+Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
 
 (pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
+Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
 
 (pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 60.
+Package pdftex.def Info: images/logo.png  used on input line 61.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [26]
+ [28]
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
+Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
 
 (pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
+Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
 
 (pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
 File: example_declaration.pdf Graphic file (type pdf)
 <use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 60.
+Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
 
 (pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
- [27
+ [29
 
  <./example_declaration.pdf>] (./main.aux (./chapters/1-Title.aux)
 Package cleveref Info: loaded `english' language definitions on input line 12.
-(./chapters/3-AbstractEN.aux) (./chapters/4-Introduction.aux)
-(./chapters/5-Background.aux) (./chapters/6-SystemArchitecture.aux)
-(./chapters/7-UnitySim.aux) (./chapters/8-PythonRL.aux)
-(./chapters/9-SDVIntegration.aux) (./chapters/10-Experiments.aux)
-(./chapters/11-Conclusions.aux))
+(./chapters/3-AbstractEN.aux) (./chapters/2-AbstractRO.aux)
+(./chapters/4-Introduction.aux) (./chapters/5-Background.aux)
+(./chapters/6-SystemArchitecture.aux) (./chapters/7-UnitySim.aux)
+(./chapters/8-PythonRL.aux) (./chapters/9-SDVIntegration.aux)
+(./chapters/10-Experiments.aux) (./chapters/11-Conclusions.aux))
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
@@ -1522,13 +1559,13 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 29034 strings out of 474222
- 519606 string characters out of 5748733
- 1944975 words of memory out of 5000000
- 50523 multiletter control sequences out of 15000+600000
- 610084 words of font info for 166 fonts, out of 8000000 for 9000
+ 29185 strings out of 474222
+ 522994 string characters out of 5748733
+ 1945975 words of memory out of 5000000
+ 50631 multiletter control sequences out of 15000+600000
+ 621530 words of font info for 199 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 79i,17n,117p,1850b,2593s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 79i,19n,117p,1850b,2593s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texl
@@ -1544,10 +1581,10 @@ cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols
 ></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/s
 hare/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/tex
 live/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (28 pages, 345633 bytes).
+Output written on main.pdf (30 pages, 353359 bytes).
 PDF statistics:
- 653 PDF objects out of 1000 (max. 8388607)
- 569 compressed objects within 6 object streams
- 135 named destinations out of 1000 (max. 500000)
- 35234 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 665 PDF objects out of 1000 (max. 8388607)
+ 579 compressed objects within 6 object streams
+ 138 named destinations out of 1000 (max. 500000)
+ 49570 words of extra memory for PDF output out of 51595 (max. 10000000)
 

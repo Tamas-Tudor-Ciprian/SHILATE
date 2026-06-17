@@ -39,6 +39,22 @@ public class LedaBroker : MonoBehaviour
     float _reconnectTimer;
     const float ReconnectInterval = 3f;
 
+    void Awake()
+    {
+        // Allow headless builds to override the env prefix via command-line arg:
+        //   -envPrefix env1
+        string[] args = System.Environment.GetCommandLineArgs();
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] == "-envPrefix")
+            {
+                envPrefix = args[i + 1];
+                Debug.Log($"[LedaBroker] envPrefix overridden from command line: {envPrefix}");
+                break;
+            }
+        }
+    }
+
     // Python → Unity heartbeat watchdog
     float _pythonHeartbeatTimer;
     bool _pythonHeartbeatReceived;

@@ -45,6 +45,24 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("Directory for TensorBoard logs")]
     public string logDir = "../logs/tensorboard";
 
+    [Header("Headless Training")]
+    [Tooltip("Path to the headless Unity build executable (used by the Headless Orchestrator)")]
+    public string unityBuildPath = "";
+
+    [Tooltip("Number of parallel headless environments to launch")]
+    public int numHeadlessEnvs = 2;
+
+    [Tooltip("Launch Unity instances with graphics (windowed) instead of -nographics. " +
+             "Useful for debugging — visual output lets you see what the agent is doing.")]
+    public bool unityWithGraphics = false;
+
+    [Tooltip("When true: one Python process trains one shared model using SubprocVecEnv across all N Unity instances. " +
+             "When false: each Unity instance gets its own independent Python process and model.")]
+    public bool headlessSingleModelMode = true;
+
+    [Tooltip("Path to a .zip model to resume all headless envs from (leave empty to train from scratch)")]
+    public string headlessResumeModelPath = "";
+
     [Header("Resume Training")]
     [Tooltip("Path to a .zip model file to resume from (leave empty to train from scratch)")]
     public string resumeModelPath = "";

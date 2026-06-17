@@ -41,13 +41,14 @@ class ShilateEnv(gym.Env):
         ray_count: int,
         mqtt_host: str = "localhost",
         mqtt_port: int = 1883,
+        env_prefix: str = "env0",
     ):
         super().__init__()
 
         self.ray_count = ray_count
 
-        # Observation: ray distances (0-1) + normalized speed + normalized steer
-        obs_size = ray_count + 2
+        # Observation: ray distances (0-1) + normalized speed + normalized steer + track progress
+        obs_size = ray_count + 3
         self.observation_space = spaces.Box(
             low=0.0, high=1.0, shape=(obs_size,), dtype=np.float32
         )
@@ -65,6 +66,7 @@ class ShilateEnv(gym.Env):
             mqtt_port=mqtt_port,
             subscribe_sensors=True,
             subscribe_training=True,
+            env_prefix=env_prefix,
         )
 
         self._connected = False
@@ -135,18 +137,20 @@ class ShilateEnv(gym.Env):
             rays = training_obs["rays"]
             speed = training_obs.get("speed", 0.0)
             steer = training_obs.get("steer", 0.5)
+            progress = training_obs.get("progress", 0.0)
         else:
             # Fallback to raw sensor data
             rays = self._ctrl.sensor_rays
             speed = min(self._ctrl.get_speed() / 150.0, 1.0)
             steer = 0.5
+            progress = 0.0
 
         # Pad or truncate rays to expected count
         ray_arr = np.zeros(self.ray_count, dtype=np.float32)
         for i in range(min(len(rays), self.ray_count)):
             ray_arr[i] = float(rays[i])
 
-        obs = np.concatenate([ray_arr, [float(speed), float(steer)]])
+        obs = np.concatenate([ray_arr, [float(speed), float(steer), float(progress)]])
         return np.clip(obs, 0.0, 1.0).astype(np.float32)
 
     def close(self):

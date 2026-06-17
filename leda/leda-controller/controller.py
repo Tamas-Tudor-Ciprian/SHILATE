@@ -15,10 +15,6 @@ import paho.mqtt.client as mqtt
 
 log = logging.getLogger(__name__)
 
-# All Unity-side topics live under this prefix. Single-env design — do not
-# parametrize this. To run multiple envs, redesign the trainer instead.
-ENV_PREFIX = "env0"
-
 
 class VehicleController:
     """MQTT-based vehicle controller that sends commands and receives telemetry."""
@@ -57,8 +53,9 @@ class VehicleController:
         mqtt_port: int = 1883,
         subscribe_sensors: bool = False,
         subscribe_training: bool = False,
+        env_prefix: str = "env0",
     ):
-        self.prefix = ENV_PREFIX
+        self.prefix = env_prefix
         self.mqtt_host = mqtt_host
         self.mqtt_port = mqtt_port
         self._subscribe_sensors = subscribe_sensors
@@ -77,6 +74,7 @@ class VehicleController:
         self.training_reward: float = 0.0
         self.training_done: bool = False
         self.training_obs: dict = {}
+        self.training_obstacle_count: int = 0
 
         # Events for synchronization
         self.obs_event = threading.Event()
@@ -89,7 +87,7 @@ class VehicleController:
 
         # MQTT client
         self._client = mqtt.Client(
-            client_id=f"shilate-controller-{ENV_PREFIX}",
+            client_id=f"shilate-controller-{env_prefix}",
             protocol=mqtt.MQTTv311,
         )
         self._client.on_connect = self._on_connect
@@ -201,6 +199,10 @@ class VehicleController:
             # Store the full payload dict, not payload["value"].
             self.training_obs = payload if isinstance(payload, dict) else {}
             self.obs_event.set()
+        elif local_topic == "vehicle/training/episode_end":
+            obs_count = payload.get("obstacle_count")
+            if obs_count is not None:
+                self.training_obstacle_count = int(obs_count)
 
     # ─── Control commands ────────────────────────────────────────────
 

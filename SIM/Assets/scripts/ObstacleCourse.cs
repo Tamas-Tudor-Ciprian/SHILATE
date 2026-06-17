@@ -27,9 +27,6 @@ public class ObstacleCourse : MonoBehaviour
     [SerializeField] float wallHeight = 3f;
 
     [Header("Obstacles")]
-    [Tooltip("Number of obstacles to spawn on the track")]
-    [SerializeField] int obstacleCount = 12;
-
     [Tooltip("Minimum spacing between obstacles (meters)")]
     [SerializeField] float minSpacing = 3f;
 
@@ -43,6 +40,9 @@ public class ObstacleCourse : MonoBehaviour
     [Header("References")]
     public LedaBroker broker;
     public TrainingBridge trainingBridge;
+
+    /// <summary>Set by TrainingBridge before Reset() to control the curriculum obstacle count.</summary>
+    public int TargetObstacleCount { get; set; } = 0;
 
     readonly List<GameObject> _obstacles = new List<GameObject>();
     readonly List<GameObject> _walls = new List<GameObject>();
@@ -252,15 +252,22 @@ public class ObstacleCourse : MonoBehaviour
     /// </summary>
     void SpawnObstacles()
     {
+        if (TargetObstacleCount == 0)
+        {
+            Debug.Log("[ObstacleCourse] No obstacles for this curriculum stage");
+            return;
+        }
+
         float margin = 1.5f;
-        float sectorDeg = 360f / obstacleCount; // degrees per sector
+        float sectorDeg = 360f / TargetObstacleCount; // degrees per sector
         float carStartAngleDeg = 0f;            // car always starts at angle 0 (positive X)
-        // Exclude sectors whose midpoint falls within 1.5 sectors of the start
-        float excludeHalfArc = sectorDeg * 1.5f;
+        // Exclude sectors whose midpoint falls within 1.5 sectors of the start,
+        // but cap at 90° so small counts (1-2) don't lose every sector.
+        float excludeHalfArc = Mathf.Min(sectorDeg * 1.5f, 90f);
 
         var positions = new List<Vector3>();
 
-        for (int i = 0; i < obstacleCount; i++)
+        for (int i = 0; i < TargetObstacleCount; i++)
         {
             float sectorMid = i * sectorDeg + sectorDeg * 0.5f;
 
@@ -312,7 +319,7 @@ public class ObstacleCourse : MonoBehaviour
             }
         }
 
-        Debug.Log($"[ObstacleCourse] Spawned {_obstacles.Count}/{obstacleCount} obstacles " +
+        Debug.Log($"[ObstacleCourse] Spawned {_obstacles.Count}/{TargetObstacleCount} obstacles " +
                   $"(stratified, R={innerRadius}-{outerRadius})");
     }
 

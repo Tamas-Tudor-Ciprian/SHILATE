@@ -19,12 +19,13 @@ public class EditorMqttListener
 
     MqttClient _mqtt;
     bool _connected;
-    const string Prefix = "env0";
+    string _prefix = "env0";
 
     public bool IsConnected => _connected;
 
-    public void Start(string host, int port)
+    public void Start(string host, int port, string envPrefix = "env0")
     {
+        _prefix = envPrefix;
         Stop();
 
         _mqtt = new MqttClient(host, port, $"shilate-editor-listener-{Guid.NewGuid():N}");
@@ -63,8 +64,8 @@ public class EditorMqttListener
     {
         _connected = true;
         OnConnectionChanged?.Invoke(true);
-        _mqtt.Subscribe($"{Prefix}/vehicle/training/episode_end");
-        _mqtt.Subscribe($"{Prefix}/vehicle/training/heartbeat");
+        _mqtt.Subscribe($"{_prefix}/vehicle/training/episode_end");
+        _mqtt.Subscribe($"{_prefix}/vehicle/training/heartbeat");
     }
 
     void HandleDisconnected(string reason)
