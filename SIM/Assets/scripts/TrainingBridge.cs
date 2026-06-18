@@ -40,6 +40,13 @@ public class TrainingBridge : MonoBehaviour
     [Tooltip("Speed threshold below which the idle penalty is applied (km/h)")]
     [SerializeField] float idleSpeedThreshold = 2f;
 
+    [Header("Curriculum Override")]
+    [Tooltip("When enabled, uses a fixed obstacle count instead of the curriculum schedule")]
+    [SerializeField] bool overrideObstacleCount = false;
+
+    [Tooltip("Fixed number of obstacles to use when override is enabled")]
+    [SerializeField] int fixedObstacleCount = 0;
+
     float _episodeTimer;
     float _lastAngle;
     float _totalAngleProgress;
@@ -146,7 +153,7 @@ public class TrainingBridge : MonoBehaviour
             stepReward += finishBonus;
             finished = true;
             _completedLaps++;
-            _currentObstacleCount = ComputeObstacleCount(_completedLaps);
+            _currentObstacleCount = overrideObstacleCount ? fixedObstacleCount : ComputeObstacleCount(_completedLaps);
             obstacleCourse.TargetObstacleCount = _currentObstacleCount;
             Debug.Log($"[TrainingBridge] Lap {_completedLaps} complete — next obstacle count: {_currentObstacleCount}");
         }
