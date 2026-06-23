@@ -40,6 +40,15 @@ public class TrainingBridge : MonoBehaviour
     [Tooltip("Speed threshold below which the idle penalty is applied (km/h)")]
     [SerializeField] float idleSpeedThreshold = 2f;
 
+    [Tooltip("Per-step reward coefficient for maintaining forward speed")]
+    [SerializeField] float speedRewardCoeff = 0.005f;
+
+    [Tooltip("Speed at which speed reward is maximised (km/h)")]
+    [SerializeField] float speedRewardCap = 40f;
+
+    [Tooltip("Max lateral speed used for normalization of the vLateral observation (m/s)")]
+    [SerializeField] float maxLateralSpeed = 10f;
+
     [Header("Curriculum Override")]
     [Tooltip("When enabled, uses a fixed obstacle count instead of the curriculum schedule")]
     [SerializeField] bool overrideObstacleCount = false;
@@ -123,6 +132,9 @@ public class TrainingBridge : MonoBehaviour
         {
             _idleTime = 0f;
         }
+
+        // Speed reward — per-step incentive for maintaining forward momentum
+        stepReward += speedRewardCoeff * Mathf.Clamp01(vehicle.CurrentSpeed / speedRewardCap);
 
         // Collision check — use flag set by OnCollisionEnter (not RaycastSensor's cleared flag)
         bool collided = _collidedThisStep;
@@ -212,7 +224,14 @@ public class TrainingBridge : MonoBehaviour
         float normSpeed = Mathf.Clamp01(vehicle.CurrentSpeed / maxSpeed);
         float normSteer = (vehicle.SteerInput + 1f) * 0.5f; // map -1..1 to 0..1
 
-        var sb = new System.Text.StringBuilder(256);
+        // Velocity in local space: Z = forward, X = lateral right
+        Vector3 localVel = vehicle.LocalVelocity;
+        float maxSpeedMs = maxSpeed / 3.6f;
+        float normVForward = Mathf.Clamp01(localVel.z / maxSpeedMs);
+        // Map lateral [-maxLateralSpeed, +maxLateralSpeed] → [0, 1], centred at 0.5
+        float normVLateral = Mathf.Clamp01(localVel.x / maxLateralSpeed * 0.5f + 0.5f);
+
+        var sb = new System.Text.StringBuilder(320);
         sb.Append("{\"rays\":[");
         for (int i = 0; i < rays.Length; i++)
         {
@@ -223,6 +242,10 @@ public class TrainingBridge : MonoBehaviour
         sb.Append(normSpeed.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
         sb.Append(",\"steer\":");
         sb.Append(normSteer.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
+        sb.Append(",\"vForward\":");
+        sb.Append(normVForward.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
+        sb.Append(",\"vLateral\":");
+        sb.Append(normVLateral.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
         sb.Append('}');
 
         broker.PublishRaw("vehicle/training/obs", sb.ToString());

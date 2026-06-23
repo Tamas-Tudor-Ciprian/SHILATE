@@ -133,6 +133,9 @@ public class VehicleController : MonoBehaviour
     /// <summary>Active gear (Park / Reverse / Neutral / Drive).</summary>
     public GearState CurrentGear { get; private set; } = GearState.Park;
 
+    /// <summary>Velocity in the vehicle's local coordinate space (m/s). X = lateral right, Z = forward.</summary>
+    public Vector3 LocalVelocity { get; private set; }
+
     Rigidbody _rb;
     float _baseSideStiffnessRL;
     float _baseSideStiffnessRR;
@@ -394,6 +397,7 @@ public class VehicleController : MonoBehaviour
         float forwardSpeed = Vector3.Dot(_rb.linearVelocity, transform.forward);
         SignedSpeed = forwardSpeed * 3.6f; // m/s → km/h
         CurrentSpeed = Mathf.Abs(SignedSpeed);
+        LocalVelocity = transform.InverseTransformDirection(_rb.linearVelocity);
 
         // Motor RPM from average rear wheel angular velocity (EV: 0 at rest)
         float avgWheelRPM = (Mathf.Abs(wheelRL.rpm) + Mathf.Abs(wheelRR.rpm)) * 0.5f;

@@ -63,7 +63,9 @@ def parse_args():
     p.add_argument("--log-dir", default=os.path.join(_PROJECT_ROOT, "logs", "tensorboard"))
     p.add_argument("--resume-model", default=None,
                    help="Path to a .zip model file to resume training from")
-    p.add_argument("--ent-coef",type=float, default=0.01, help="This encourages the agent to explore more")
+    p.add_argument("--ent-coef", type=float, default=0.01, help="This encourages the agent to explore more")
+    p.add_argument("--smoothness-coeff", type=float, default=0.05,
+                   help="Per-step penalty coefficient for abrupt steer/throttle/brake changes")
     p.add_argument("--env-prefix", default="env0",
                    help="MQTT topic prefix matching the Unity instance (e.g. env0, env1). "
                         "Must match the -envPrefix arg passed to the Unity build.")
@@ -120,6 +122,7 @@ def main():
             mqtt_port=args.mqtt_port,
             ray_count=ray_count,
             env_prefix=args.env_prefix,
+            smoothness_coeff=args.smoothness_coeff,
         )
         return Monitor(env)
 
@@ -132,6 +135,7 @@ def main():
                     mqtt_port=args.mqtt_port,
                     ray_count=ray_count,
                     env_prefix=prefix,
+                    smoothness_coeff=args.smoothness_coeff,
                 ))
             return _inner
         vec_env = SubprocVecEnv([_make_env_i(f"env{i}") for i in range(args.num_envs)])
