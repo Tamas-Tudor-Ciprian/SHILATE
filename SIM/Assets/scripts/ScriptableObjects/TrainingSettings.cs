@@ -25,6 +25,11 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("PPO learning rate")]
     public float learningRate = 3e-4f;
 
+    [Tooltip("Discount factor. 0.999 gives ~1000-step effective horizon, matching the episode length "
+             "so the finish bonus is meaningful. Lower values (e.g. 0.99) cause the agent to ignore "
+             "rewards near the end of the lap.")]
+    public float gamma = 0.999f;
+
     [Tooltip("Steps per rollout")]
     public int nSteps = 2048;
 
@@ -129,6 +134,7 @@ public class TrainingSettings : ScriptableObject
         var args = new System.Text.StringBuilder();
 
         args.Append($"--learning-rate {learningRate.ToString(System.Globalization.CultureInfo.InvariantCulture)} ");
+        args.Append($"--gamma {gamma.ToString(System.Globalization.CultureInfo.InvariantCulture)} ");
         args.Append($"--n-steps {nSteps} ");
         args.Append($"--batch-size {batchSize} ");
         args.Append($"--mqtt-host {mqttHost} ");
