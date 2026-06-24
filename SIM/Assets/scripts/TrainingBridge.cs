@@ -14,13 +14,13 @@ public class TrainingBridge : MonoBehaviour
 
     [Header("Reward Settings")]
     [Tooltip("Reward per degree of forward progress around the track")]
-    [SerializeField] float progressReward = 0.2f;
+    [SerializeField] float progressReward = 0.5f;
 
     [Tooltip("Penalty on collision")]
-    [SerializeField] float collisionPenalty = -30f;
+    [SerializeField] float collisionPenalty = 0f;
 
     [Tooltip("Bonus for completing a full lap")]
-    [SerializeField] float finishBonus = 60f;
+    [SerializeField] float finishBonus = -0.1f;
 
     [Header("Episode Settings")]
     [Tooltip("Max episode duration in sim-time seconds")]
@@ -28,7 +28,7 @@ public class TrainingBridge : MonoBehaviour
 
 
     [Tooltip("One-time bonus awarded when vehicle heading first reaches 180 degrees (±10°)")]
-    [SerializeField] float halfTurnBonus = 25f;
+    [SerializeField] float halfTurnBonus = 0f;
 
 
     [Tooltip("Max speed for observation normalization (km/h)")]
@@ -38,7 +38,7 @@ public class TrainingBridge : MonoBehaviour
     [SerializeField] float idlePenalty = -0.02f;
 
     [Tooltip("Speed threshold below which the idle penalty is applied (km/h)")]
-    [SerializeField] float idleSpeedThreshold = 2f;
+    [SerializeField] float idleSpeedThreshold = 0.5f;
 
     [Tooltip("Per-step reward coefficient for maintaining forward speed")]
     [SerializeField] float speedRewardCoeff = 0.005f;

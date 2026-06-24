@@ -118,11 +118,12 @@ class ShilateEnv(gym.Env):
 
         steer, throttle, brake = float(action[0]), float(action[1]), float(action[2])
 
-        # Smoothness penalty: penalise large deltas in steer and throttle/brake
+        # Smoothness penalty: penalise abrupt steering changes only.
+        # Throttle and brake are excluded — penalising acceleration deltas
+        # creates a local optimum at throttle=0 that prevents the agent from
+        # learning to move.
         delta_steer = abs(steer - float(self._prev_action[0]))
-        delta_throttle = abs(throttle - float(self._prev_action[1]))
-        delta_brake = abs(brake - float(self._prev_action[2]))
-        smoothness_penalty = -self.smoothness_coeff * (delta_steer + delta_throttle + delta_brake)
+        smoothness_penalty = -self.smoothness_coeff * delta_steer
 
         self._prev_action = np.array([steer, throttle, brake], dtype=np.float32)
         self._ctrl.send_action(steer, throttle, brake)
