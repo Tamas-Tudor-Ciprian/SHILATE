@@ -20,7 +20,7 @@ public class TrainingBridge : MonoBehaviour
     [SerializeField] float collisionPenalty = 0f;
 
     [Tooltip("Bonus for completing a full lap")]
-    [SerializeField] float finishBonus = -0.1f;
+    [SerializeField] float finishBonus = 0f;
 
     [Header("Episode Settings")]
     [Tooltip("Max episode duration in sim-time seconds")]
@@ -173,7 +173,10 @@ public class TrainingBridge : MonoBehaviour
         _cumulativeReward += stepReward;
 
         // Episode done conditions
-        bool timeout = _episodeTimer >= episodeTimeout || _idleTime >= 3f;
+        bool idleTimeout = _idleTime >= 3f;
+        if (idleTimeout)
+            stepReward = 0f;
+        bool timeout = _episodeTimer >= episodeTimeout || idleTimeout;
         _episodeDone = collided || finished || timeout;
 
         // Tell ObstacleCourse whether to regenerate the layout on the next reset.
