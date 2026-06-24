@@ -25,8 +25,8 @@ public class TrainingSettings : ScriptableObject
     [Tooltip("PPO learning rate")]
     public float learningRate = 3e-4f;
 
-    [Tooltip("Discount factor. 0.999 gives ~1000-step effective horizon, matching the episode length ",
-             "so the finish bonus is meaningful. Lower values (e.g. 0.99) cause the agent to ignore ",
+    [Tooltip("Discount factor. 0.999 gives ~1000-step effective horizon, matching the episode length 
+             "so the finish bonus is meaningful. Lower values (e.g. 0.99) cause the agent to ignore 
              "rewards near the end of the lap.")]
     public float gamma = 0.999f;
 
