@@ -73,7 +73,7 @@ def parse_args():
                         "Each needs its own headless Unity instance with -envPrefix env0, env1, ... "
                         "All share one Python process and one PPO model.")
     p.add_argument("--gamma", type=float, default=0.999,
-			"gamma is the discount factor that has the model care more about present actions than future actions")
+			help="gamma is the discount factor that has the model care more about present actions than future actions")
     return p.parse_args()
 
 
