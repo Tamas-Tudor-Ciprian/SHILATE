@@ -15,6 +15,7 @@ Usage:
     --save-path        Model save directory (default: <project-root>/models)
     --log-dir          TensorBoard log directory (default: <project-root>/logs/tensorboard)
     --resume-model     Path to a .zip model file to resume from
+    --gamma            Discount factor
 
 The number of raycast sensors is read from ../../config.json (model.ray_count).
 This trainer always runs against exactly ONE environment at real-time speed —
@@ -71,6 +72,8 @@ def parse_args():
                    help="Number of parallel Unity environments (SubprocVecEnv). "
                         "Each needs its own headless Unity instance with -envPrefix env0, env1, ... "
                         "All share one Python process and one PPO model.")
+    p.add_argument("--gamma", type=float, default=0.999,
+			"gamma is the discount factor that has the model care more about present actions than future actions")
     return p.parse_args()
 
 
@@ -166,6 +169,7 @@ def main():
             policy_kwargs=policy_kwargs,
             verbose=1,
             tensorboard_log=args.log_dir,
+	    gamma=args.gamma,
         )
         log.info("PPO model created")
 
