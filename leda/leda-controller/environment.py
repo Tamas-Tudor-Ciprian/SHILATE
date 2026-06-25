@@ -123,8 +123,12 @@ class ShilateEnv(gym.Env):
             return obs, -1.0, False, True, {"reason": "obs_timeout"}
 
         obs = self._build_observation()
-        reward = self._ctrl.training_reward
-        done = self._ctrl.training_done
+        # Read reward and done from the bundled obs payload (Unity packs them into the same
+        # MQTT message to eliminate the timing race of reading separate topics).
+        # Fall back to the separately-published fields if the keys are absent.
+        t_obs = self._ctrl.training_obs
+        reward = float(t_obs.get("reward", self._ctrl.training_reward))
+        done = bool(t_obs.get("done", 1 if self._ctrl.training_done else 0))
         self._step_count += 1
 
         return obs, reward, done, False, {}

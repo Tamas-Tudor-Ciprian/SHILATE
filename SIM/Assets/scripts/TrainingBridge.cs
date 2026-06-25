@@ -169,8 +169,8 @@ public class TrainingBridge : MonoBehaviour
         if (_episodeDone && obstacleCourse != null)
             obstacleCourse.ShouldRespawnObstacles = finished;
 
-        // Publish observation
-        PublishObservation();
+        // Publish observation (reward and done bundled in — eliminates Python-side timing race)
+        PublishObservation(stepReward, _episodeDone);
 
         // Publish reward
         broker.PublishRaw("vehicle/training/reward",
@@ -206,11 +206,12 @@ public class TrainingBridge : MonoBehaviour
         }
     }
 
-    void PublishObservation()
+    void PublishObservation(float stepReward, bool done)
     {
         float[] rays = raycastSensor.GetDistances();
         float normSpeed = Mathf.Clamp01(vehicle.CurrentSpeed / maxSpeed);
         float normSteer = (vehicle.SteerInput + 1f) * 0.5f; // map -1..1 to 0..1
+        float normProgress = Mathf.Clamp01(_totalAngleProgress / 360f);
 
         var sb = new System.Text.StringBuilder(256);
         sb.Append("{\"rays\":[");
@@ -223,6 +224,12 @@ public class TrainingBridge : MonoBehaviour
         sb.Append(normSpeed.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
         sb.Append(",\"steer\":");
         sb.Append(normSteer.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
+        sb.Append(",\"progress\":");
+        sb.Append(normProgress.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
+        sb.Append(",\"reward\":");
+        sb.Append(stepReward.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
+        sb.Append(",\"done\":");
+        sb.Append(done ? "1" : "0");
         sb.Append('}');
 
         broker.PublishRaw("vehicle/training/obs", sb.ToString());

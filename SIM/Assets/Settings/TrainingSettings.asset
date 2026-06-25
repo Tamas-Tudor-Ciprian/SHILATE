@@ -14,15 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TrainingSettings
   venvPath: ../leda/leda-controller/.venv
   trainScriptPath: ../leda/leda-controller/train.py
-  numEnvs: 10
-  timescale: 1
   learningRate: 0.0003
   nSteps: 2048
   batchSize: 64
-  rayCount: 21
-  debugTimescale: 1
   mqttHost: localhost
   mqttPort: 1883
   savePath: ../models
   logDir: ../logs/tensorboard
-  resumeModelPath: 
+  unityBuildPath: D:/SHILATE/SIM/build/SHILATE.exe
+  numHeadlessEnvs: 1
+  unityWithGraphics: 1
+  headlessSingleModelMode: 1
+  headlessResumeModelPath: D:/SHILATE/models-shy-guy/shilate_ppo_7obs_2950000_steps.zip
+  resumeModelPath: D:/SHILATE/models-shy-guy/shilate_ppo_7obs_2950000_steps.zip
