@@ -15,6 +15,7 @@ Usage:
     --save-path        Model save directory (default: <project-root>/models)
     --log-dir          TensorBoard log directory (default: <project-root>/logs/tensorboard)
     --resume-model     Path to a .zip model file to resume from
+    --gamma            Discount factor (default: 0.999)
 
 The number of raycast sensors is read from ../../config.json (model.ray_count).
 This trainer always runs against exactly ONE environment at real-time speed —
@@ -63,7 +64,12 @@ def parse_args():
     p.add_argument("--log-dir", default=os.path.join(_PROJECT_ROOT, "logs", "tensorboard"))
     p.add_argument("--resume-model", default=None,
                    help="Path to a .zip model file to resume training from")
-    p.add_argument("--ent-coef",type=float, default=0.01, help="This encourages the agent to explore more")
+    p.add_argument("--ent-coef", type=float, default=0.01, help="This encourages the agent to explore more")
+    p.add_argument("--gamma", type=float, default=0.999,
+                   help="Discount factor. Default 0.999 gives ~1000-step effective horizon, "
+                        "matching the episode length and ensuring the finish bonus is valued.")
+    p.add_argument("--smoothness-coeff", type=float, default=0.05,
+                   help="Per-step penalty coefficient for abrupt steer/throttle/brake changes")
     p.add_argument("--env-prefix", default="env0",
                    help="MQTT topic prefix matching the Unity instance (e.g. env0, env1). "
                         "Must match the -envPrefix arg passed to the Unity build.")
@@ -100,6 +106,7 @@ def main():
     log.info("  Total timesteps:  %s", "unlimited" if unlimited else total_timesteps)
     log.info("  Learning rate:    %s", args.learning_rate)
     log.info("  n_steps:          %d", args.n_steps)
+    log.info("  Gamma:            %s", args.gamma)
     log.info("  Batch size:       %d", args.batch_size)
     log.info("  Num envs:         %d", args.num_envs)
     log.info("  Ray count:        %d (from config.json)", ray_count)
@@ -120,6 +127,7 @@ def main():
             mqtt_port=args.mqtt_port,
             ray_count=ray_count,
             env_prefix=args.env_prefix,
+            smoothness_coeff=args.smoothness_coeff,
         )
         return Monitor(env)
 
@@ -132,6 +140,7 @@ def main():
                     mqtt_port=args.mqtt_port,
                     ray_count=ray_count,
                     env_prefix=prefix,
+                    smoothness_coeff=args.smoothness_coeff,
                 ))
             return _inner
         vec_env = SubprocVecEnv([_make_env_i(f"env{i}") for i in range(args.num_envs)])
@@ -152,6 +161,7 @@ def main():
             n_steps=args.n_steps,
             batch_size=args.batch_size,
             ent_coef=args.ent_coef,
+            gamma=args.gamma,
         )
         model.tensorboard_log = args.log_dir
         log.info("Model loaded, resuming training")
@@ -163,6 +173,7 @@ def main():
             n_steps=args.n_steps,
             batch_size=args.batch_size,
             ent_coef=args.ent_coef,
+            gamma=args.gamma,
             policy_kwargs=policy_kwargs,
             verbose=1,
             tensorboard_log=args.log_dir,
