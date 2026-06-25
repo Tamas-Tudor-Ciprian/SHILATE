@@ -147,16 +147,18 @@ def build_observation(ctrl: "VehicleController", ray_count: int) -> np.ndarray:
         rays = training_obs["rays"]
         speed = training_obs.get("speed", 0.0)
         steer = training_obs.get("steer", 0.5)
+        progress = training_obs.get("progress", 0.0)
     else:
         rays = ctrl.sensor_rays
         speed = min(ctrl.get_speed() / 150.0, 1.0)
         steer = 0.5
+        progress = 0.0
 
     ray_arr = np.zeros(ray_count, dtype=np.float32)
     for i in range(min(len(rays), ray_count)):
         ray_arr[i] = float(rays[i])
 
-    obs = np.concatenate([ray_arr, [float(speed), float(steer)]])
+    obs = np.concatenate([ray_arr, [float(speed), float(steer), float(progress)]])
     return np.clip(obs, 0.0, 1.0).astype(np.float32)
 
 
