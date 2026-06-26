@@ -48,6 +48,7 @@ public class ObstacleCourse : MonoBehaviour
     readonly List<GameObject> _walls = new List<GameObject>();
     Material _obstacleMaterial;
     Material _wallMaterial;
+    GameObject _roadSurface;
 
     /// <summary>
     /// Set to true by TrainingBridge when the previous episode ended with a completed lap.
@@ -147,6 +148,7 @@ public class ObstacleCourse : MonoBehaviour
             if (wall != null) Destroy(wall);
         }
         _walls.Clear();
+        if (_roadSurface != null) { Destroy(_roadSurface); _roadSurface = null; }
     }
 
     void SpawnWalls()
@@ -157,6 +159,8 @@ public class ObstacleCourse : MonoBehaviour
         _walls.Add(CreateCylinderWall("InnerWall", innerRadius, true));
         // Outer wall: normals face inward (visible from the track)
         _walls.Add(CreateCylinderWall("OuterWall", outerRadius, false));
+
+        SpawnRoadSurface();
 
         Debug.Log($"[ObstacleCourse] Spawned cylinder walls: inner R={innerRadius}, outer R={outerRadius}, {wallSegments} segments");
     }
@@ -242,6 +246,116 @@ public class ObstacleCourse : MonoBehaviour
 
 	//return the created game object
         return go;
+    }
+
+    /// <summary>
+    /// Generates a flat annular road-surface mesh (XZ plane) with a runtime-baked texture:
+    /// solid edge stripes on the inner and outer sides, and a dashed centre line that scrolls
+    /// past as the vehicle drives, giving a natural speed-gauging reference.
+    ///
+    /// Texture U axis = radial (0 = inner edge, 1 = outer edge).
+    /// Texture V axis = one dash cycle; the material tiles it <c>tilesAround</c> times so each
+    /// tile covers roughly (trackCircumference / tilesAround) metres.
+    /// </summary>
+    void SpawnRoadSurface()
+    {
+        const int   segs       = 128;   // ring smoothness
+        const int   tilesAround = 30;   // dash pattern repeats around the track (~6.8 m per tile)
+        const float yOffset    = 0.01f; // just above the ground plane to prevent z-fighting
+
+        int vertCount = (segs + 1) * 2;
+        var positions = new Vector3[vertCount];
+        var uvs       = new Vector2[vertCount];
+        var tris      = new int[segs * 6];
+
+        for (int i = 0; i <= segs; i++)
+        {
+            float t     = (float)i / segs;
+            float angle = t * Mathf.PI * 2f;
+            float cos   = Mathf.Cos(angle);
+            float sin   = Mathf.Sin(angle);
+
+            int vi = i * 2;
+            positions[vi]     = new Vector3(trackCenter.x + innerRadius * cos, yOffset, trackCenter.z + innerRadius * sin);
+            positions[vi + 1] = new Vector3(trackCenter.x + outerRadius * cos, yOffset, trackCenter.z + outerRadius * sin);
+
+            // u=0 at inner edge, u=1 at outer edge; v goes 0..1 once around the track
+            uvs[vi]     = new Vector2(0f, t);
+            uvs[vi + 1] = new Vector2(1f, t);
+        }
+
+        for (int i = 0; i < segs; i++)
+        {
+            int inner0 = i * 2;
+            int outer0 = i * 2 + 1;
+            int inner1 = (i + 1) * 2;
+            int outer1 = (i + 1) * 2 + 1;
+            int ti     = i * 6;
+
+            // CCW winding → RecalculateNormals produces +Y (upward) normals
+            tris[ti    ] = inner0;
+            tris[ti + 1] = inner1;
+            tris[ti + 2] = outer1;
+            tris[ti + 3] = inner0;
+            tris[ti + 4] = outer1;
+            tris[ti + 5] = outer0;
+        }
+
+        var mesh = new Mesh { name = "RoadRingMesh" };
+        mesh.vertices  = positions;
+        mesh.uv        = uvs;
+        mesh.triangles = tris;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        // ── Procedural road-marking texture ──────────────────────────────────
+        // U = radial (inner→outer); V = one dash cycle (tiled tilesAround times)
+        const int   texW       = 256;
+        const int   texH       = 256;
+        const float edgeW      = 0.07f;   // solid white stripe on each edge
+        const float centreHalf = 0.025f;  // half-width of dashed centre line
+        const float dashFrac   = 0.55f;   // 55% dash / 45% gap per tile
+
+        var asphalt   = new Color(0.10f, 0.10f, 0.10f);
+        var lineColor = new Color(0.92f, 0.90f, 0.82f); // warm white
+
+        var tex = new Texture2D(texW, texH, TextureFormat.RGB24, false)
+        {
+            filterMode = FilterMode.Bilinear,
+            wrapMode   = TextureWrapMode.Repeat
+        };
+
+        for (int y = 0; y < texH; y++)
+        {
+            float v      = (float)y / texH;
+            bool  dashOn = v < dashFrac;
+
+            for (int x = 0; x < texW; x++)
+            {
+                float u = (float)x / texW;
+                bool isLine = u < edgeW
+                           || u > 1f - edgeW
+                           || (dashOn && Mathf.Abs(u - 0.5f) < centreHalf);
+
+                tex.SetPixel(x, y, isLine ? lineColor : asphalt);
+            }
+        }
+        tex.Apply();
+
+        var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "RoadMat" };
+        mat.SetFloat("_Smoothness", 0.05f);
+        mat.SetFloat("_Metallic",   0f);
+        mat.mainTexture      = tex;
+        mat.mainTextureScale = new Vector2(1f, tilesAround);
+
+        _roadSurface = new GameObject("RoadSurface");
+        _roadSurface.AddComponent<MeshFilter>().mesh = mesh;
+        var mr = _roadSurface.AddComponent<MeshRenderer>();
+        mr.material           = mat;
+        mr.shadowCastingMode  = UnityEngine.Rendering.ShadowCastingMode.Off;
+        mr.receiveShadows     = true;
+
+        Debug.Log($"[ObstacleCourse] Road surface spawned (inner R={innerRadius}, outer R={outerRadius}, {tilesAround} dash tiles)");
     }
 
     /// <summary>
