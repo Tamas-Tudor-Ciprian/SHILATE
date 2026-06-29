@@ -66,6 +66,13 @@ public class TrainingEditorWindow : EditorWindow
         set => SessionState.SetBool(InferenceModeKey, value);
     }
 
+    const string RemoteModeKey = "TrainingController_RemoteMode";
+    bool RemoteMode
+    {
+        get => SessionState.GetBool(RemoteModeKey, false);
+        set => SessionState.SetBool(RemoteModeKey, value);
+    }
+
     const int MaxLogEntries = 500;
     const string SettingsAssetPath = "Assets/Settings/TrainingSettings.asset";
 
@@ -156,8 +163,26 @@ public class TrainingEditorWindow : EditorWindow
         if (now - _lastMqttCheck > 2.0)
         {
             _lastMqttCheck = now;
-            CheckMqttConnection();
-            _health.NotifyMqttConnected(_mqttConnected);
+            // Probe runs on a background thread — never blocks the main thread
+            var host = _settings?.mqttHost ?? "localhost";
+            var port = _settings?.mqttPort ?? 1883;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                bool connected = false;
+                try
+                {
+                    using var client = new TcpClient();
+                    var ar = client.BeginConnect(host, port, null, null);
+                    connected = ar.AsyncWaitHandle.WaitOne(500) && client.Connected;
+                    try { client.Close(); } catch { }
+                }
+                catch { }
+                return connected;
+            }).ContinueWith(t =>
+            {
+                _mqttConnected = t.Result;
+                _health.NotifyMqttConnected(_mqttConnected);
+            });
         }
     }
 
@@ -165,17 +190,24 @@ public class TrainingEditorWindow : EditorWindow
     {
         bool isRunning = _processManager != null && _processManager.IsRunning;
 
-        if (state == PlayModeStateChange.EnteredPlayMode && (TrainingActive || InferenceMode))
+        if (state == PlayModeStateChange.EnteredPlayMode && (TrainingActive || InferenceMode || RemoteMode))
         {
             EditorApplication.delayCall += ConfigureSceneAndLaunch;
         }
-        else if (state == PlayModeStateChange.ExitingPlayMode && (TrainingActive || InferenceMode))
+        else if (state == PlayModeStateChange.ExitingPlayMode && (TrainingActive || InferenceMode || RemoteMode))
         {
             AddLog("Exiting Play mode, stopping process...", LogType.Warning);
             if (_processManager != null && _processManager.IsRunning)
                 _processManager.Stop();
+            if (RemoteMode)
+            {
+                AddLog("Restarting local Mosquitto...", LogType.Log);
+                // RunCommand is non-blocking
+                System.Threading.Tasks.Task.Run(RestartMosquitto);
+            }
             TrainingActive = false;
             InferenceMode = false;
+            RemoteMode = false;
             HoldSleep(false);
             _health.StopTraining();
             _mqtt?.Stop();
@@ -257,6 +289,14 @@ public class TrainingEditorWindow : EditorWindow
         {
             // Inference: process was already started in StartInference()
             AddLog("Inference scene ready.", LogType.Log);
+            return;
+        }
+
+        if (RemoteMode)
+        {
+            // Remote: Pi handles inference — no local Python process needed
+            _health.StartTraining();
+            AddLog($"Scene configured. Pi inference running at {_settings.mqttHost}:{_settings.mqttPort}", LogType.Log);
             return;
         }
 
@@ -347,9 +387,9 @@ public class TrainingEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
         bool isRunning = IsBusy();
-        string label = isRunning ? (InferenceMode ? "INFERENCE" : "TRAINING") : "IDLE";
+        string label = isRunning ? (RemoteMode ? "REMOTE" : InferenceMode ? "INFERENCE" : "TRAINING") : "IDLE";
         Color color = isRunning
-            ? (InferenceMode ? new Color(0.4f, 0.8f, 1f) : new Color(0.2f, 0.85f, 0.3f))
+            ? (RemoteMode ? new Color(1f, 0.65f, 0.1f) : InferenceMode ? new Color(0.4f, 0.8f, 1f) : new Color(0.2f, 0.85f, 0.3f))
             : Color.gray;
         var style = new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = color } };
         EditorGUILayout.LabelField($"[{label}]", style, GUILayout.Width(100));
@@ -641,6 +681,12 @@ public class TrainingEditorWindow : EditorWindow
         if (GUILayout.Button("Run Model", GUILayout.Width(120), GUILayout.Height(34)))
             StartInference();
 
+        var remoteStyle = new GUIStyle(GUI.skin.button);
+        remoteStyle.normal.textColor = new Color(1f, 0.65f, 0.1f);
+        remoteStyle.fontStyle = FontStyle.Bold;
+        if (GUILayout.Button("Run From Remote", remoteStyle, GUILayout.Width(140), GUILayout.Height(34)))
+            StartRemoteInference();
+
         GUI.enabled = busy;
         if (GUILayout.Button("Stop", GUILayout.Width(100), GUILayout.Height(34)))
             StopAll();
@@ -654,7 +700,7 @@ public class TrainingEditorWindow : EditorWindow
     {
         bool processRunning = _processManager != null && _processManager.IsRunning;
         bool playing = EditorApplication.isPlaying;
-        return processRunning || ((TrainingActive || InferenceMode) && playing);
+        return processRunning || ((TrainingActive || InferenceMode || RemoteMode) && playing);
     }
 
     // ─── Actions ───────────────────────────────────────────────────────
@@ -770,13 +816,82 @@ public class TrainingEditorWindow : EditorWindow
     {
         if (_processManager != null && _processManager.IsRunning)
             _processManager.Stop();
-        if ((TrainingActive || InferenceMode) && EditorApplication.isPlaying)
+        if ((TrainingActive || InferenceMode || RemoteMode) && EditorApplication.isPlaying)
             EditorApplication.ExitPlaymode();
+        // Mosquitto restart is handled in OnPlayModeChanged when RemoteMode is set
         TrainingActive = false;
         InferenceMode = false;
+        RemoteMode = false;
         HoldSleep(false);
         _health.StopTraining();
         _mqtt?.Stop();
+    }
+
+    // ─── Remote inference ──────────────────────────────────────────────
+
+    void StartRemoteInference()
+    {
+        RemoteMode = true;
+        TrainingActive = false;
+        InferenceMode = false;
+        HoldSleep(true, "remote inference");
+        _logEntries.Clear();
+        _metricsParser.Clear();
+        _health.Clear();
+        _trainingStartTime = DateTime.Now;
+
+        AddLog($"Remote inference — Pi broker: {_settings.mqttHost}:{_settings.mqttPort}", LogType.Log);
+        AddLog("Killing local Mosquitto and Python processes...", LogType.Log);
+
+        // taskkill is fire-and-forget: Process.Start returns immediately
+        RunCommand("taskkill", "/F /IM mosquitto.exe");
+        RunCommand("taskkill", "/F /IM python.exe");
+        RunCommand("taskkill", "/F /IM python3.exe");
+
+        AddLog("Entering Play mode...", LogType.Log);
+        EditorApplication.delayCall += EditorApplication.EnterPlaymode;
+    }
+
+    static void RunCommand(string exe, string args)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe, args)
+            {
+                CreateNoWindow  = true,
+                UseShellExecute = false,
+            });
+        }
+        catch { /* process not found or access denied — ignore */ }
+    }
+
+    static void RestartMosquitto()
+    {
+        // Try Windows service
+        RunCommand("net", "start mosquitto");
+
+        // Also try direct exe in case it's not a service
+        string[] candidates = {
+            @"C:\Program Files\mosquitto\mosquitto.exe",
+            @"C:\mosquitto\mosquitto.exe",
+            @"C:\Program Files (x86)\mosquitto\mosquitto.exe",
+        };
+        foreach (var path in candidates)
+        {
+            if (File.Exists(path))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path)
+                    {
+                        UseShellExecute  = true,
+                        WorkingDirectory = Path.GetDirectoryName(path),
+                    });
+                }
+                catch { /* ignore */ }
+                break;
+            }
+        }
     }
 
     // ─── Process callbacks ─────────────────────────────────────────────
@@ -885,21 +1000,7 @@ public class TrainingEditorWindow : EditorWindow
         Repaint();
     }
 
-    void CheckMqttConnection()
-    {
-        try
-        {
-            using var client = new TcpClient();
-            var result = client.BeginConnect(_settings.mqttHost, _settings.mqttPort, null, null);
-            bool connected = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(500));
-            _mqttConnected = connected && client.Connected;
-            client.Close();
-        }
-        catch
-        {
-            _mqttConnected = false;
-        }
-    }
+    // TCP probe is now inlined async above; kept for reference only\n    // void CheckMqttConnection() { ... }
 
     void HoldSleep(bool hold, string reason = null)
     {

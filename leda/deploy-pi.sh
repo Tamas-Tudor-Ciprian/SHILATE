@@ -15,7 +15,7 @@
 
 set -euo pipefail
 
-PI_HOST="10.248.13.115"
+PI_HOST="10.122.6.115"
 PI_USER="tetrix"
 PI_SSH="ssh -o StrictHostKeyChecking=no ${PI_USER}@${PI_HOST}"
 PI_SCP="scp -o StrictHostKeyChecking=no"
