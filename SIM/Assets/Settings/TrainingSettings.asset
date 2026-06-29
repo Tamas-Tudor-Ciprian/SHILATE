@@ -17,13 +17,13 @@ MonoBehaviour:
   learningRate: 0.0003
   nSteps: 2048
   batchSize: 64
-  mqttHost: localhost
+  mqttHost: 10.122.6.115
   mqttPort: 1883
   savePath: ../models
   logDir: ../logs/tensorboard
   unityBuildPath: D:/SHILATE/SIM/build/SHILATE.exe
-  numHeadlessEnvs: 1
-  unityWithGraphics: 1
+  numHeadlessEnvs: 30
+  unityWithGraphics: 0
   headlessSingleModelMode: 1
-  headlessResumeModelPath: D:/SHILATE/models-shy-guy/shilate_ppo_7obs_2950000_steps.zip
+  headlessResumeModelPath: D:/SHILATE/models-import/shilate_ppo_8500000_steps.zip
   resumeModelPath: D:/SHILATE/models-shy-guy/shilate_ppo_7obs_2950000_steps.zip

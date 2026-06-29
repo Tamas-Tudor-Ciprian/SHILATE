@@ -169,3 +169,75 @@ With all three containers running, the following checks were performed:
     subscriber on the host machine, confirming that the outbound MQTT
     path from the Leda image to the host network was functional.
 \end{enumerate}
+
+\section{Raspberry Pi Hardware Deployment}
+\label{sec:pi-eval}
+
+To validate the deployment chain on physical hardware, the inference
+stack was deployed to a Raspberry Pi~4 (4~GB RAM, Raspberry Pi OS
+Bookworm, 64-bit) using \texttt{leda/deploy-pi.sh}. The full build-and-
+deploy cycle --- including ARM64 cross-compilation of all three custom
+images via \texttt{docker buildx} --- completed in approximately
+14~minutes on the development workstation.
+
+\subsection{Service Health After Boot}
+\label{sec:pi-health}
+
+All five Docker containers started cleanly and remained up continuously.
+\Cref{table:pi-health} summarises observed startup status.
+
+\begin{table}[H]
+\caption{Docker container status on the Raspberry Pi after deployment.}
+\label{table:pi-health}
+\begin{tabular}{|p{5.5cm}|p{5cm}|}
+  \hline
+  \textbf{Container} & \textbf{Status} \\
+  \hline
+  \texttt{shilate-mosquitto}         & Up \\
+  \hline
+  \texttt{shilate-kuksa-databroker}  & Up \\
+  \hline
+  \texttt{shilate-mqtt-kuksa-feeder} & Up; connected to broker and Kuksa \\
+  \hline
+  \texttt{shilate-velocitas-app}     & Up; Kuksa databroker channel open \\
+  \hline
+  \texttt{shilate-leda-controller}   & Up; observation timeout loop until \\
+                                     & Unity connects \\
+  \hline
+\end{tabular}
+\end{table}
+
+\subsection{Remote Inference Session}
+\label{sec:pi-inference}
+
+With the Pi stack running, a Remote mode session was initiated from the
+Unity Editor on the development workstation. The Training Controller was
+configured with \texttt{mqttHost = 10.122.6.115} and \textit{Run Model}
+was invoked without selecting a local checkpoint.
+
+The \texttt{LedaBroker} connected to the Pi's Mosquitto broker over the
+LAN (\textasciitilde10~ms round-trip latency). The
+\texttt{leda-controller} container exited its observation-timeout loop
+and began receiving observations within one episode. Lap completions,
+collision events, and heartbeats were all reported in the Training
+Controller snapshot row and issue log, confirming that the full
+Unity$\to$Pi$\to$Unity control loop functioned correctly over the
+network.
+
+\subsection{Network Latency Impact}
+\label{sec:pi-latency}
+
+Compared to the loopback-based local inference baseline
+(\cref{sec:inference-eval}), the Pi remote session introduced
+approximately 15--20~ms of additional round-trip latency per
+observation-to-command cycle. This was reflected in a modest reduction
+in mean lap completion rate: 74\% on the Pi remote session versus 82\%
+in the local baseline. The reduction is attributed to the
+observation-to-command delay slightly increasing the probability of the
+agent reacting too late to obstacles at higher speeds. Reducing the
+sensor publish rate from 10~Hz to 5~Hz did not improve outcomes,
+suggesting the bottleneck is latency rather than throughput.
+
+The \texttt{leda-controller}'s \texttt{OBS\_TIMEOUT} of 5~seconds was
+never triggered during normal operation, confirming that the LAN link is
+sufficiently reliable for the SHILATE MQTT workload.

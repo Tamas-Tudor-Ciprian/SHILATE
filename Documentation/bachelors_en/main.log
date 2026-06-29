@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  16 JUN 2026 16:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  29 JUN 2026 15:08
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -865,8 +865,7 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (./chapters/2-AbstractRO.aux) (./chapters/4-Introduction.aux)
 (./chapters/5-Background.aux) (./chapters/6-SystemArchitecture.aux)
 (./chapters/7-UnitySim.aux) (./chapters/8-PythonRL.aux)
-(./chapters/9-SDVIntegration.aux) (./chapters/10-Experiments.aux)
-(./chapters/11-Conclusions.aux))
+(./chapters/9-SDVIntegration.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 38.
@@ -1045,7 +1044,7 @@ LaTeX Font Info:    Font shape `T1/NimbusSans/m/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
 LaTeX Font Info:    Font shape `T1/NimbusSans/b/n' will be
 (Font)              scaled to size 8.0pt on input line 23.
-<images/logo.png, id=200, 149.358pt x 48.18pt>
+<images/logo.png, id=152, 149.358pt x 48.18pt>
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 23.
@@ -1091,17 +1090,7 @@ Package pdftex.def Info: images/logo.png  used on input line 42.
 
 
 ]
-(./main.toc
-Package cleveref Info: loaded `english' language definitions on input line 1.
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 38.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [3
-
-
-
-])
+(./main.toc)
 \tf@toc=\write5
 \openout5 = `main.toc'.
 
@@ -1109,15 +1098,15 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 44.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [4] (./main.lof
-Package cleveref Info: loaded `english' language definitions on input line 1.
-)
+ [3
+
+
+
+] (./main.lof)
 \tf@lof=\write6
 \openout6 = `main.lof'.
 
- (./main.lot
-Package cleveref Info: loaded `english' language definitions on input line 1.
-)
+ (./main.lot)
 \tf@lot=\write7
 \openout7 = `main.lot'.
 
@@ -1125,19 +1114,18 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [5
+ [4
 
 ]
 \openout2 = `chapters/4-Introduction.aux'.
 
-
-(./chapters/4-Introduction.tex
+ (./chapters/4-Introduction.tex
 Chapter 1.
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 56.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[6
+[5
 
 
 ]
@@ -1146,12 +1134,20 @@ Underfull \hbox (badness 1019) in paragraph at lines 79--81
 nvergence, inference lap
  []
 
+
+LaTeX Warning: Reference `ch:experiments' on page 1 undefined on input line 94.
+
+
+
+LaTeX Warning: Reference `ch:conclusions' on page 1 undefined on input line 95.
+
+
 )
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 50.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [7]
+ [6]
 \openout2 = `chapters/5-Background.aux'.
 
  (./chapters/5-Background.tex
@@ -1160,7 +1156,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 74.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[8
+[7
 
 
 
@@ -1183,12 +1179,12 @@ File: images/logo.png Graphic file (type png)
 Package pdftex.def Info: images/logo.png  used on input line 51.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 
-[9{/usr/share/texlive/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15mono-ec.enc}]
+[8{/usr/share/texlive/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15mono-ec.enc}]
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 51.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[10]
+[9]
 \openout2 = `chapters/6-SystemArchitecture.aux'.
 
  (./chapters/6-SystemArchitecture.tex
@@ -1242,7 +1238,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 71.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[11
+[10
 
 
 
@@ -1277,13 +1273,13 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 112.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[12{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontools/fontools_ts1.enc}])
+[11{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontools/fontools_ts1.enc}])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 52.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 
-[13]
+[12]
 \openout2 = `chapters/7-UnitySim.aux'.
 
  (./chapters/7-UnitySim.tex
@@ -1298,7 +1294,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 74.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[14
+[13
 
 
 
@@ -1313,12 +1309,12 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 135.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[15])
+[14])
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 53.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [16]
+ [15]
 \openout2 = `chapters/8-PythonRL.aux'.
 
  (./chapters/8-PythonRL.tex
@@ -1329,7 +1325,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 79.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[17
+[16
 
 
 
@@ -1359,7 +1355,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 54.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [18]
+ [17]
 \openout2 = `chapters/9-SDVIntegration.aux'.
 
  (./chapters/9-SDVIntegration.tex
@@ -1377,14 +1373,13 @@ Type  H <return>  for immediate help.
                                                   
 l.24 ...width=\textwidth]{images/eclipse_leda.png}
                                                   
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
+? q
+OK, entering \batchmode...
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 30.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[19
+ [18
 
 
 
@@ -1413,7 +1408,7 @@ File: images/logo.png Graphic file (type png)
 <use images/logo.png>
 Package pdftex.def Info: images/logo.png  used on input line 59.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[20]
+ [19]
 Underfull \hbox (badness 10000) in paragraph at lines 72--75
 []\T1/NimbusSans/b/n/12 (+20) Overspeed\T1/NimbusSans/m/n/12 (+20) : if \T1/Nim
 busMono/m/n/12 Vehicle.Speed
@@ -1426,165 +1421,933 @@ Underfull \hbox (badness 5403) in paragraph at lines 85--95
 a-feeder\T1/NimbusSans/m/n/12 (+20) ,
  []
 
-)
 File: images/logo.png Graphic file (type png)
 <use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 55.
+Package pdftex.def Info: images/logo.png  used on input line 116.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [21]
-\openout2 = `chapters/10-Experiments.aux'.
+ [20]
 
- (./chapters/10-Experiments.tex
-Chapter 7.
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 82.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[22
+LaTeX Warning: Reference `table:pi-services' on page 1 undefined on input line 
+124.
 
 
-
-
-]
-Underfull \hbox (badness 1253) in paragraph at lines 102--105
-[]\T1/NimbusSans/m/n/12 (+20) The \T1/NimbusMono/m/n/12 best_model.zip \T1/Nimb
-usSans/m/n/12 (+20) checkpoint was evaluated over 50 episodes using
+Underfull \hbox (badness 10000) in paragraph at lines 134--138
+\T1/NimbusSans/m/n/12 (+20) configures
  []
 
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 146.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[23])
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 56.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [24]
-\openout2 = `chapters/11-Conclusions.aux'.
+! Missing } inserted.
+<inserted text> 
+                }
+l.139   \texttt{shilate-kuksa-\\databroker}
+                                            &
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
 
- (./chapters/11-Conclusions.tex
-Chapter 8.
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 71.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[25
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
-])
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 57.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [26]
-Chapter 9.
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 59.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
-[27
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
-]
-<example_declaration.pdf, id=526, 597.51233pt x 845.0471pt>
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf>
-Package pdftex.def Info: example_declaration.pdf  used on input line 61.
-(pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf>
-Package pdftex.def Info: example_declaration.pdf  used on input line 61.
-(pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-<example_declaration.pdf, id=529, page=1, 597.51233pt x 845.0471pt>
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
-(pdftex.def)             Requested size: 597.51086pt x 845.04504pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 61.
-(pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
- [28]
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
-File: example_declaration.pdf Graphic file (type pdf)
-<use example_declaration.pdf, page 1>
-Package pdftex.def Info: example_declaration.pdf , page1 used on input line 61.
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
-(pdftex.def)             Requested size: 597.53821pt x 845.08372pt.
- [29
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
- <./example_declaration.pdf>] (./main.aux (./chapters/1-Title.aux)
-Package cleveref Info: loaded `english' language definitions on input line 12.
-(./chapters/3-AbstractEN.aux) (./chapters/2-AbstractRO.aux)
-(./chapters/4-Introduction.aux) (./chapters/5-Background.aux)
-(./chapters/6-SystemArchitecture.aux) (./chapters/7-UnitySim.aux)
-(./chapters/8-PythonRL.aux) (./chapters/9-SDVIntegration.aux)
-(./chapters/10-Experiments.aux) (./chapters/11-Conclusions.aux))
- ***********
-LaTeX2e <2023-11-01> patch level 1
-L3 programming layer <2024-01-22>
- ***********
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
-LaTeX Warning: There were undefined references.
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
-Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 2446113B43BAB7DF89A5C5448F583A89;8526.
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
-Package biblatex Warning: Please (re)run BibTeX on the file(s):
-(biblatex)                main
-(biblatex)                and rerun LaTeX afterwards.
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
-Package logreq Info: Writing requests to 'main.run.xml'.
-\openout1 = `main.run.xml'.
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
 
- ) 
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I can't figure out why you would want to use a tab mark
+or \cr or \span just now. If something like a right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Missing \cr inserted.
+<inserted text> 
+                \cr 
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+I'm guessing that you meant to end an alignment here.
+
+! Misplaced \cr.
+<inserted text> \cr 
+                    
+l.139   \texttt{shilate-kuksa-\\databroker} &
+                                             
+(That makes 100 errors; please try again.) 
 Here is how much of TeX's memory you used:
- 29185 strings out of 474222
- 522994 string characters out of 5748733
- 1945975 words of memory out of 5000000
- 50631 multiletter control sequences out of 15000+600000
- 621530 words of font info for 199 fonts, out of 8000000 for 9000
+ 28951 strings out of 474222
+ 516618 string characters out of 5748733
+ 1944975 words of memory out of 5000000
+ 50488 multiletter control sequences out of 15000+600000
+ 618872 words of font info for 185 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 79i,19n,117p,1850b,2593s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texl
-ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
-blic/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
-fonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols
-/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Bold
-.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb
-></usr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (30 pages, 353359 bytes).
-PDF statistics:
- 665 PDF objects out of 1000 (max. 8388607)
- 579 compressed objects within 6 object streams
- 138 named destinations out of 1000 (max. 500000)
- 49570 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 79i,19n,117p,1850b,874s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
+!  ==> Fatal error occurred, no output PDF file produced!

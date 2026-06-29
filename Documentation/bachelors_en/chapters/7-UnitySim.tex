@@ -154,3 +154,26 @@ health evaluator monitors five independent failure modes: MQTT
 disconnection, Python process crash, observation gap exceeding 5~seconds,
 heartbeat/reward gap exceeding 60~seconds, and reward collapse (more than
 50\% drop over a 10-episode window).
+
+\textit{Run Model} supports two operating sub-modes depending on whether
+a local checkpoint is provided. If the user selects a \texttt{.zip} file
+in the picker, \texttt{PythonProcessManager} spawns \texttt{ai\_driver.py}
+on the host and the policy drives the simulation locally. If the picker
+is dismissed without a selection, the window enters \textbf{Remote mode}:
+it issues \texttt{taskkill} commands to terminate any locally running
+Mosquitto broker and Python processes (preventing port conflicts), then
+enters Play mode with the \texttt{RemoteMode} session flag set. In
+\texttt{ConfigureSceneAndLaunch()}, \texttt{LedaBroker} is pointed at the
+remote MQTT host defined in \texttt{TrainingSettings} (typically the
+Raspberry Pi at \texttt{10.122.6.115:1883}); no local Python process is
+started. The \texttt{leda-controller} container already running on the Pi
+takes over driving the simulation.
+
+The toolbar badge changes to \textbf{[REMOTE]} and is rendered in amber
+to distinguish this mode from the green \textbf{[TRAINING]} and cyan
+\textbf{[INFERENCE]} states. The health monitor remains active
+throughout: episode-end events and heartbeats are received from Unity
+over MQTT and displayed in the snapshot row and issue log exactly as in
+local modes. When the session is stopped, the window fires a background
+task to restart the local Windows Mosquitto service, restoring the host
+to its pre-session state.

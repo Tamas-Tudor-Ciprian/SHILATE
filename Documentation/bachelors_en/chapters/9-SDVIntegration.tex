@@ -102,3 +102,128 @@ multiplexing relay: any client that connects and sends telemetry data has
 that data forwarded to all other connected clients. This enables tools
 such as \texttt{netcat} or custom dashboards to observe the live
 telemetry stream without subscribing to individual MQTT topics.
+
+\section{Raspberry Pi Deployment}
+\label{sec:pi-deploy}
+
+In addition to the QEMU-based Eclipse Leda workflow, SHILATE supports
+deploying the full inference stack directly onto a \textbf{Raspberry
+Pi~4} running standard Raspberry Pi OS (Debian Bookworm). This path
+eliminates QEMU virtualisation overhead and produces a portable hardware
+inference node that the Unity Editor on a developer workstation connects
+to over a LAN. The Pi runs all five SHILATE services as Docker containers
+and listens on the standard MQTT port~1883, reachable from Windows Unity.
+
+\subsection{Container Stack}
+\label{sec:pi-stack}
+
+The Pi deployment is defined in \texttt{leda/docker-compose.pi.yml}. All
+services use \texttt{network\_mode: host} so they share the Pi's network
+namespace without any port-mapping configuration, and intra-stack
+communication uses \texttt{localhost}. The five containers are described
+in \cref{table:pi-services}.
+
+\begin{table}[H]
+\caption{Docker services in the Raspberry Pi deployment stack.}
+\label{table:pi-services}
+\begin{tabular}{|p{4.5cm}|p{7cm}|}
+  \hline
+  \textbf{Container} & \textbf{Role} \\
+  \hline
+  \texttt{shilate-mosquitto} &
+    Eclipse Mosquitto~2 MQTT broker. The volume-mounted
+    \texttt{mosquitto.conf} configures a single listener on port~1883
+    bound to all interfaces (\texttt{listener 1883}), with anonymous
+    access permitted (\texttt{allow\_anonymous true}). \\
+  \hline
+  \texttt{shilate-kuksa-\\databroker} &
+    Eclipse Kuksa.VAL databroker. Exposes a gRPC endpoint on
+    port~30555 with \texttt{--insecure} for development use.
+    Stores the current value of each VSS signal path. \\
+  \hline
+  \texttt{shilate-mqtt-kuksa-\\feeder} &
+    Bridges the \texttt{vehicle/\#} MQTT wildcard to VSS writes in
+    the Kuksa databroker via gRPC, enabling the Velocitas application
+    to observe simulation telemetry. \\
+  \hline
+  \texttt{shilate-velocitas-app} &
+    Velocitas safety application. Monitors \texttt{Vehicle.Speed}
+    (limit: 120~km/h) and engine RPM (limit: 6500) via the Kuksa
+    databroker and publishes alerts to \texttt{leda/command/alert}. \\
+  \hline
+  \texttt{shilate-leda-\\controller} &
+    The RL inference controller (\texttt{MODE=inference}).
+    Loads the checkpoint volume-mounted at \texttt{/model/best\_model.zip},
+    connects to Mosquitto at \texttt{MQTT\_HOST=127.0.0.1},
+    and drives the Unity simulation over MQTT.
+    \texttt{RAY\_COUNT=21} matches the simulation's sensor
+    configuration. \\
+  \hline
+\end{tabular}
+\end{table}
+
+\subsection{Build and Deployment Automation}
+\label{sec:pi-build}
+
+The \texttt{leda/deploy-pi.sh} script automates the entire
+build-and-deploy cycle from the developer's workstation. It proceeds
+through the following stages:
+
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item \textbf{Preflight checks.} SSH connectivity to the Pi user
+    \texttt{tetrix@10.122.6.115} is tested. The script verifies that
+    Docker and a compatible \texttt{docker compose} version are available
+    on the Pi, and installs them via \texttt{apt-get} if not.
+    On the build host, ARM64 emulation support is verified via
+    \texttt{docker buildx}; if absent, the QEMU binfmt handler is
+    installed automatically with
+    \texttt{docker run --privileged tonistiigi/binfmt --install arm64}.
+  \item \textbf{ARM64 image builds.} Each service that ships a custom
+    Dockerfile (\texttt{leda-controller}, \texttt{mqtt-kuksa-feeder},
+    \texttt{velocitas-app}) is built for the \texttt{linux/arm64}
+    platform using \texttt{docker buildx build --platform linux/arm64
+    --load}. The resulting images are saved as \texttt{.tar} archives
+    in \texttt{/tmp/}.
+  \item \textbf{Asset transfer.} All image archives, the compose file,
+    and the \texttt{mosquitto.conf} configuration are copied to
+    \texttt{\textasciitilde/shilate/} on the Pi via \texttt{scp}.
+  \item \textbf{Load and start.} Each image archive is loaded into
+    the Pi's Docker daemon with \texttt{docker load}. Finally,
+    \texttt{docker compose -f docker-compose.pi.yml up -d} starts
+    all five containers with the \texttt{unless-stopped} restart
+    policy.
+\end{enumerate}
+
+Partial deployment is supported: invoking the script with the argument
+\texttt{feeder}, \texttt{app}, \texttt{controller}, or \texttt{all}
+rebuilds and redeploys only the specified component, reducing iteration
+time when a single service is updated.
+
+\subsection{Unity-to-Pi Connection Workflow}
+\label{sec:unity-pi}
+
+Once the Pi stack is running, the Unity Editor connects to it over the
+LAN. The MQTT host in \texttt{TrainingSettings} must be set to the
+Pi's IP address and port (\texttt{10.122.6.115:1883}). The
+\textit{Remote} mode of the Training Controller
+(see \cref{sec:editor-window}) automates the full connection sequence:
+
+\begin{enumerate}[leftmargin=2cm,topsep=1.15pt,itemsep=1.15pt,partopsep=1.15pt,parsep=1.15pt]
+  \item The user presses \textit{Run Model} in the Training Controller
+    and dismisses the file picker without selecting a local checkpoint.
+  \item The window terminates any locally running \texttt{mosquitto.exe}
+    and Python processes to free port~1883 on the host.
+  \item Unity enters Play mode. \texttt{ConfigureSceneAndLaunch()} runs
+    and calls \texttt{LedaBroker.Configure("10.122.6.115", 1883, "env0")},
+    overriding the inspector default of \texttt{localhost}.
+  \item \texttt{LedaBroker} connects to the Pi's Mosquitto broker.
+    The Pi's \texttt{leda-controller} container, which is already
+    subscribed to \texttt{env0/vehicle/training/obs}, begins receiving
+    observations from Unity and publishing control commands in response.
+  \item The Training Controller toolbar displays \textbf{[REMOTE]} in
+    amber. Episode-end events and heartbeats are received by the Editor's
+    MQTT listener and displayed in the snapshot row and issue log.
+  \item When the session ends (Stop button or Play mode exit), the
+    Editor fires a background task to restart the local Windows Mosquitto
+    service, restoring the host to its original state.
+\end{enumerate}

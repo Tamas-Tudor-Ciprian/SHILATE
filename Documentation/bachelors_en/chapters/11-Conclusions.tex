@@ -33,11 +33,17 @@ modification. A Unity Editor window provides one-click training control,
 real-time health monitoring across five independently evaluated failure
 modes, and live metric graphs.
 
-\textbf{A complete SDV deployment chain.} A containerised
-MQTT-to-Kuksa bridge maps simulator telemetry to COVESA VSS paths, and
-a Velocitas vehicle application enforces operational limits on the
-running RL policy. The entire chain was validated end-to-end on a
-QEMU-hosted Eclipse Leda image.
+\textbf{A complete SDV deployment chain, validated on physical hardware.}
+A containerised MQTT-to-Kuksa bridge maps simulator telemetry to COVESA
+VSS paths, and a Velocitas vehicle application enforces operational limits
+on the running RL policy. The chain was validated end-to-end on both a
+QEMU-hosted Eclipse Leda image and a physical Raspberry Pi~4. On the
+Raspberry Pi, all five Docker containers (Mosquitto, Kuksa databroker,
+MQTT-Kuksa feeder, Velocitas app, and RL inference controller) were built
+for ARM64 via 	exttt{docker buildx} and deployed automatically with a
+single script. Remote inference sessions initiated from the Unity Editor
+connected to the Pi over LAN and achieved a lap completion rate of 74\%,
+demonstrating a viable sim-to-hardware deployment pipeline.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -74,10 +80,11 @@ configuration as the agent improves would implement a difficulty
 curriculum and is expected to address the stalling behaviour observed
 in the inference evaluation.
 
-\textbf{Physical hardware deployment.} Validating the deployment chain
-on a physical SDV platform --- such as a CAN-bus-instrumented RC vehicle
-running Eclipse Leda on embedded hardware --- would provide direct
-evidence of the pipeline's applicability to real automotive systems.
+\textbf{Physical CAN-bus vehicle deployment.} The Raspberry Pi
+deployment demonstrated the portability of the SHILATE stack to embedded
+ARM hardware. The natural next step is validating the chain on a
+CAN-bus-instrumented RC or prototype vehicle, where real tyre dynamics
+and sensor noise would expose the sim-to-real gap directly.
 
 \textbf{Safety monitor upgrade.} Extending the Velocitas application to
 publish override control commands when a limit is exceeded would close
