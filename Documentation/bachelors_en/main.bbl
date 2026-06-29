@@ -142,6 +142,24 @@
     \field{year}{2021}
   \endentry
 
+  \entry{ClaudeSonnet46}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Anthropic}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A1}
+    \strng{fullhash}{A1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.anthropic.com/claude}}
+    \field{note}{Large language model used for AI-assisted development and
+  documentation. Accessed June 2026}
+    \field{title}{Claude {Sonnet} 4.6}
+    \field{year}{2025}
+  \endentry
+
   \entry{Sutton2018}{book}{}
     \name{author}{2}{}{%
       {{hash=SRS}{%

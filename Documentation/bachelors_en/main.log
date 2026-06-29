@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  29 JUN 2026 16:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.6.10)  29 JUN 2026 16:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1242,7 +1242,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 57--63
 ates the three-component action
  []
 
-<images/car_model.png, id=468, 652.23676pt x 476.982pt>
+<images/car_model.png, id=470, 652.23676pt x 476.982pt>
 File: images/car_model.png Graphic file (type png)
 <use images/car_model.png>
 Package pdftex.def Info: images/car_model.png  used on input line 66.
@@ -1257,7 +1257,7 @@ Package pdftex.def Info: images/logo.png  used on input line 70.
 
 
 ]
-<images/car_model_transparent.png, id=474, 573.94424pt x 466.74374pt>
+<images/car_model_transparent.png, id=476, 573.94424pt x 466.74374pt>
 File: images/car_model_transparent.png Graphic file (type png)
 <use images/car_model_transparent.png>
 Package pdftex.def Info: images/car_model_transparent.png  used on input line 9
@@ -1278,7 +1278,7 @@ File: images/logo.png Graphic file (type png)
 Package pdftex.def Info: images/logo.png  used on input line 140.
 (pdftex.def)             Requested size: 132.30373pt x 42.67912pt.
 [15 <./images/car_model_transparent.png>]
-<images/enviroment_overview.png, id=489, 1154.51324pt x 687.7695pt>
+<images/enviroment_overview.png, id=491, 1154.51324pt x 687.7695pt>
 File: images/enviroment_overview.png Graphic file (type png)
 <use images/enviroment_overview.png>
 Package pdftex.def Info: images/enviroment_overview.png  used on input line 167
@@ -1335,7 +1335,7 @@ Overfull \hbox (4.98892pt too wide) in paragraph at lines 131--132
 []\T1/NimbusMono/m/n/12 --total-timesteps| 
  []
 
-<images/training_graphs.png, id=563, 395.076pt x 289.08pt>
+<images/training_graphs.png, id=565, 395.076pt x 289.08pt>
 File: images/training_graphs.png Graphic file (type png)
 <use images/training_graphs.png>
 Package pdftex.def Info: images/training_graphs.png  used on input line 184.
@@ -1364,7 +1364,7 @@ Package pdftex.def Info: images/logo.png  used on input line 54.
 
  (./chapters/9-SDVIntegration.tex
 Chapter 6.
-<images/eclipse_leda.png, id=624, 492.03825pt x 347.49825pt>
+<images/eclipse_leda.png, id=626, 492.03825pt x 347.49825pt>
 File: images/eclipse_leda.png Graphic file (type png)
 <use images/eclipse_leda.png>
 Package pdftex.def Info: images/eclipse_leda.png  used on input line 24.
@@ -1659,11 +1659,11 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 29948 strings out of 474222
- 531428 string characters out of 5748733
+ 29955 strings out of 474222
+ 531653 string characters out of 5748733
  2088975 words of memory out of 5000000
- 51276 multiletter control sequences out of 15000+600000
- 625238 words of font info for 202 fonts, out of 8000000 for 9000
+ 51280 multiletter control sequences out of 15000+600000
+ 625424 words of font info for 203 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  79i,19n,117p,1850b,2593s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
@@ -1682,10 +1682,10 @@ cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols
 sr/share/texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Bol.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/nimbus15/zhv-Reg.pfb></usr/share/texlive
 /texmf-dist/fonts/type1/public/nimbus15/zhv-RegIta.pfb>
-Output written on main.pdf (37 pages, 2322472 bytes).
+Output written on main.pdf (37 pages, 2323164 bytes).
 PDF statistics:
- 869 PDF objects out of 1000 (max. 8388607)
- 775 compressed objects within 8 object streams
- 255 named destinations out of 1000 (max. 500000)
+ 872 PDF objects out of 1000 (max. 8388607)
+ 778 compressed objects within 8 object streams
+ 256 named destinations out of 1000 (max. 500000)
  52199 words of extra memory for PDF output out of 61914 (max. 10000000)
 
