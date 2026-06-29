@@ -61,6 +61,13 @@ torques and steer angles. A creep behaviour applies a small constant
 torque in drive gear when both throttle and brake inputs are near zero,
 mirroring a real automatic-transmission vehicle.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{images/car_model.png}
+  \caption{Rendered vehicle model used in the SHILATE simulation.}
+  \label{fig:car-model}
+\end{figure}
+
 \section{Perception Layer}
 \label{sec:perception}
 
@@ -83,6 +90,13 @@ where $N$ is the configured ray count, $v$ is current speed (km/h),
 $v_{\max} = 150$~km/h, and $\delta$ is steer angle normalised to
 $[-1, 1]$. All elements of $\mathbf{o}$ lie in $[0, 1]$, simplifying
 network initialisation.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.70\textwidth]{images/car_model_transparent.png}
+  \caption{Vehicle mesh with transparent body, in the future internal components will be highlighted when physical subsystems send debug messages.}
+  \label{fig:car-transparent}
+\end{figure}
 
 \section{Reward Function}
 \label{sec:reward}
@@ -147,6 +161,14 @@ from top to bottom comprises:
   \item \textbf{Controls}: \textit{Start Training} / \textit{Run Model}
     / \textit{Stop}.
 \end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/enviroment_overview.png}
+  \caption{Unity Editor during a live training session. The Scene view shows the obstacle course with the 21-ray LiDAR fan, the circular track walls, and the vehicle. The Training Controller panel displays the HEALTHY banner, episode metrics, and live loss graphs.}
+  \label{fig:env-overview}
+\end{figure}
+
 The \textit{Start Training} button enters Play mode programmatically and,
 once the scene is loaded and the MQTT connection is confirmed, launches
 the Python training script with arguments from TrainingSettings. The
@@ -154,26 +176,3 @@ health evaluator monitors five independent failure modes: MQTT
 disconnection, Python process crash, observation gap exceeding 5~seconds,
 heartbeat/reward gap exceeding 60~seconds, and reward collapse (more than
 50\% drop over a 10-episode window).
-
-\textit{Run Model} supports two operating sub-modes depending on whether
-a local checkpoint is provided. If the user selects a \texttt{.zip} file
-in the picker, \texttt{PythonProcessManager} spawns \texttt{ai\_driver.py}
-on the host and the policy drives the simulation locally. If the picker
-is dismissed without a selection, the window enters \textbf{Remote mode}:
-it issues \texttt{taskkill} commands to terminate any locally running
-Mosquitto broker and Python processes (preventing port conflicts), then
-enters Play mode with the \texttt{RemoteMode} session flag set. In
-\texttt{ConfigureSceneAndLaunch()}, \texttt{LedaBroker} is pointed at the
-remote MQTT host defined in \texttt{TrainingSettings} (typically the
-Raspberry Pi at \texttt{10.122.6.115:1883}); no local Python process is
-started. The \texttt{leda-controller} container already running on the Pi
-takes over driving the simulation.
-
-The toolbar badge changes to \textbf{[REMOTE]} and is rendered in amber
-to distinguish this mode from the green \textbf{[TRAINING]} and cyan
-\textbf{[INFERENCE]} states. The health monitor remains active
-throughout: episode-end events and heartbeats are received from Unity
-over MQTT and displayed in the snapshot row and issue log exactly as in
-local modes. When the session is stopped, the window fires a background
-task to restart the local Windows Mosquitto service, restoring the host
-to its pre-session state.

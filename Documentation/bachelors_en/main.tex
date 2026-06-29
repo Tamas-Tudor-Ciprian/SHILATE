@@ -15,6 +15,7 @@
 \usepackage{hyperref}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{subcaption}
 \usepackage{pdfpages}
 \usepackage{nimbusmono}
 \usepackage{nimbussans}
@@ -39,7 +40,6 @@
 \pagestyle{pagestyle}
 \include{chapters/1-Title}
 \include{chapters/3-AbstractEN}
-\include{chapters/2-AbstractRO}
 \tableofcontents
 \listoffigures
 \vspace{24pt}
@@ -58,6 +58,6 @@
 
 \printbibliography[heading=bibnumbered]
 
-\includepdf[pages={1}]{\declarationPath}
+%\includepdf[pages={1}]{\declarationPath}
 
 \end{document}
