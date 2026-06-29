@@ -44,15 +44,15 @@ VSS path write via gRPC. The topic-to-VSS mapping is shown in
   \hline
   \textbf{MQTT topic} & \textbf{VSS path} \\
   \hline
-  \texttt{vehicle/speed}    & \texttt{Vehicle.Speed} \\
+  \nolinkurl{vehicle/speed}    & \nolinkurl{Vehicle.Speed} \\
   \hline
-  \texttt{vehicle/rpm}      & \texttt{Vehicle.Powertrain.CombustionEngine.Speed} \\
+  \nolinkurl{vehicle/rpm}      & \nolinkurl{Vehicle.Powertrain.CombustionEngine.Speed} \\
   \hline
-  \texttt{vehicle/steering} & \texttt{Vehicle.Chassis.SteeringWheel.Angle} \\
+  \nolinkurl{vehicle/steering} & \nolinkurl{Vehicle.Chassis.SteeringWheel.Angle} \\
   \hline
-  \texttt{vehicle/brake}    & \texttt{Vehicle.Chassis.Brake.PedalPosition} \\
+  \nolinkurl{vehicle/brake}    & \nolinkurl{Vehicle.Chassis.Brake.PedalPosition} \\
   \hline
-  \texttt{vehicle/throttle} & \texttt{Vehicle.OBD.ThrottlePosition} \\
+  \nolinkurl{vehicle/throttle} & \nolinkurl{Vehicle.OBD.ThrottlePosition} \\
   \hline
 \end{tabular}
 \end{table}
@@ -130,28 +130,28 @@ in \cref{table:pi-services}.
   \hline
   \textbf{Container} & \textbf{Role} \\
   \hline
-  \texttt{shilate-mosquitto} &
+  \nolinkurl{shilate-mosquitto} &
     Eclipse Mosquitto~2 MQTT broker. The volume-mounted
     \texttt{mosquitto.conf} configures a single listener on port~1883
     bound to all interfaces (\texttt{listener 1883}), with anonymous
     access permitted (\texttt{allow\_anonymous true}). \\
   \hline
-  \texttt{shilate-kuksa-databroker} &
+  \nolinkurl{shilate-kuksa-databroker} &
     Eclipse Kuksa.VAL databroker. Exposes a gRPC endpoint on
     port~30555 with \texttt{--insecure} for development use.
     Stores the current value of each VSS signal path. \\
   \hline
-  \texttt{shilate-mqtt-kuksa-feeder} &
+  \nolinkurl{shilate-mqtt-kuksa-feeder} &
     Bridges the \texttt{vehicle/\#} MQTT wildcard to VSS writes in
     the Kuksa databroker via gRPC, enabling the Velocitas application
     to observe simulation telemetry. \\
   \hline
-  \texttt{shilate-velocitas-app} &
+  \nolinkurl{shilate-velocitas-app} &
     Velocitas safety application. Monitors \texttt{Vehicle.Speed}
     (limit: 120~km/h) and engine RPM (limit: 6500) via the Kuksa
     databroker and publishes alerts to \texttt{leda/command/alert}. \\
   \hline
-  \texttt{shilate-leda-controller} &
+  \nolinkurl{shilate-leda-controller} &
     The RL inference controller (\texttt{MODE=inference}).
     Loads the checkpoint volume-mounted at \texttt{/model/best\_model.zip},
     connects to Mosquitto at \texttt{MQTT\_HOST=127.0.0.1},
