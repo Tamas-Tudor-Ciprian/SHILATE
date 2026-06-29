@@ -126,7 +126,7 @@ in \cref{table:pi-services}.
 \begin{table}[H]
 \caption{Docker services in the Raspberry Pi deployment stack.}
 \label{table:pi-services}
-\begin{tabular}{|p{4.5cm}|p{7cm}|}
+\begin{tabular}{|p{5.2cm}|p{6.3cm}|}
   \hline
   \textbf{Container} & \textbf{Role} \\
   \hline
@@ -136,12 +136,12 @@ in \cref{table:pi-services}.
     bound to all interfaces (\texttt{listener 1883}), with anonymous
     access permitted (\texttt{allow\_anonymous true}). \\
   \hline
-  \texttt{shilate-kuksa-\\databroker} &
+  \texttt{shilate-kuksa-databroker} &
     Eclipse Kuksa.VAL databroker. Exposes a gRPC endpoint on
     port~30555 with \texttt{--insecure} for development use.
     Stores the current value of each VSS signal path. \\
   \hline
-  \texttt{shilate-mqtt-kuksa-\\feeder} &
+  \texttt{shilate-mqtt-kuksa-feeder} &
     Bridges the \texttt{vehicle/\#} MQTT wildcard to VSS writes in
     the Kuksa databroker via gRPC, enabling the Velocitas application
     to observe simulation telemetry. \\
@@ -151,7 +151,7 @@ in \cref{table:pi-services}.
     (limit: 120~km/h) and engine RPM (limit: 6500) via the Kuksa
     databroker and publishes alerts to \texttt{leda/command/alert}. \\
   \hline
-  \texttt{shilate-leda-\\controller} &
+  \texttt{shilate-leda-controller} &
     The RL inference controller (\texttt{MODE=inference}).
     Loads the checkpoint volume-mounted at \texttt{/model/best\_model.zip},
     connects to Mosquitto at \texttt{MQTT\_HOST=127.0.0.1},
