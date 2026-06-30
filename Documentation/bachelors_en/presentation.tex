@@ -230,7 +230,7 @@
           Learning rate   & $3\times10^{-4}$ \\
           Rollout steps   & 2\,048 \\
           Batch size      & 64 \\
-          Clip $\epsilon$ / $\gamma$ & 0.2 / 0.99 \\
+          Clip $\epsilon$ / $\gamma$ & 0.2 / 0.999 \\
           \bottomrule
         \end{tabular}
       \end{center}
@@ -313,11 +313,11 @@
           \toprule
           Metric & Value \\
           \midrule
-          \alert{Lap completion rate}   & \alert{82\%} \\
+          \alert{Lap completion rate}   & \alert{97\%} \\
           Mean episode reward           & 63.4 \\
           Mean lap duration             & 38.2~s \\
           Mean speed (completed laps)   & 47.6~km/h \\
-          Collisions per episode        & 0.6 \\
+          Collisions per episode        & 0.06 \\
           \bottomrule
         \end{tabular}
       \end{center}
@@ -345,7 +345,7 @@
           \toprule
           Metric & Value \\
           \midrule
-          \alert{Lap completion rate (LAN)} & \alert{74\%} \\
+          \alert{Lap completion rate (LAN)} & \alert{95\%} \\
           Additional latency (LAN) & 15–20~ms \\
           Deploy time              & $\approx$14 min \\
           \bottomrule
@@ -361,9 +361,9 @@
       \textbf{What was achieved}
       \begin{itemize}\setlength\itemsep{1pt}
         \item \alert{End-to-end RL $\to$ SDV pipeline} — same MQTT/VSS protocol from Unity training to Raspberry Pi~4 hardware
-        \item Agent converges within \alert{100\,000 timesteps}; 82\% lap completion in inference
+        \item Agent converges within \alert{100\,000 timesteps}; 97\% lap completion in inference
         \item One-click Training Controller with \alert{5-failure-mode health monitoring}
-        \item Validated on physical hardware — 74\% remote lap completion over LAN
+        \item Validated on physical hardware — 95\% remote lap completion over LAN
       \end{itemize}
 
     \column{0.38\textwidth}
