@@ -140,12 +140,12 @@
         \node[box] (unity) {%
           \textbf{Unity Simulation}\\[-1pt]
           {\footnotesize Vehicle physics · LiDAR · Training Controller}};
-        \node[mqttbox, below=0.20cm of unity] (mqtt)
+        \node[mqttbox, below=0.45cm of unity] (mqtt)
           {Mosquitto MQTT broker};
-        \node[modebox, below=0.55cm of mqtt, xshift=-1.5cm] (python) {%
+        \node[modebox, below=0.80cm of mqtt, xshift=-1.5cm] (python) {%
           \textbf{Python PPO}\\[-1pt]
           {\footnotesize Stable-Baselines3\\Gymnasium env}};
-        \node[modebox, below=0.55cm of mqtt, xshift=1.5cm] (leda) {%
+        \node[modebox, below=0.80cm of mqtt, xshift=1.5cm] (leda) {%
           \textbf{Leda SDV}\\[-1pt]
           {\footnotesize Kuksa · feeder\\Velocitas · RPi~4}};
         \node[font=\tiny\itshape, text=upt-gray,
@@ -155,8 +155,8 @@
         \node[font=\footnotesize\bfseries, text=upt-red]
           at ($(python.east)!0.5!(leda.west)+(0,0.3cm)$) {or};
         \draw[arr] (unity.south) -- (mqtt.north);
-        \draw[arr] (mqtt.south) -- ++(0,-0.15cm) -| (python.north);
-        \draw[arr] (mqtt.south) -- ++(0,-0.15cm) -| (leda.north);
+        \draw[arr] (mqtt.south) -- ++(0,-0.45cm) -| (python.north);
+        \draw[arr] (mqtt.south) -- ++(0,-0.45cm) -| (leda.north);
       \end{tikzpicture}
 
     \column{0.52\textwidth}
