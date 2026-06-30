@@ -2,7 +2,7 @@
 % 7-minute academic slide deck — LaTeX Beamer
 % Compile: pdflatex presentation.tex
 
-\documentclass[aspectratio=169]{beamer}
+\documentclass[aspectratio=169,9pt]{beamer}
 
 \usetheme{CambridgeUS}
 \usecolortheme{beaver}
@@ -91,14 +91,14 @@
   \begin{columns}[T]
     \column{0.52\textwidth}
       \textbf{The Industry Shift}
-      \begin{itemize}\setlength\itemsep{5pt}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item Vehicles are becoming \alert{software-defined} — behaviour updated over-the-air
         \item Reinforcement learning (RL) is maturing as a practical control tool
         \item But no open-source pipeline bridges \textbf{RL training} and \textbf{SDV deployment}
       \end{itemize}
-      \vspace{0.8em}
+      \vspace{0.3em}
       \textbf{Four Open Challenges}
-      \begin{enumerate}\setlength\itemsep{3pt}
+      \begin{enumerate}\setlength\itemsep{1pt}
         \item Simulation $\leftrightarrow$ middleware protocol coupling
         \item Standardised signal representation (VSS)
         \item Operational safety monitoring of learned policies
@@ -108,7 +108,7 @@
     \column{0.45\textwidth}
       \begin{block}{Goal}
         Build an \textbf{end-to-end, open-source} pipeline that:
-        \begin{itemize}\setlength\itemsep{4pt}
+        \begin{itemize}\setlength\itemsep{1pt}
           \item Trains a deep RL agent in a Unity physics sim
           \item Deploys the policy onto a real Eclipse Leda SDV stack
           \item Uses the \textbf{same MQTT / VSS layer} from training to hardware
@@ -124,7 +124,7 @@
       \begin{tikzpicture}[
           box/.style={
             draw=upt-navy, fill=upt-navy!8, rounded corners=4pt,
-            text width=4.2cm, minimum height=1.05cm,
+            text width=4.2cm, minimum height=0.85cm,
             align=center, font=\small},
           mqttbox/.style={
             draw=upt-red, fill=upt-red!10, rounded corners=3pt,
@@ -155,8 +155,8 @@
       \includegraphics[width=\linewidth]{images/enviroment_overview.png}
       {\centering\footnotesize\textcolor{upt-gray}{Simulation environment overview}\par}
 
-      \vspace{0.5em}
-      \begin{itemize}\setlength\itemsep{4pt}
+      \vspace{0.2em}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item All inter-tier traffic flows through \alert{MQTT topic prefix \texttt{env0/}}
         \item No direct function calls across tiers — fully decoupled
         \item Same topic namespace in training \textbf{and} on hardware
@@ -173,13 +173,13 @@
 
     \column{0.56\textwidth}
       \textbf{Vehicle \& Sensor}
-      \begin{itemize}\setlength\itemsep{3pt}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item 1\,500~kg RWD chassis — four WheelColliders, Pacejka tire model
         \item \alert{21-ray LiDAR} spanning 120° at 50~m range, published at 10~Hz
         \item Observation $\mathbf{o} \in \mathbb{R}^{23}$: rays + normalised speed + steer
       \end{itemize}
 
-      \vspace{0.5em}
+      \vspace{0.2em}
       \textbf{Reward Function}
       \[
         r_t = \underbrace{2\,\Delta p_t}_{\text{progress}}
@@ -188,9 +188,9 @@
               \;+\; +25\,\mathbf{1}_{\frac{1}{2}\text{-turn}}}_{\text{milestones}}
       \]
 
-      \vspace{0.5em}
+      \vspace{0.2em}
       \textbf{Training Controller (Editor window)}
-      \begin{itemize}\setlength\itemsep{3pt}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item One-click \textbf{Start Training / Run Model / Stop}
         \item Live health banner — 5 failure modes monitored
         \item Real-time reward, loss, and KL-divergence graphs
@@ -203,17 +203,17 @@
   \begin{columns}[T]
     \column{0.48\textwidth}
       \textbf{Algorithm \& Architecture}
-      \begin{itemize}\setlength\itemsep{4pt}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item Proximal Policy Optimisation (PPO)
         \item Actor-Critic MLP: two hidden layers [256, 128]
         \item Action space: $\mathbf{a} = [\delta, \theta, \beta]$
           — steer $\in[-1,1]$, throttle $\in[0,1]$, brake $\in[0,1]$
       \end{itemize}
 
-      \vspace{0.6em}
+      \vspace{0.2em}
       \textbf{Key Hyperparameters}
       \begin{center}
-        \small
+        \footnotesize
         \begin{tabular}{ll}
           \toprule
           Parameter & Value \\
@@ -222,18 +222,17 @@
           Learning rate   & $3\times10^{-4}$ \\
           Rollout steps   & 2\,048 \\
           Batch size      & 64 \\
-          Clip $\epsilon$ & 0.2 \\
-          Discount $\gamma$ & 0.99 \\
+          Clip $\epsilon$ / $\gamma$ & 0.2 / 0.99 \\
           \bottomrule
         \end{tabular}
       \end{center}
 
     \column{0.50\textwidth}
-      \includegraphics[width=\linewidth]{images/training_graphs.png}
+      \includegraphics[width=\linewidth,height=0.44\textheight,keepaspectratio]{images/training_graphs.png}
       {\centering\footnotesize\textcolor{upt-gray}{Training convergence graphs (TensorBoard)}\par}
 
-      \vspace{0.4em}
-      \begin{itemize}\setlength\itemsep{3pt}
+      \vspace{0.2em}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item Gymnasium-compliant wrapper — any SB3 algorithm can be substituted
         \item Structured telemetry: \texttt{SHILATE-METRIC} / \texttt{SHILATE-HEALTH} markers parsed live by the Editor
         \item 5-second observation timeout triggers health alert
@@ -245,13 +244,13 @@
 \begin{frame}{Eclipse Leda SDV Integration}
   \begin{columns}[T]
     \column{0.46\textwidth}
-      \includegraphics[width=0.92\linewidth]{images/eclipse_leda.png}
+      \includegraphics[width=0.92\linewidth,height=0.30\textheight,keepaspectratio]{images/eclipse_leda.png}
       {\centering\footnotesize\textcolor{upt-gray}{Eclipse Leda container stack}\par}
 
-      \vspace{0.4em}
+      \vspace{0.1em}
       \small
       \begin{block}{5-Container Docker Compose Stack}
-        \begin{enumerate}\setlength\itemsep{2pt}
+        \begin{enumerate}\setlength\itemsep{0pt}
           \item \textbf{Mosquitto} — MQTT broker
           \item \textbf{Kuksa databroker} — VSS signal store
           \item \textbf{mqtt-kuksa-feeder} — MQTT → VSS bridge
@@ -262,25 +261,19 @@
 
     \column{0.52\textwidth}
       \textbf{Signal Chain}
-      \begin{itemize}\setlength\itemsep{4pt}
-        \item \texttt{env0/vehicle/speed} mapped to \texttt{Vehicle.Speed} (COVESA VSS)
-        \item Kuksa databroker stores all VSS values
-        \item Velocitas app enforces safety limits:
-          \begin{itemize}
-            \item Overspeed alert if speed $>$ 120~km/h
-            \item RPM alert if RPM $>$ 6\,500
-          \end{itemize}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item \texttt{env0/vehicle/speed} $\to$ \texttt{Vehicle.Speed} (COVESA VSS)
+        \item Velocitas app: overspeed alert ($>$120~km/h), RPM alert ($>$6\,500)
       \end{itemize}
 
-      \vspace{0.5em}
+      \vspace{0.2em}
       \textbf{Deployment to Raspberry Pi~4}
-      \begin{itemize}\setlength\itemsep{4pt}
-        \item \texttt{deploy-pi.sh} — ARM64 cross-compile via \texttt{docker buildx}
-        \item Transfers images over SSH/SCP, starts stack with \texttt{docker compose up -d}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item \texttt{deploy-pi.sh} — cross-compiles ARM64 via \texttt{docker buildx}, transfers and starts stack
         \item \alert{Full deploy cycle: $\approx$14 minutes}
       \end{itemize}
 
-      \vspace{0.4em}
+      \vspace{0.1em}
       \textbf{Remote Inference} — Training Controller targets the Pi broker; no code changes, policy runs on-device
   \end{columns}
 \end{frame}
@@ -304,7 +297,7 @@
         \end{tabular}
       \end{center}
 
-      \vspace{0.5em}
+      \vspace{0.2em}
       \textbf{Inference — 50 episodes (local)}
       \begin{center}
         \small
@@ -323,20 +316,20 @@
 
     \column{0.51\textwidth}
       \textbf{Ablation Study}
-      \begin{itemize}\setlength\itemsep{3pt}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item Half-turn bonus removed ($c_h=0$): first lap delayed by \alert{$\approx$18\,000 steps}; rolling mean 12 pts lower at 100K
         \item Weaker collision penalty ($c_c=-1$): laps completed but agent drove closer to walls
       \end{itemize}
 
-      \vspace{0.5em}
+      \vspace{0.2em}
       \textbf{Health Monitoring — All Failure Modes Detected}
-      \begin{itemize}\setlength\itemsep{3pt}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item Observation timeout ($>5$~s) → \textit{Critical}
         \item Python crash → non-zero exit code
         \item MQTT disconnect → \textit{Disconnected} within 35~s
       \end{itemize}
 
-      \vspace{0.5em}
+      \vspace{0.2em}
       \textbf{Raspberry Pi Remote Inference}
       \begin{center}
         \small
@@ -358,18 +351,16 @@
   \begin{columns}[T]
     \column{0.60\textwidth}
       \textbf{What was achieved}
-      \begin{itemize}\setlength\itemsep{5pt}
+      \begin{itemize}\setlength\itemsep{1pt}
         \item \alert{End-to-end RL $\to$ SDV pipeline} — same MQTT/VSS protocol from Unity training to Raspberry Pi~4 hardware
         \item Agent converges within \alert{100\,000 timesteps}; 82\% lap completion in inference
         \item One-click Training Controller with \alert{5-failure-mode health monitoring}
         \item Validated on physical hardware — 74\% remote lap completion over LAN
-        \item Curriculum scaling: automatic obstacle density increase with agent skill
-        \item Parallel training via Headless Orchestrator (up to 30 environments)
       \end{itemize}
 
     \column{0.38\textwidth}
       \begin{block}{Future Work}
-        \begin{itemize}\setlength\itemsep{4pt}
+        \begin{itemize}\setlength\itemsep{1pt}
           \item Domain randomisation for sim-to-real transfer
           \item Safety monitor → active command override (not just alerts)
           \item Multi-agent scenarios and cooperative driving
@@ -377,12 +368,12 @@
         \end{itemize}
       \end{block}
 
-      \vspace{0.8em}
+      \vspace{0.2em}
       \centering
-      \includegraphics[width=0.65\linewidth]{images/logo.png}
+      \includegraphics[width=0.55\linewidth]{images/logo.png}
   \end{columns}
 
-  \vspace{0.8em}
+  \vspace{0.3em}
   \begin{center}
     \Large\textbf{Thank you!} \quad
     {\normalsize Questions?}
