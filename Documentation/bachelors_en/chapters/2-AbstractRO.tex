@@ -3,45 +3,11 @@
 \vspace*{36pt}
 
 \begin{center}
-    \textbf{\fontsize{20pt}{24pt} \selectfont REZUMAT}
+\textbf{\fontsize{20pt}{24pt} \selectfont ABSTRACT}
 \end{center}
 
 \vspace{24pt}
 
-Proliferarea platformelor de tip vehicul definit prin software (SDV) a creat
-oportunitatea de a combina tehnicile moderne de invatare prin intarire
-(\textit{reinforcement learning}, RL) cu stive software automotive reale.
-Aceasta lucrare de licenta prezinta \textbf{SHILATE} --- un pipeline complet,
-cu sursa deschisa, care antreneaza un agent Proximal Policy Optimization (PPO)
-in cadrul unei simulari fizice Unity si implementeaza politica rezultata pe o
-stiva SDV Eclipse Leda, reducand decalajul dintre cercetarea RL in laborator
-si implementarea realista a software-ului auto.
-
-Componenta de simulare este construita in Unity 2022 LTS. Un vehicul cu
-tractiune spate navigheaza pe un circuit circular cu obstacole, echipat cu un
-senzor LiDAR stilizat cu 21 de raze. Modulul de antrenament calculeaza un
-semnal de recompensa bazat pe progres, coliziuni si etape de parcurs,
-comunicand cu procesul Python exclusiv prin MQTT, mentinand cele doua
-subsisteme complet decuplate. O fereastra dedicata in Unity Editor
-(\textit{SHILATE Training Controller}) ofera monitorizare in timp real a
-sanatatii sistemului, grafice de metrici si control al antrenarii cu un
-singur click.
-
-Stiva Python inconjoara simularea intr-un mediu compatibil Gymnasium,
-configureaza agentul PPO din Stable-Baselines3 cu o retea actor-critic pe
-doua straturi si transmite telemetrie structurata catre Editor. Modelele
-salvate sunt ulterior implementate pe imaginea SDV Eclipse Leda printr-un
-bridge MQTT-Kuksa containerizat si o aplicatie Velocitas care impune limite
-operationale (viteza maxima, turatie limita) agentului activ.
-
-Rezultatele experimentale demonstreaza ca agentul PPO converge fiabil pe
-circuitul de obstacole in 100\,000 de pasi de interactiune si ca lantul de
-implementare transmite corect telemetria vehiculului din simulare prin stratul
-de date VSS pana la monitorul de siguranta Velocitas. Proiectul demonstreaza
-ca un pipeline integrat sim-to-SDV este realizabil cu instrumente open-source
-accesibile.
-
-\textbf{Cuvinte cheie:} invatare prin intarire, vehicul definit prin software,
-simulare Unity, PPO, MQTT, Eclipse Leda, Kuksa, Stable-Baselines3, Gymnasium.
+The abstract is intended to inform about the content of the paper through a brief description of the research of up to one page, the procedures/methods, as well as its results or conclusions. The abstract in Romanian becomes mandatory for works edited in languages other than Romanian and will be written in 12 pt Nimbus Sans fonts. It will start two blank lines after the heading "ABSTRACT". Before the title, there will be three blank 12 pt. lines.
 
 \vfill

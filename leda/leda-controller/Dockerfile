@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir \
     && pip install --no-cache-dir \
     "stable-baselines3>=2.3,<3.0" \
     "gymnasium>=0.29,<1.0" \
-    "numpy>=1.24,<2.0"
+    "numpy>=2.0"
 
 # --- Debug image (tiny: ~150 MB) ---
 FROM base AS debug

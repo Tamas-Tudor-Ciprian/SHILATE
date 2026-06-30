@@ -61,6 +61,13 @@ torques and steer angles. A creep behaviour applies a small constant
 torque in drive gear when both throttle and brake inputs are near zero,
 mirroring a real automatic-transmission vehicle.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{images/car_model.png}
+  \caption{Rendered vehicle model used in the SHILATE simulation.}
+  \label{fig:car-model}
+\end{figure}
+
 \section{Perception Layer}
 \label{sec:perception}
 
@@ -83,6 +90,13 @@ where $N$ is the configured ray count, $v$ is current speed (km/h),
 $v_{\max} = 150$~km/h, and $\delta$ is steer angle normalised to
 $[-1, 1]$. All elements of $\mathbf{o}$ lie in $[0, 1]$, simplifying
 network initialisation.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.70\textwidth]{images/car_model_transparent.png}
+  \caption{Vehicle mesh with transparent body, in the future internal components will be highlighted when physical subsystems send debug messages.}
+  \label{fig:car-transparent}
+\end{figure}
 
 \section{Reward Function}
 \label{sec:reward}
@@ -147,6 +161,14 @@ from top to bottom comprises:
   \item \textbf{Controls}: \textit{Start Training} / \textit{Run Model}
     / \textit{Stop}.
 \end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/enviroment_overview.png}
+  \caption{Unity Editor during a live training session. The Scene view shows the obstacle course with the 21-ray LiDAR fan, the circular track walls, and the vehicle. The Training Controller panel displays the HEALTHY banner, episode metrics, and live loss graphs.}
+  \label{fig:env-overview}
+\end{figure}
+
 The \textit{Start Training} button enters Play mode programmatically and,
 once the scene is loaded and the MQTT connection is confirmed, launches
 the Python training script with arguments from TrainingSettings. The
@@ -154,3 +176,36 @@ health evaluator monitors five independent failure modes: MQTT
 disconnection, Python process crash, observation gap exceeding 5~seconds,
 heartbeat/reward gap exceeding 60~seconds, and reward collapse (more than
 50\% drop over a 10-episode window).
+
+\section{Multi-Environment Parallel Training}
+\label{sec:headless}
+
+When training throughput beyond the single-editor rate is required, the
+\textit{Headless Orchestrator} window (\texttt{SHILATE} $\to$
+\texttt{Headless Orchestrator}) launches multiple independent Unity
+processes in parallel, each paired with its own Python trainer and using
+a unique MQTT topic prefix so that all environments share a single
+Mosquitto broker without message collisions.
+
+Each environment slot spawns a Unity build instance (with or without
+graphics, controlled by the \texttt{unityWithGraphics} setting),
+a Python \texttt{train.py} process targeting that slot's
+\texttt{MQTT\_HOST} and prefix, and monitors both processes for crashes.
+Up to 30 slots are supported; in practice the limit is CPU and RAM.
+The \texttt{headlessSingleModelMode} flag configures whether all slots
+share one PPO model (data-parallel rollout collection) or train
+independent models simultaneously.
+
+\Cref{fig:multi-env} shows 15 environments running simultaneously with
+graphics enabled, visible in the Windows task switcher alongside the
+Unity Editor and the Mosquitto broker process.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/multiple_enviroment_training.png}
+  \caption{Windows task switcher (Win+Tab) showing 15 parallel SHILATE
+  simulation instances with graphics enabled, the Unity Editor window,
+  and the Mosquitto broker process running simultaneously during a
+  multi-environment training session.}
+  \label{fig:multi-env}
+\end{figure}

@@ -33,18 +33,43 @@ modification. A Unity Editor window provides one-click training control,
 real-time health monitoring across five independently evaluated failure
 modes, and live metric graphs.
 
-\textbf{A complete SDV deployment chain.} A containerised
-MQTT-to-Kuksa bridge maps simulator telemetry to COVESA VSS paths, and
-a Velocitas vehicle application enforces operational limits on the
-running RL policy. The entire chain was validated end-to-end on a
-QEMU-hosted Eclipse Leda image.
+\textbf{Automatic difficulty curriculum.} Obstacle density scales
+automatically with the agent's progress. For the first nine completed
+laps the course is obstacle-free; from lap ten onward one additional
+obstacle is introduced every fifty laps, up to a maximum of eight. The
+track layout regenerates only after a successful lap, so failed episodes
+do not change the difficulty. An inspector override allows the count to
+be fixed for ablation experiments.
+
+\textbf{Multi-environment parallelisation via headless builds.} A
+dedicated \textit{Headless Orchestrator} window (\texttt{SHILATE
+$\to$ Headless Orchestrator}) launches up to 30 independent headless
+Unity processes paired with individual Python trainer instances, each
+using a unique MQTT topic prefix. This replaces the single-editor
+bottleneck with a scalable parallel-training architecture that can
+exploit all available CPU cores on the host.
+
+\textbf{A complete SDV deployment chain, validated on physical hardware.}
+A containerised MQTT-to-Kuksa bridge maps simulator telemetry to COVESA
+VSS paths, and a Velocitas vehicle application enforces operational limits
+on the running RL policy. The chain was validated end-to-end on both a
+QEMU-hosted Eclipse Leda image and a physical Raspberry Pi~4. On the
+Raspberry Pi, all five Docker containers (Mosquitto, Kuksa databroker,
+MQTT-Kuksa feeder, Velocitas app, and RL inference controller) were built
+for ARM64 via \texttt{docker buildx} and deployed automatically with a
+single script. Remote inference sessions initiated from the Unity Editor
+connected to the Pi over LAN and achieved a lap completion rate of 74\%,
+demonstrating a viable sim-to-hardware deployment pipeline.
 
 \section{Limitations}
 \label{sec:limitations}
 
-\textbf{Single training environment.} SHILATE supports exactly one
-Unity Editor instance at real time (\texttt{Time.timeScale = 1}).
-Training throughput is therefore limited by wall-clock simulation speed.
+\textbf{Single-editor training environment.} The \textit{Training
+Controller} window supports exactly one Unity Editor instance at real
+time (\texttt{Time.timeScale = 1}). When higher throughput is required
+the \textit{Headless Orchestrator} window provides a parallel-build
+alternative, but this requires a pre-built headless Unity binary and
+cannot be used for interactive Editor-side monitoring.
 
 \textbf{No sim-to-real gap mitigation.} The sensor model, vehicle
 physics, and obstacle geometry are all abstractions. No domain
@@ -64,20 +89,11 @@ manoeuvres available to the agent.
 \section{Future Work}
 \label{sec:future}
 
-\textbf{Multi-environment parallelisation.} Replacing the single Unity
-Editor instance with headless builds or container-based simulation
-instances would dramatically increase sample efficiency and enable
-distributed RL algorithms such as IMPALA.
-
-\textbf{Curriculum learning.} Automatically varying the obstacle
-configuration as the agent improves would implement a difficulty
-curriculum and is expected to address the stalling behaviour observed
-in the inference evaluation.
-
-\textbf{Physical hardware deployment.} Validating the deployment chain
-on a physical SDV platform --- such as a CAN-bus-instrumented RC vehicle
-running Eclipse Leda on embedded hardware --- would provide direct
-evidence of the pipeline's applicability to real automotive systems.
+\textbf{Physical CAN-bus vehicle deployment.} The Raspberry Pi
+deployment demonstrated the portability of the SHILATE stack to embedded
+ARM hardware. The natural next step is validating the chain on a
+CAN-bus-instrumented RC or prototype vehicle, where real tyre dynamics
+and sensor noise would expose the sim-to-real gap directly.
 
 \textbf{Safety monitor upgrade.} Extending the Velocitas application to
 publish override control commands when a limit is exceeded would close

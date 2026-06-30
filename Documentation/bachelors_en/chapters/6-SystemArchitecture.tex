@@ -42,29 +42,30 @@ topic set is listed in \cref{table:mqtt-topics}.
 \begin{table}[H]
 \caption{MQTT topic map for the SHILATE training loop.}
 \label{table:mqtt-topics}
-\begin{tabular}{|p{5.5cm}|p{3cm}|p{4cm}|}
+\footnotesize
+\begin{tabular}{|p{7.5cm}|p{3.2cm}|p{2.8cm}|}
   \hline
   \textbf{Topic} & \textbf{Direction} & \textbf{Payload} \\
   \hline
-  \texttt{env0/leda/control/steer}    & Python$\to$Unity & float $[-1,1]$ \\
+  \nolinkurl{env0/leda/control/steer}    & Python$\to$Unity & float $[-1,1]$ \\
   \hline
-  \texttt{env0/leda/control/throttle} & Python$\to$Unity & float $[0,1]$ \\
+  \nolinkurl{env0/leda/control/throttle} & Python$\to$Unity & float $[0,1]$ \\
   \hline
-  \texttt{env0/leda/control/brake}    & Python$\to$Unity & float $[0,1]$ \\
+  \nolinkurl{env0/leda/control/brake}    & Python$\to$Unity & float $[0,1]$ \\
   \hline
-  \texttt{env0/leda/control/reset}    & Python$\to$Unity & ``1'' \\
+  \nolinkurl{env0/leda/control/reset}    & Python$\to$Unity & ``1'' \\
   \hline
-  \texttt{env0/vehicle/speed}         & Unity$\to$Python & float km/h \\
+  \nolinkurl{env0/vehicle/speed}         & Unity$\to$Python & float km/h \\
   \hline
-  \texttt{env0/vehicle/training/obs}  & Unity$\to$Python & JSON array \\
+  \nolinkurl{env0/vehicle/training/obs}  & Unity$\to$Python & JSON array \\
   \hline
-  \texttt{env0/vehicle/training/reward} & Unity$\to$Python & float \\
+  \nolinkurl{env0/vehicle/training/reward} & Unity$\to$Python & float \\
   \hline
-  \texttt{env0/vehicle/training/done} & Unity$\to$Python & bool \\
+  \nolinkurl{env0/vehicle/training/done} & Unity$\to$Python & bool \\
   \hline
-  \texttt{env0/vehicle/training/episode\_end} & Unity$\to$Editor & JSON object \\
+  \nolinkurl{env0/vehicle/training/episode_end} & Unity$\to$Editor & JSON object \\
   \hline
-  \texttt{env0/vehicle/training/heartbeat}    & Unity$\to$Editor & JSON (1 Hz) \\
+  \nolinkurl{env0/vehicle/training/heartbeat}    & Unity$\to$Editor & JSON (1 Hz) \\
   \hline
 \end{tabular}
 \end{table}

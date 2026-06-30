@@ -22,6 +22,24 @@
 !Documentation/figures/**
 !Documentation/bachelors_en/
 !Documentation/bachelors_en/**
+
+# Re-ignore LaTeX build artifacts inside bachelors_en
+Documentation/bachelors_en/*.aux
+Documentation/bachelors_en/*.log
+Documentation/bachelors_en/*.out
+Documentation/bachelors_en/*.toc
+Documentation/bachelors_en/*.lof
+Documentation/bachelors_en/*.lot
+Documentation/bachelors_en/*.bbl
+Documentation/bachelors_en/*.blg
+Documentation/bachelors_en/*.fls
+Documentation/bachelors_en/*.run.xml
+Documentation/bachelors_en/*.fdb_latexmk
+Documentation/bachelors_en/*-blx.bib
+Documentation/bachelors_en/main.pdf
+Documentation/bachelors_en/chapters/*.aux
+Documentation/bachelors_en/chapters/*.log
+Documentation/bachelors_en/chapters/*.out
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/media/
 !Documentation/vertopal_7bfba83002a042659755220b13a52129/media/**

@@ -1,0 +1,413 @@
+% SHILATE — Bachelor's Thesis Presentation
+% 7-minute academic slide deck — LaTeX Beamer
+% Compile: pdflatex presentation.tex
+
+\documentclass[aspectratio=169,9pt]{beamer}
+
+\usetheme{CambridgeUS}
+\usecolortheme{beaver}
+
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,backgrounds,calc}
+
+% ─── Palette tweaks ──────────────────────────────────────────────────────────
+\definecolor{upt-navy}{RGB}{0,56,101}
+\definecolor{upt-red}{RGB}{184,14,27}
+\definecolor{upt-gray}{RGB}{88,88,88}
+
+\setbeamercolor{title}{fg=white,bg=upt-navy}
+\setbeamercolor{frametitle}{fg=white,bg=upt-navy}
+\setbeamercolor{section in head/foot}{fg=white,bg=upt-navy}
+\setbeamercolor{subsection in head/foot}{fg=white,bg=upt-red}
+\setbeamercolor{author in head/foot}{fg=white,bg=upt-navy}
+\setbeamercolor{date in head/foot}{fg=white,bg=upt-red}
+\setbeamercolor{title in head/foot}{fg=white,bg=upt-navy}
+\setbeamercolor{item}{fg=upt-red}
+\setbeamercolor{structure}{fg=upt-navy}
+\setbeamercolor{block title}{bg=upt-navy,fg=white}
+\setbeamercolor{block body}{bg=upt-navy!8}
+\setbeamercolor{alerted text}{fg=upt-red}
+
+\setbeamerfont{title}{size=\large,series=\bfseries}
+\setbeamerfont{frametitle}{size=\normalsize,series=\bfseries}
+
+% ─── Metadata ────────────────────────────────────────────────────────────────
+\title[SHILATE]{SHILATE\\[4pt]
+  \small Software Hardware In Loop\\Automotive Testing Environment}
+\author[Tudor-Ciprian Tămaș]{Tudor-Ciprian Tămaș\\[2pt]
+  {\footnotesize Supervisor: Sl.~Dr.~Ing.~Valentin Mărănescu}}
+\institute[UPT]{
+  \textit{Electronics, Telecommunications and Information Technology}\\
+  Politehnica University of Timișoara}
+\date{July 2026}
+
+% ─── Helpers ─────────────────────────────────────────────────────────────────
+\newcommand{\mqttarrow}[0]{\textcolor{upt-red}{\(\boldsymbol{\leftrightarrow}\)}\,MQTT\,\textcolor{upt-red}{\(\boldsymbol{\leftrightarrow}\)}}
+
+% ─── Suppress navigation symbols ─────────────────────────────────────────────
+\setbeamertemplate{navigation symbols}{}
+
+% ─── Progress bar in footline ────────────────────────────────────────────────
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.45\paperwidth,ht=2.5ex,dp=1ex,left,leftskip=1em]{author in head/foot}%
+      \usebeamerfont{author in head/foot}\insertshortauthor
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.45\paperwidth,ht=2.5ex,dp=1ex,center]{title in head/foot}%
+      \usebeamerfont{title in head/foot}\insertshorttitle
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.10\paperwidth,ht=2.5ex,dp=1ex,right,rightskip=1em]{date in head/foot}%
+      \usebeamerfont{date in head/foot}
+      \insertframenumber{}/\inserttotalframenumber
+    \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+% =============================================================================
+\begin{document}
+% =============================================================================
+
+% ─── SLIDE 1 — Title ─────────────────────────────────────────────────────────
+\begin{frame}
+  \vspace{0.5em}
+  \begin{columns}[c]
+    \column{0.72\textwidth}
+      \titlepage
+    \column{0.28\textwidth}
+      \centering
+      \includegraphics[width=0.88\linewidth]{images/logo.png}
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 2 — Motivation ────────────────────────────────────────────────────
+\begin{frame}{Motivation}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+      \textbf{The Industry Shift}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item Vehicles are becoming \alert{software-defined} — behaviour updated over-the-air
+        \item Reinforcement learning (RL) is maturing as a practical control tool
+        \item But no open-source pipeline bridges \textbf{RL training} and \textbf{SDV deployment}
+      \end{itemize}
+      \vspace{0.3em}
+      \textbf{Four Open Challenges}
+      \begin{enumerate}\setlength\itemsep{1pt}
+        \item Simulation $\leftrightarrow$ middleware protocol coupling
+        \item Standardised signal representation (VSS)
+        \item Operational safety monitoring of learned policies
+        \item Reproducible, one-click training workflow
+      \end{enumerate}
+
+    \column{0.45\textwidth}
+      \begin{block}{Goal}
+        Build an \textbf{end-to-end, open-source} pipeline that:
+        \begin{itemize}\setlength\itemsep{1pt}
+          \item Trains a deep RL agent in a Unity physics sim
+          \item Deploys the policy onto a real Eclipse Leda SDV stack
+          \item Uses the \textbf{same MQTT / VSS layer} from training to hardware
+        \end{itemize}
+      \end{block}
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 3 — System Architecture ──────────────────────────────────────────
+\begin{frame}{System Architecture — Training vs.\ Deploy Mode}
+  \begin{columns}[T]
+    \column{0.46\textwidth}
+      \begin{tikzpicture}[
+          box/.style={
+            draw=upt-navy, fill=upt-navy!8, rounded corners=4pt,
+            text width=3.8cm, minimum height=0.80cm,
+            align=center, font=\small},
+          mqttbox/.style={
+            draw=upt-red, fill=upt-red!10, rounded corners=3pt,
+            text width=3.8cm, minimum height=0.50cm,
+            align=center, font=\footnotesize\itshape},
+          modebox/.style={
+            draw=upt-navy!70, fill=upt-navy!5, rounded corners=3pt,
+            text width=1.68cm, minimum height=0.80cm,
+            align=center, font=\small},
+          arr/.style={{Stealth[length=4pt]}-{Stealth[length=4pt]},
+            upt-red, line width=1.0pt}
+        ]
+        \node[box] (unity) {%
+          \textbf{Unity Simulation}\\[-1pt]
+          {\footnotesize Vehicle physics · LiDAR · Training Controller}};
+        \node[mqttbox, below=0.45cm of unity] (mqtt)
+          {Mosquitto MQTT broker};
+        \node[modebox, below=0.80cm of mqtt, xshift=-1.5cm] (python) {%
+          \textbf{Python PPO}\\[-1pt]
+          {\footnotesize Stable-Baselines3\\Gymnasium env}};
+        \node[modebox, below=0.80cm of mqtt, xshift=1.5cm] (leda) {%
+          \textbf{Leda SDV}\\[-1pt]
+          {\footnotesize Kuksa · feeder\\Velocitas · RPi~4}};
+        \node[font=\tiny\itshape, text=upt-gray,
+          below=1pt of python] {Training mode};
+        \node[font=\tiny\itshape, text=upt-gray,
+          below=1pt of leda] {Deploy mode};
+        \node[font=\footnotesize\bfseries, text=upt-red]
+          at ($(python.east)!0.5!(leda.west)+(0,0.3cm)$) {or};
+        \draw[arr] (unity.south) -- (mqtt.north);
+        \draw[arr] (mqtt.south) -- ++(0,-0.45cm) -| (python.north);
+        \draw[arr] (mqtt.south) -- ++(0,-0.45cm) -| (leda.north);
+      \end{tikzpicture}
+
+    \column{0.52\textwidth}
+      \includegraphics[width=\linewidth]{images/enviroment_overview.png}
+      {\centering\footnotesize\textcolor{upt-gray}{Simulation environment overview}\par}
+
+      \vspace{0.2em}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item \textbf{Training}: Unity Sim $\leftrightarrow$ MQTT $\leftrightarrow$ Python PPO
+        \item \textbf{Deploy}: Unity Sim $\leftrightarrow$ MQTT $\leftrightarrow$ Eclipse Leda SDV
+        \item Same \alert{\texttt{env0/}} topic namespace in both modes — no protocol changes at deploy time
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 4 — Unity Simulation ──────────────────────────────────────────────
+\begin{frame}{Unity Simulation Component}
+  \begin{columns}[T]
+    \column{0.42\textwidth}
+      \includegraphics[width=\linewidth]{images/car_model_transparent.png}
+      {\centering\footnotesize\textcolor{upt-gray}{Rear-wheel-drive vehicle model}\par}
+
+    \column{0.56\textwidth}
+      \textbf{Vehicle \& Sensor}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item 1\,500~kg RWD chassis — four WheelColliders, Pacejka tire model
+        \item \alert{21-ray LiDAR} spanning 120° at 50~m range, published at 10~Hz
+        \item Observation $\mathbf{o} \in \mathbb{R}^{23}$: rays + normalised speed + steer
+      \end{itemize}
+
+      \vspace{0.2em}
+      \textbf{Reward Function}
+      \[
+        r_t = \underbrace{2\,\Delta p_t}_{\text{progress}}
+            + \underbrace{(-5)\,\mathbf{1}_{\text{collision}}}_{\text{collision}}
+            + \underbrace{+50\,\mathbf{1}_{\text{lap}}
+              \;+\; +25\,\mathbf{1}_{\frac{1}{2}\text{-turn}}}_{\text{milestones}}
+      \]
+
+      \vspace{0.2em}
+      \textbf{Training Controller (Editor window)}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item One-click \textbf{Start Training / Run Model / Stop}
+        \item Live health banner — 5 failure modes monitored
+        \item Real-time reward, loss, and KL-divergence graphs
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 5 — Python RL Agent ───────────────────────────────────────────────
+\begin{frame}{Python RL Agent — PPO via Stable-Baselines3}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{Algorithm \& Architecture}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item Proximal Policy Optimisation (PPO)
+        \item Actor-Critic MLP: two hidden layers [256, 128]
+        \item Action space: $\mathbf{a} = [\delta, \theta, \beta]$
+          — steer $\in[-1,1]$, throttle $\in[0,1]$, brake $\in[0,1]$
+      \end{itemize}
+
+      \vspace{0.2em}
+      \textbf{Key Hyperparameters}
+      \begin{center}
+        \footnotesize
+        \begin{tabular}{ll}
+          \toprule
+          Parameter & Value \\
+          \midrule
+          Total timesteps & 100\,000 \\
+          Learning rate   & $3\times10^{-4}$ \\
+          Rollout steps   & 2\,048 \\
+          Batch size      & 64 \\
+          Clip $\epsilon$ / $\gamma$ & 0.2 / 0.999 \\
+          \bottomrule
+        \end{tabular}
+      \end{center}
+
+    \column{0.50\textwidth}
+      \begin{center}
+        \includegraphics[width=\linewidth,height=0.47\textheight,keepaspectratio]{images/training_graphs.png}\\[1pt]
+        {\footnotesize\textcolor{upt-gray}{Training convergence graphs (TensorBoard)}}
+      \end{center}
+      \vspace{0.2em}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item Gymnasium-compliant wrapper — any SB3 algorithm can be substituted
+        \item Structured telemetry: \texttt{SHILATE-METRIC} / \texttt{SHILATE-HEALTH} markers parsed live by the Editor
+        \item 5-second observation timeout triggers health alert
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 6 — Eclipse Leda SDV Integration ──────────────────────────────────
+\begin{frame}{Eclipse Leda SDV Integration}
+  \begin{columns}[T]
+    \column{0.46\textwidth}
+      \begin{center}
+        \includegraphics[width=\linewidth,height=0.38\textheight,keepaspectratio]{images/eclipse_leda.png}\\[1pt]
+        {\footnotesize\textcolor{upt-gray}{Eclipse Leda container stack}}
+      \end{center}
+      \vspace{0.1em}
+      \small
+      \begin{block}{5-Container Docker Compose Stack}
+        \begin{enumerate}\setlength\itemsep{0pt}
+          \item \textbf{Mosquitto} — MQTT broker
+          \item \textbf{Kuksa databroker} — VSS signal store
+          \item \textbf{mqtt-kuksa-feeder} — MQTT → VSS bridge
+          \item \textbf{Velocitas app} — safety monitor
+          \item \textbf{leda-controller} — RL inference engine
+        \end{enumerate}
+      \end{block}
+
+    \column{0.52\textwidth}
+      \textbf{Signal Chain}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item \texttt{env0/vehicle/speed} $\to$ \texttt{Vehicle.Speed} (COVESA VSS)
+        \item Velocitas app: overspeed alert ($>$120~km/h), RPM alert ($>$6\,500)
+      \end{itemize}
+
+      \vspace{0.2em}
+      \textbf{Deployment to Raspberry Pi~4}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item \texttt{deploy-pi.sh} — cross-compiles ARM64 via \texttt{docker buildx}, transfers and starts stack
+        \item \alert{Full deploy cycle: $\approx$14 minutes}
+      \end{itemize}
+
+      \vspace{0.1em}
+      \textbf{Remote Inference} — Training Controller targets the Pi broker; no code changes, policy runs on-device
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 6b — Hardware Setup ───────────────────────────────────────────────
+\begin{frame}{Hardware Setup — Raspberry Pi~4 Connections}
+  \begin{columns}[c]
+    \column{0.60\textwidth}
+      \includegraphics[width=\linewidth,height=0.76\textheight,keepaspectratio]{images/GPIO_diagram.png}
+    \column{0.38\textwidth}
+      \textbf{Physical Wiring}
+      \begin{itemize}\setlength\itemsep{3pt}
+        \item \textbf{Ethernet} — direct cable to development laptop running Unity Sim and MQTT broker
+        \item \textbf{3 GPIO LEDs} (via UART pins) used as hardware status indicators
+        \item MQTT traffic flows over the LAN link using the same \alert{\texttt{env0/}} topic namespace — zero reconfiguration
+        \item \alert{15–20\,ms} round-trip latency measured over direct Ethernet
+      \end{itemize}
+      \vspace{0.4em}
+      \begin{block}{Key insight}
+        The same containerised inference stack runs identically on the Pi and inside the QEMU Leda image.
+      \end{block}
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 7 — Experimental Results ─────────────────────────────────────────
+\begin{frame}{Experimental Results}
+  \begin{columns}[T]
+    \column{0.47\textwidth}
+      \textbf{Training Convergence} {\small (3 seeds, mean)}
+      \begin{center}
+        \small
+        \begin{tabular}{lrr}
+          \toprule
+          Milestone & Timestep & $\sigma$ \\
+          \midrule
+          First collision-free episode & 12\,400 & $\pm$2\,100 \\
+          Half-turn bonus triggered    & 31\,000 & $\pm$3\,800 \\
+          \alert{First full lap}       & \alert{48\,500} & $\pm$5\,200 \\
+          Rolling mean $\geq 60$       & 76\,000 & $\pm$6\,900 \\
+          \bottomrule
+        \end{tabular}
+      \end{center}
+
+      \vspace{0.2em}
+      \textbf{Inference — 100 episodes (local)}
+      \begin{center}
+        \small
+        \begin{tabular}{lr}
+          \toprule
+          Metric & Value \\
+          \midrule
+          \alert{Lap completion rate}   & \alert{97\%} \\
+          Mean episode reward           & 63.4 \\
+          Mean lap duration             & 38.2~s \\
+          Mean speed (completed laps)   & 47.6~km/h \\
+          Collisions per episode        & 0.01 \\
+          \bottomrule
+        \end{tabular}
+      \end{center}
+
+    \column{0.51\textwidth}
+      \textbf{Ablation Study}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item Half-turn bonus removed ($c_h=0$): first lap delayed by \alert{$\approx$18\,000 steps}; rolling mean 12 pts lower at 100K
+        \item Weaker collision penalty ($c_c=-1$): laps completed but agent drove closer to walls
+      \end{itemize}
+
+      \vspace{0.2em}
+      \textbf{Health Monitoring — All Failure Modes Detected}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item Observation timeout ($>5$~s) → \textit{Critical}
+        \item Python crash → non-zero exit code
+        \item MQTT disconnect → \textit{Disconnected} within 35~s
+      \end{itemize}
+
+      \vspace{0.2em}
+      \textbf{Raspberry Pi Remote Inference}
+      \begin{center}
+        \small
+        \begin{tabular}{lr}
+          \toprule
+          Metric & Value \\
+          \midrule
+          \alert{Lap completion rate (LAN)} & \alert{95\%} \\
+          Additional latency (LAN) & 15–20~ms \\
+          Deploy time              & $\approx$14 min \\
+          \bottomrule
+        \end{tabular}
+      \end{center}
+  \end{columns}
+\end{frame}
+
+% ─── SLIDE 8 — Conclusions ────────────────────────────────────────────────────
+\begin{frame}{Conclusions}
+  \begin{columns}[T]
+    \column{0.60\textwidth}
+      \textbf{What was achieved}
+      \begin{itemize}\setlength\itemsep{1pt}
+        \item \alert{End-to-end RL $\to$ SDV pipeline} — same MQTT/VSS protocol from Unity training to Raspberry Pi~4 hardware
+        \item Agent converges within \alert{100\,000 timesteps}; 97\% lap completion in inference
+        \item One-click Training Controller with \alert{5-failure-mode health monitoring}
+        \item Validated on physical hardware — 95\% remote lap completion over LAN
+      \end{itemize}
+
+    \column{0.38\textwidth}
+      \begin{block}{Future Work}
+        \begin{itemize}\setlength\itemsep{1pt}
+          \item Domain randomisation for sim-to-real transfer
+          \item Safety monitor → active command override (not just alerts)
+          \item Multi-agent scenarios and cooperative driving
+          \item CAN bus hardware-in-loop testing on real ECUs
+        \end{itemize}
+      \end{block}
+
+      \vspace{0.2em}
+      \centering
+      \includegraphics[width=0.55\linewidth]{images/logo.png}
+  \end{columns}
+
+  \vspace{0.3em}
+  \begin{center}
+    \Large\textbf{Thank you!} \quad
+    {\normalsize Questions?}
+  \end{center}
+\end{frame}
+
+\end{document}

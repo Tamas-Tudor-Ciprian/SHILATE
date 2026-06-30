@@ -22,8 +22,8 @@ MonoBehaviour:
   savePath: ../models
   logDir: ../logs/tensorboard
   unityBuildPath: D:/SHILATE/SIM/build/SHILATE.exe
-  numHeadlessEnvs: 1
+  numHeadlessEnvs: 20
   unityWithGraphics: 1
   headlessSingleModelMode: 1
-  headlessResumeModelPath: D:/SHILATE/models-shy-guy/shilate_ppo_7obs_2950000_steps.zip
-  resumeModelPath: D:/SHILATE/models-shy-guy/shilate_ppo_7obs_2950000_steps.zip
+  headlessResumeModelPath: D:/SHILATE/models_long_training_export/shilate_ppo_18500000_steps.zip
+  resumeModelPath: D:/SHILATE/models_long_training_export/shilate_ppo_17500000_steps.zip

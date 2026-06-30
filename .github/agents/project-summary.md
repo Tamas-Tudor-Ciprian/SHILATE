@@ -1,7 +1,7 @@
 # SHILATE Project Summary
 
 > **Auto-maintained reference** for the `project-wiki` agent. Updated when PRs are merged to `main`.
-> Last updated: 2026-06-08
+> Last updated: 2026-06-29
 
 ## What is SHILATE?
 
@@ -20,6 +20,8 @@ SHILATE is a **Software-defined-Vehicle reinforcement-learning project**. A Unit
 | `leda/mqtt-kuksa-feeder/` | Bridges MQTT ↔ Kuksa data broker |
 | `leda/velocitas-app/` | Eclipse Velocitas vehicle-app template (deployment target) |
 | `leda/examples/` | Sample manifests and configs |
+| `leda/docker-compose.pi.yml` | Raspberry Pi deployment stack — 5 containers (mosquitto, kuksa-databroker, mqtt-kuksa-feeder, velocitas-app, leda-controller), all `network_mode: host` |
+| `leda/deploy-pi.sh` | Builds ARM64 Docker images via `docker buildx`, transfers them to the Pi (`tetrix@10.122.6.115`) over SSH/SCP, and starts the stack with `docker compose up -d` |
 | `config.json` (repo root) | Shared config — currently holds `model.ray_count` |
 | `.github/agents/` | Custom Copilot agents for this repo |
 
@@ -67,7 +69,7 @@ All Editor scripts live in `SIM/Assets/scripts/Editor/Training/`.
 
 | Script | Role |
 |--------|------|
-| `TrainingEditorWindow.cs` | **The training UX.** Menu: `SHILATE → Training Controller`. Layout top-to-bottom: toolbar (status + MQTT dot + duration) → coloured health banner → snapshot row (Episodes / Last reward / Rolling reward / Heartbeats) → collapsed settings → metric graphs (reward / policy loss / value loss / KL) → issue log → collapsed raw stdout → controls (Start Training / Run Model / Stop). One button = enter Play mode and auto-launch Python after scene loads. State persisted via `SessionState`. Beeps on non-zero Python exit. |
+| `TrainingEditorWindow.cs` | **The training UX.** Menu: `SHILATE → Training Controller`. Layout top-to-bottom: toolbar (status + MQTT dot + duration) → coloured health banner → snapshot row (Episodes / Last reward / Rolling reward / Heartbeats) → collapsed settings → metric graphs (reward / policy loss / value loss / KL) → issue log → collapsed raw stdout → controls (Start Training / Run Model / Stop). Three operating modes: **Training** (enters Play mode + spawns local `train.py`), **Inference** (pick a local `.zip` → spawns `ai_driver.py`), **Remote** (cancel the file picker → kills local Mosquitto/Python, enters Play mode, points `LedaBroker` at the Pi broker, no local Python started; toolbar shows amber **[REMOTE]**; on Stop, local Mosquitto is restarted). State persisted via `SessionState`. Beeps on non-zero Python exit. |
 | `TrainingHealthEvaluator.cs` | Pure C# state machine emitting `HealthState ∈ {Idle, Healthy, Warning, Critical, Disconnected}`. Tickle every 0.25 s. Signals: MQTT disconnect, Python crash, no obs > 5 s, no heartbeat / no rewards > 60 s, reward collapse (> 50% drop over a 10-episode window), NaN/Inf in losses. `History` list of `Issue { Time, Level, Message }` powers the issue log. |
 | `TrainingMetricsParser.cs` | Parses SB3 stdout tables (`rollout/ep_rew_mean`, `train/policy_gradient_loss`, `train/value_loss`, `train/approx_kl`) **and** the structured `SHILATE-METRIC key=value` / `SHILATE-HEALTH signal` markers. Exposes histories per metric and an `OnHealthMarker` event consumed by the evaluator. |
 | `PythonProcessManager.cs` | Spawns/kills the Python trainer or inference script. Streams stdout/stderr line-by-line; raises `OnOutputLine`, `OnErrorLine`, `OnExited(int)`. No `debugMode`/`--num-envs`/`--timescale`/`--ray-count` plumbing. |
@@ -80,11 +82,13 @@ All Editor scripts live in `SIM/Assets/scripts/Editor/Training/`.
 | Goal | How |
 |------|-----|
 | Train | Open Unity → menu **SHILATE → Training Controller** → press **Start Training**. The window enters Play mode and launches Python automatically. |
-| Inference (run a trained model) | Same window → **Run Model** → pick a `.zip` checkpoint. |
+| Inference (local model) | Same window → **Run Model** → pick a `.zip` checkpoint. |
+| Inference (Pi remote) | Same window → **Run Model** → **Cancel** in the file dialog. Kills local Mosquitto, enters Play mode, `LedaBroker` connects to the Pi broker; Pi's `leda-controller` drives the sim. |
 | Manual drive (debug) | `python3 leda/leda-controller/debug_drive.py` while Unity is in Play mode. |
-| Boot Leda image | `leda/run-leda.sh` (or `.cmd`). |
+| Deploy to Raspberry Pi | `cd leda && ./deploy-pi.sh` (optionally with `feeder`, `app`, `controller`, or `all`). |
+| Boot Leda QEMU image | `leda/run-leda.sh` (or `.cmd`). |
 
-The Mosquitto broker must be running on the configured host (`127.0.0.1:1883` by default) before pressing Start. The window's toolbar shows the MQTT status dot live.
+For local training/inference, a Mosquitto broker must be running on the configured host (`127.0.0.1:1883` by default). For Pi remote mode, set `mqttHost` to the Pi's IP in Settings — the window manages broker switching automatically.
 
 ## How to Tell If Training Is Healthy (at a glance)
 
