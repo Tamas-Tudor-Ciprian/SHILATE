@@ -14,7 +14,7 @@
 \usepackage{booktabs}
 \usepackage{amsmath}
 \usepackage{tikz}
-\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,backgrounds}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,backgrounds,calc}
 
 % ─── Palette tweaks ──────────────────────────────────────────────────────────
 \definecolor{upt-navy}{RGB}{0,56,101}
@@ -118,37 +118,45 @@
 \end{frame}
 
 % ─── SLIDE 3 — System Architecture ──────────────────────────────────────────
-\begin{frame}{System Architecture — Three Loosely Coupled Tiers}
+\begin{frame}{System Architecture — Training vs.\ Deploy Mode}
   \begin{columns}[T]
     \column{0.46\textwidth}
       \begin{tikzpicture}[
           box/.style={
             draw=upt-navy, fill=upt-navy!8, rounded corners=4pt,
-            text width=4.2cm, minimum height=0.85cm,
+            text width=3.8cm, minimum height=0.80cm,
             align=center, font=\small},
           mqttbox/.style={
             draw=upt-red, fill=upt-red!10, rounded corners=3pt,
-            text width=4.2cm, minimum height=0.55cm,
+            text width=3.8cm, minimum height=0.50cm,
             align=center, font=\footnotesize\itshape},
-          arr/.style={-{Stealth[length=5pt]}, upt-red, line width=1.1pt}
+          modebox/.style={
+            draw=upt-navy!70, fill=upt-navy!5, rounded corners=3pt,
+            text width=1.68cm, minimum height=0.80cm,
+            align=center, font=\small},
+          arr/.style={{Stealth[length=4pt]}-{Stealth[length=4pt]},
+            upt-red, line width=1.0pt}
         ]
         \node[box] (unity) {%
-          \textbf{Tier~1: Unity Simulation}\\[-1pt]
+          \textbf{Unity Simulation}\\[-1pt]
           {\footnotesize Vehicle physics · LiDAR · Training Controller}};
-        \node[mqttbox, below=0.18cm of unity] (mqtt1)
+        \node[mqttbox, below=0.20cm of unity] (mqtt)
           {Mosquitto MQTT broker};
-        \node[box, below=0.18cm of mqtt1] (python) {%
-          \textbf{Tier~2: Python PPO}\\[-1pt]
-          {\footnotesize Stable-Baselines3 · Gymnasium env}};
-        \node[mqttbox, below=0.18cm of python] (mqtt2)
-          {Mosquitto MQTT broker};
-        \node[box, below=0.18cm of mqtt2] (leda) {%
-          \textbf{Tier~3: Eclipse Leda SDV}\\[-1pt]
-          {\footnotesize Kuksa · feeder · Velocitas · RPi~4}};
-        \draw[arr] (unity.south) -- (mqtt1.north);
-        \draw[arr] (mqtt1.south) -- (python.north);
-        \draw[arr] (python.south) -- (mqtt2.north);
-        \draw[arr] (mqtt2.south) -- (leda.north);
+        \node[modebox, below=0.55cm of mqtt, xshift=-1.5cm] (python) {%
+          \textbf{Python PPO}\\[-1pt]
+          {\footnotesize Stable-Baselines3\\Gymnasium env}};
+        \node[modebox, below=0.55cm of mqtt, xshift=1.5cm] (leda) {%
+          \textbf{Leda SDV}\\[-1pt]
+          {\footnotesize Kuksa · feeder\\Velocitas · RPi~4}};
+        \node[font=\tiny\itshape, text=upt-gray,
+          below=1pt of python] {Training mode};
+        \node[font=\tiny\itshape, text=upt-gray,
+          below=1pt of leda] {Deploy mode};
+        \node[font=\footnotesize\bfseries, text=upt-red]
+          at ($(python.east)!0.5!(leda.west)+(0,0.3cm)$) {or};
+        \draw[arr] (unity.south) -- (mqtt.north);
+        \draw[arr] (mqtt.south) -- ++(0,-0.15cm) -| (python.north);
+        \draw[arr] (mqtt.south) -- ++(0,-0.15cm) -| (leda.north);
       \end{tikzpicture}
 
     \column{0.52\textwidth}
@@ -157,9 +165,9 @@
 
       \vspace{0.2em}
       \begin{itemize}\setlength\itemsep{1pt}
-        \item All inter-tier traffic flows through \alert{MQTT topic prefix \texttt{env0/}}
-        \item No direct function calls across tiers — fully decoupled
-        \item Same topic namespace in training \textbf{and} on hardware
+        \item \textbf{Training}: Unity Sim $\leftrightarrow$ MQTT $\leftrightarrow$ Python PPO
+        \item \textbf{Deploy}: Unity Sim $\leftrightarrow$ MQTT $\leftrightarrow$ Eclipse Leda SDV
+        \item Same \alert{\texttt{env0/}} topic namespace in both modes — no protocol changes at deploy time
       \end{itemize}
   \end{columns}
 \end{frame}
