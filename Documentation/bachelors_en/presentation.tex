@@ -118,7 +118,7 @@
 \end{frame}
 
 % ─── SLIDE 3 — System Architecture ──────────────────────────────────────────
-\begin{frame}{System Architecture — Training vs.\ Deploy Mode}
+\begin{frame}{System Architecture — Training vs.\ Inference Mode}
   \begin{columns}[T]
     \column{0.46\textwidth}
       \begin{tikzpicture}[
@@ -151,7 +151,7 @@
         \node[font=\tiny\itshape, text=upt-gray,
           below=1pt of python] {Training mode};
         \node[font=\tiny\itshape, text=upt-gray,
-          below=1pt of leda] {Deploy mode};
+          below=1pt of leda] {Inference mode};
         \node[font=\footnotesize\bfseries, text=upt-red]
           at ($(python.east)!0.5!(leda.west)+(0,0.3cm)$) {or};
         \draw[arr] (unity.south) -- (mqtt.north);
@@ -183,7 +183,7 @@
       \textbf{Vehicle \& Sensor}
       \begin{itemize}\setlength\itemsep{1pt}
         \item 1\,500~kg RWD chassis — four WheelColliders, Pacejka tire model
-        \item \alert{21-ray LiDAR} spanning 120° at 50~m range, published at 10~Hz
+        \item \alert{21-ray LiDAR} spanning 120° at 15~m range, published at 10~Hz
         \item Observation $\mathbf{o} \in \mathbb{R}^{23}$: rays + normalised speed + steer
       \end{itemize}
 
