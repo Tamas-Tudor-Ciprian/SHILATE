@@ -819,13 +819,6 @@ public class TrainingEditorWindow : EditorWindow
         _trainingStartTime = DateTime.Now;
 
         AddLog($"Remote inference — Pi broker: {_settings.mqttHost}:{_settings.mqttPort}", LogType.Log);
-        AddLog("Killing local Mosquitto and Python processes...", LogType.Log);
-
-        // Fire-and-forget: kill any local broker/trainer that would conflict
-        RunCommand("taskkill", "/F /IM mosquitto.exe");
-        RunCommand("taskkill", "/F /IM python.exe");
-        RunCommand("taskkill", "/F /IM python3.exe");
-
         AddLog("Entering Play mode...", LogType.Log);
         EditorApplication.delayCall += EditorApplication.EnterPlaymode;
     }
@@ -841,35 +834,6 @@ public class TrainingEditorWindow : EditorWindow
             });
         }
         catch { /* process not found or access denied — ignore */ }
-    }
-
-    static void RestartMosquitto()
-    {
-        // Try Windows service first
-        RunCommand("net", "start mosquitto");
-
-        // Also try direct exe in case it's not registered as a service
-        string[] candidates = {
-            @"C:\Program Files\mosquitto\mosquitto.exe",
-            @"C:\mosquitto\mosquitto.exe",
-            @"C:\Program Files (x86)\mosquitto\mosquitto.exe",
-        };
-        foreach (var path in candidates)
-        {
-            if (File.Exists(path))
-            {
-                try
-                {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path)
-                    {
-                        UseShellExecute  = true,
-                        WorkingDirectory = Path.GetDirectoryName(path),
-                    });
-                }
-                catch { /* ignore */ }
-                break;
-            }
-        }
     }
 
     // ─── Process callbacks ─────────────────────────────────────────────
