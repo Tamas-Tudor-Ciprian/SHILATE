@@ -286,6 +286,26 @@
   \end{columns}
 \end{frame}
 
+% ─── SLIDE 6b — Hardware Setup ───────────────────────────────────────────────
+\begin{frame}{Hardware Setup — Raspberry Pi~4 Connections}
+  \begin{columns}[c]
+    \column{0.60\textwidth}
+      \includegraphics[width=\linewidth,height=0.76\textheight,keepaspectratio]{images/GPIO_diagram.png}
+    \column{0.38\textwidth}
+      \textbf{Physical Wiring}
+      \begin{itemize}\setlength\itemsep{3pt}
+        \item \textbf{Ethernet} — direct cable to development laptop running Unity Sim and MQTT broker
+        \item \textbf{3 GPIO LEDs} (via UART pins) used as hardware status indicators
+        \item MQTT traffic flows over the LAN link using the same \alert{\texttt{env0/}} topic namespace — zero reconfiguration
+        \item \alert{15–20\,ms} round-trip latency measured over direct Ethernet
+      \end{itemize}
+      \vspace{0.4em}
+      \begin{block}{Key insight}
+        The same containerised inference stack runs identically on the Pi and inside the QEMU Leda image.
+      \end{block}
+  \end{columns}
+\end{frame}
+
 % ─── SLIDE 7 — Experimental Results ─────────────────────────────────────────
 \begin{frame}{Experimental Results}
   \begin{columns}[T]
